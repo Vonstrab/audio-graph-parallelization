@@ -1,0 +1,6 @@
+[package]
+name = "audio-graph-parallelization"
+version = "0.1.0"
+authors = ["Ivan <delgado.ivan@protonmail.com>"]
+
+[dependencies]
