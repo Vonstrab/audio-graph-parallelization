@@ -1,6 +1,18 @@
 [package]
-name = "audio-graph-parallelization"
+name = "audio_graph_parallelization"
 version = "0.1.0"
 authors = ["Ivan <delgado.ivan@protonmail.com>"]
 
+[[bin]]
+name = "agp_bin"
+path = "src/main.rs"
+
+[lib]
+name = "agp_lib"
+
 [dependencies]
+petgraph = "*"
+ucd-trie = "0.1.1"
+pest = "2.1.0"
+pest_derive = "2.1.0"
+

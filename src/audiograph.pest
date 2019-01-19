@@ -1,0 +1,36 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+NUMBER = @{ASCII_DIGIT+|"."}
+
+//canvas arguments overlooked fornow
+CANARGS = { NUMBER~NUMBER~NUMBER~NUMBER~NUMBER }
+
+//node id
+ID= @{ (ASCII_ALPHA_LOWER | "~" | "*" | "+" )+ }
+
+//coordinates of an obj
+COBJ = {NUMBER~NUMBER}
+
+//object arguments
+AOBJ = {(("-")?~NUMBER | "empty")}
+
+//new canva definition at SOF
+NEWCANVAS  = {"#N"~"canvas"~CANARGS~";"}
+
+//node def
+OBJ = {"#X"~"obj"~COBJ~ID~AOBJ*~";"}
+
+//connextion args
+CONARGS = {ASCII_ALPHANUMERIC~ASCII_ALPHANUMERIC~ASCII_ALPHANUMERIC~ASCII_ALPHANUMERIC}
+
+//connexion def
+CON = {"#X"~"connect"~CONARGS~";"}
+
+
+file = {
+  SOI
+  ~ NEWCANVAS
+  ~ OBJ +
+  ~ CON + 
+  ~ EOI
+}

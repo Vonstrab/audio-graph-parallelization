@@ -1,0 +1,19 @@
+#N canvas 0 7 3 1 0;
+#X obj 62 208 random 800;
+#X obj 62 256 + 200;
+#X obj 62 291 osc~;
+#X obj 64 396 dac~;
+#X obj 62 54 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X obj 62 163 metro 500;
+#X obj 62 125 + 200;
+#X obj 62 83 random 1000;
+#X obj 63 348 *~ 0.1;
+#X connect 0 0 1 0;
+#X connect 1 0 2 0;
+#X connect 2 0 8 0;
+#X connect 4 0 7 0;
+#X connect 5 0 0 0;
+#X connect 6 0 5 0;
+#X connect 7 0 6 0;
+#X connect 8 0 3 0;
