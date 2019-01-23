@@ -1,7 +1,7 @@
 #N canvas 0 87 683 681 10;
 #X obj 62 208 random 800;
 #X obj 62 256 + 200;
-#X obj 213 347 osc~, f 7;
+#X obj 213 347 osc~;
 #X obj 217 462 dac~;
 #X obj 102 16 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;

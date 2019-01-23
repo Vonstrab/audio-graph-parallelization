@@ -8,8 +8,14 @@ CANARGS = { NUMBER~NUMBER~NUMBER~NUMBER~NUMBER }
 //node id
 ID= @{ (ASCII_ALPHA_LOWER | "~" | "*" | "+" )+ }
 
+
 //coordinates of an obj
-COBJ = {NUMBER~NUMBER}
+//COBJ = {POSX~POSY}
+POSX = {NUMBER}
+
+POSY = {NUMBER}
+
+
 
 //object arguments
 AOBJ = {(("-")?~NUMBER | "empty")}
@@ -18,7 +24,7 @@ AOBJ = {(("-")?~NUMBER | "empty")}
 NEWCANVAS  = {"#N"~"canvas"~CANARGS~";"}
 
 //node def
-OBJ = {"#X"~"obj"~COBJ~ID~AOBJ*~";"}
+OBJ = {"#X"~"obj"~POSX~POSY~ID~AOBJ*~";"}
 
 //connexion source
 SOURCE = {NUMBER}
