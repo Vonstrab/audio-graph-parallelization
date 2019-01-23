@@ -1,20 +1,20 @@
 //! Parse a fileformat describing audiographs
 
-use std::fs::File;
-use std::io::*;
-
 use pest::Parser;
+
+use petgraph::graph::NodeIndex;
+use petgraph::Graph;
 
 #[derive(Parser)]
 #[grammar = "audiograph.pest"]
 pub struct AudiographParser;
 
-pub fn parse_audiograph(audiograph: &str) -> bool {
+pub fn audiograph_from_pd(audiograph: &str) -> Graph<String, ()> {
     let parse_result =
         AudiographParser::parse(Rule::file, audiograph).unwrap_or_else(|e| panic!("{}", e));
 
     let mut nodes: Vec<String> = Vec::new();
-    let mut edges: Vec<(i32, i32)> = Vec::new();
+    let mut edges: Vec<(usize, usize)> = Vec::new();
 
     for file in parse_result {
         let defs = file.into_inner();
@@ -62,18 +62,28 @@ pub fn parse_audiograph(audiograph: &str) -> bool {
         }
     }
 
-    // DEBUG
+    let mut audio_graph = Graph::<String, ()>::with_capacity(nodes.len(), edges.len());
+    let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(nodes.len());
+
     for node in nodes {
-        println!("{}", node)
+        node_refs.push(audio_graph.add_node(node));
     }
+
+    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>)> = Vec::with_capacity(edges.len());
+
+    for (source, target) in edges {
+        ag_edges.push((node_refs[source], node_refs[target]));
+    }
+
+    audio_graph.extend_with_edges(ag_edges);
 
     // DEBUG
-    for edge in edges {
-        println!("Source: {}", edge.0);
-        println!("Target: {}", edge.1);
-    }
+    println!(
+        "{:?}",
+        petgraph::dot::Dot::with_config(&audio_graph, &[petgraph::dot::Config::EdgeNoLabel])
+    );
 
-    true
+    audio_graph
 }
 
 #[cfg(test)]
