@@ -2,7 +2,7 @@ WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 
 NUMBER = @{ASCII_DIGIT+|"."}
 
-//canvas arguments overlooked fornow
+//canvas arguments overlooked for now
 CANARGS = { NUMBER~NUMBER~NUMBER~NUMBER~NUMBER }
 
 //node id
@@ -20,17 +20,26 @@ NEWCANVAS  = {"#N"~"canvas"~CANARGS~";"}
 //node def
 OBJ = {"#X"~"obj"~COBJ~ID~AOBJ*~";"}
 
-//connextion args
-CONARGS = {ASCII_ALPHANUMERIC~ASCII_ALPHANUMERIC~ASCII_ALPHANUMERIC~ASCII_ALPHANUMERIC}
+//connexion source
+SOURCE = {NUMBER}
+
+//connexion outlet
+OUTLET = {NUMBER}
+
+//connexion target
+TARGET = {NUMBER}
+
+//connexion inlet
+INLET = {NUMBER}
 
 //connexion def
-CON = {"#X"~"connect"~CONARGS~";"}
+CON = {"#X"~"connect"~SOURCE~OUTLET~TARGET~INLET~";"}
 
 
 file = {
   SOI
   ~ NEWCANVAS
   ~ OBJ +
-  ~ CON + 
+  ~ CON +
   ~ EOI
 }
