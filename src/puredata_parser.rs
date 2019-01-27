@@ -8,12 +8,12 @@ use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 
 #[derive(Parser)]
-#[grammar = "audiograph.pest"]
-pub struct AudiographParser;
+#[grammar = "puredata.pest"]
+pub struct PuredataParser;
 
-pub fn audiograph_from_pd(audiograph: &str) -> Graph<AudioNode, ()> {
+pub fn graph_from_pd(puredata: &str) -> Graph<AudioNode, ()> {
     let parse_result =
-        AudiographParser::parse(Rule::file, audiograph).unwrap_or_else(|e| panic!("{}", e));
+        PuredataParser::parse(Rule::file, puredata).unwrap_or_else(|e| panic!("{}", e));
 
     let mut audio_nodes: Vec<AudioNode> = Vec::new();
     let mut edges: Vec<(usize, usize)> = Vec::new();
