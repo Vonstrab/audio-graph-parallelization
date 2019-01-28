@@ -1,6 +1,11 @@
 //! Parse a fileformat describing audiographs
 
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+
 use audio_node::AudioNode;
+use audiograph::*;
 
 use pest::Parser;
 
@@ -11,7 +16,7 @@ use petgraph::Graph;
 #[grammar = "puredata.pest"]
 pub struct PuredataParser;
 
-pub fn graph_from_pd(puredata: &str) -> Graph<AudioNode, ()> {
+pub fn parse_puredata(puredata: &str) -> AudioGraph {
     let parse_result =
         PuredataParser::parse(Rule::file, puredata).unwrap_or_else(|e| panic!("{}", e));
 
@@ -33,16 +38,13 @@ pub fn graph_from_pd(puredata: &str) -> Graph<AudioNode, ()> {
 
                     for field in fields {
                         if field.as_rule() == Rule::ID {
-                            node.set_object(field.as_str().to_string());
+                            node.object_name = field.as_str().to_string();
                         }
                         if field.as_rule() == Rule::POSX {
                             posx = field.as_str().parse::<i64>().unwrap();
                         }
                         if field.as_rule() == Rule::POSY {
                             posy = field.as_str().parse::<i64>().unwrap();
-                        }
-                        if field.as_rule() == Rule::ID {
-                            node.set_object(field.as_str().to_string());
                         }
 
                         if field.as_rule() == Rule::AOBJ {
@@ -77,6 +79,7 @@ pub fn graph_from_pd(puredata: &str) -> Graph<AudioNode, ()> {
             }
         }
     }
+
     let mut audio_graph = Graph::<AudioNode, ()>::with_capacity(audio_nodes.len(), edges.len());
     let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
 
@@ -98,5 +101,13 @@ pub fn graph_from_pd(puredata: &str) -> Graph<AudioNode, ()> {
         petgraph::dot::Dot::with_config(&audio_graph, &[petgraph::dot::Config::EdgeNoLabel])
     );
 
-    audio_graph
+   AudioGraph::new(audio_graph)
+}
+
+pub fn parse_puredata_from_file(filename : &str) -> AudioGraph {
+    let path = Path::new(filename);
+    let mut file = File::open(&path).expect("Impossible to open file.");
+    let mut s = String::new();
+    file.read_to_string(&mut s).expect("Impossible to read file.");
+    parse_puredata(&s)
 }

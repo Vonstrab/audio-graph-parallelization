@@ -1,14 +1,20 @@
 //! Implement a Node for the Audio Graph
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug,Clone)]
 pub struct AudioNode {
     //Node Name
-    pub audio_object: String,
+    pub object_name: String,
+    //Node_id
+    pub id: String,
     //Node x and y positions
     pub xpos: i64,
     pub ypos: i64,
     //Node List of Arguments
     pub args: Vec<String>,
+    pub nb_inlets: i64,
+    pub nb_outlets: i64,
+    pub text: Option<String>,
+    pub wcet: Option<f64>,
 }
 
 impl AudioNode {
@@ -17,22 +23,20 @@ impl AudioNode {
      **/
     pub fn new() -> AudioNode {
         AudioNode {
-            audio_object: String::default(),
+            id : String::default(),
+            object_name: String::default(),
             xpos: -1,
             ypos: -1,
             args: Vec::new(),
+            nb_inlets: -1,
+            nb_outlets: -1,
+            text: None,
+            wcet: None,
         }
     }
     /**
-     * Set Node name
-     */
-    pub fn set_object(&mut self, value: String) {
-        self.audio_object = value;
-    }
-     /**
      * Set Node Position
      */
-    
     pub fn set_pos(&mut self, x: i64, y: i64) {
         self.xpos = x;
         self.ypos = y;
