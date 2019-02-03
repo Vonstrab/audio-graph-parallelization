@@ -1,9 +1,9 @@
 #![crate_type = "lib"]
 
-pub mod puredata_parser;
 pub mod audio_node;
-pub mod audiograph_parser;
 pub mod audiograph;
+pub mod audiograph_parser;
+pub mod puredata_parser;
 
 extern crate petgraph;
 

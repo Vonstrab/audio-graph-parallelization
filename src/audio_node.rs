@@ -1,6 +1,6 @@
 //! Implement a Node for the Audio Graph
 
-#[derive(Default, Debug,Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct AudioNode {
     //Node Name
     pub object_name: String,
@@ -23,7 +23,7 @@ impl AudioNode {
      **/
     pub fn new() -> AudioNode {
         AudioNode {
-            id : String::default(),
+            id: String::default(),
             object_name: String::default(),
             xpos: -1,
             ypos: -1,

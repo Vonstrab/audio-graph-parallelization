@@ -101,13 +101,14 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
         petgraph::dot::Dot::with_config(&audio_graph, &[petgraph::dot::Config::EdgeNoLabel])
     );
 
-   AudioGraph::new(audio_graph)
+    AudioGraph::new(audio_graph)
 }
 
-pub fn parse_puredata_from_file(filename : &str) -> AudioGraph {
+pub fn parse_puredata_from_file(filename: &str) -> AudioGraph {
     let path = Path::new(filename);
     let mut file = File::open(&path).expect("Impossible to open file.");
     let mut s = String::new();
-    file.read_to_string(&mut s).expect("Impossible to read file.");
+    file.read_to_string(&mut s)
+        .expect("Impossible to read file.");
     parse_puredata(&s)
 }
