@@ -1,7 +1,7 @@
 #![crate_type = "lib"]
 
-pub mod audio_node;
 pub mod audiograph;
+pub mod audiograph_node;
 pub mod audiograph_parser;
 pub mod puredata_parser;
 

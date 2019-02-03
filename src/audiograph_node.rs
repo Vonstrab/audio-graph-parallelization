@@ -1,8 +1,8 @@
 //! This module implements a node for the audio graph
 
 #[derive(Default, Debug, Clone)]
-pub struct AudioNode {
-    pub id: String, // `AudioNode`'s ID
+pub struct AGNode {
+    pub id: String, // `AGNode`'s ID
 
     // Pure Data related informations
     pub object_name: String, // Pure Data object's name
@@ -18,10 +18,10 @@ pub struct AudioNode {
     pub estimated_computation_cost: Option<f64>, // In milliseconds
 }
 
-impl AudioNode {
-    /// Creates a new empty `AudioNode`
-    pub fn new() -> AudioNode {
-        AudioNode {
+impl AGNode {
+    /// Creates a new empty `AGNode`
+    pub fn new() -> AGNode {
+        AGNode {
             id: String::default(),
 
             object_name: String::default(),
@@ -37,7 +37,7 @@ impl AudioNode {
         }
     }
 
-    /// Sets the `AudioNode`'s position
+    /// Sets the `AGNode`'s position
     pub fn set_pos(&mut self, x: i64, y: i64) {
         self.xpos = x;
         self.ypos = y;

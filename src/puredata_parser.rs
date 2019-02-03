@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use audio_node::AudioNode;
+use audiograph_node::AGNode;
 use audiograph::*;
 
 use pest::Parser;
@@ -20,7 +20,7 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
     let parse_result =
         PuredataParser::parse(Rule::file, puredata).unwrap_or_else(|e| panic!("{}", e));
 
-    let mut audio_nodes: Vec<AudioNode> = Vec::new();
+    let mut audio_nodes: Vec<AGNode> = Vec::new();
     let mut edges: Vec<(usize, usize)> = Vec::new();
 
     for file in parse_result {
@@ -31,7 +31,7 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
                 Rule::OBJ => {
                     let fields = def.into_inner();
 
-                    let mut node = AudioNode::new();
+                    let mut node = AGNode::new();
 
                     let mut posx: i64 = -1;
                     let mut posy: i64 = -1;
@@ -80,7 +80,7 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
         }
     }
 
-    let mut audio_graph = Graph::<AudioNode, ()>::with_capacity(audio_nodes.len(), edges.len());
+    let mut audio_graph = Graph::<AGNode, ()>::with_capacity(audio_nodes.len(), edges.len());
     let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
 
     for node in audio_nodes {

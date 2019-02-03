@@ -6,8 +6,8 @@ use std::path::Path;
 
 use itertools::Itertools;
 
-use audio_node::*;
-use audiograph::*;
+use audiograph::AudioGraph;
+use audiograph_node::AGNode;
 
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
@@ -26,7 +26,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
     let parse_result =
         AudiographParser::parse(Rule::file, audiograph).unwrap_or_else(|e| panic!("{}", e));
 
-    let mut audio_nodes: Vec<AudioNode> = Vec::new();
+    let mut audio_nodes: Vec<AGNode> = Vec::new();
     let edges: Vec<Edge> = Vec::new();
     let mut audio_edges: Vec<(usize, usize)> = Vec::new();
 
@@ -37,7 +37,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
             match statement.as_rule() {
                 Rule::node => {
                     let fields = statement.into_inner();
-                    let mut node = AudioNode::new();
+                    let mut node = AGNode::new();
 
                     for field in fields {
                         if field.as_rule() == Rule::ident {
@@ -97,7 +97,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
         }
     }
 
-    let mut audio_graph = Graph::<AudioNode, ()>::with_capacity(audio_nodes.len(), edges.len());
+    let mut audio_graph = Graph::<AGNode, ()>::with_capacity(audio_nodes.len(), edges.len());
     let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
 
     for node in audio_nodes.clone() {
