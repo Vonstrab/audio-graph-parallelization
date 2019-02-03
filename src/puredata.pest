@@ -2,29 +2,28 @@ WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
 
 NUMBER = @{ASCII_DIGIT+|"."}
 
+WORD = @{(ASCII_ALPHA_LOWER | ASCII_ALPHA_UPPER)+ }
+
+STRING = {( WORD | NUMBER)+ }
+
+//node id
+ID= @{ (WORD | "~" | "*" | "+" )+ }
+
+//coordinates of an obj
+POSX = {NUMBER}
+POSY = {NUMBER}
+
+//object arguments
+AOBJ = {(("-")?~NUMBER | "empty" |WORD)}
+
 //canvas arguments overlooked for now
 CANARGS = { NUMBER~NUMBER~NUMBER~NUMBER~NUMBER }
 
-//node id
-ID= @{ (ASCII_ALPHA_LOWER | "~" | "*" | "+" )+ }
-
-
-//coordinates of an obj
-//COBJ = {POSX~POSY}
-POSX = {NUMBER}
-
-POSY = {NUMBER}
-
-
-
-//object arguments
-AOBJ = {(("-")?~NUMBER | "empty")}
-
 //new canva definition at SOF
-NEWCANVAS  = {"#N"~"canvas"~CANARGS~";"}
+NEWCANVAS  = {"#N canvas"~CANARGS~";"}
 
 //node def
-OBJ = {"#X"~"obj"~POSX~POSY~ID~AOBJ*~";"}
+OBJ = {"#X obj"~POSX~POSY~ID?~AOBJ*~";"}
 
 //connexion source
 SOURCE = {NUMBER}
@@ -39,13 +38,16 @@ TARGET = {NUMBER}
 INLET = {NUMBER}
 
 //connexion def
-CON = {"#X"~"connect"~SOURCE~OUTLET~TARGET~INLET~";"}
+CON = {"#X connect"~SOURCE~OUTLET~TARGET~INLET~";"}
 
+//message def
+MSG = {"#X msg"~POSX~POSY~STRING~";"}
 
 file = {
   SOI
   ~ NEWCANVAS
-  ~ OBJ +
-  ~ CON +
+  ~ (OBJ |
+    CON |
+    MSG)+
   ~ EOI
 }

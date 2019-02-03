@@ -47,7 +47,6 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
                         if field.as_rule() == Rule::POSY {
                             posy = field.as_str().parse::<i64>().unwrap();
                         }
-
                         if field.as_rule() == Rule::AOBJ {
                             for aobj in field.as_str().split_whitespace() {
                                 node.add_arg(aobj.to_string());
@@ -76,6 +75,31 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
 
                     edges.push((source, target));
                 }
+                Rule::MSG => {
+                    let fields = def.into_inner();
+
+                    let mut node = AGNode::new();
+
+                    let mut posx: i64 = -1;
+                    let mut posy: i64 = -1;
+
+                    for field in fields {
+                        if field.as_rule() == Rule::STRING {
+                            node.object_name = "msg".to_string();
+                            node.add_arg(field.as_str().to_string());
+                        }
+                        if field.as_rule() == Rule::POSX {
+                            posx = field.as_str().parse::<i64>().unwrap();
+                        }
+                        if field.as_rule() == Rule::POSY {
+                            posy = field.as_str().parse::<i64>().unwrap();
+                        }
+                    }
+
+                    node.set_pos(posx, posy);
+                    audio_nodes.push(node);
+                }
+
                 _ => {}
             }
         }
@@ -88,7 +112,8 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
         node_refs.push(audio_graph.add_node(node));
     }
 
-    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>, AGEdge)> = Vec::with_capacity(edges.len());
+    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>, AGEdge)> =
+        Vec::with_capacity(edges.len());
 
     for (source, target) in edges {
         ag_edges.push((node_refs[source], node_refs[target], AGEdge::new()));
@@ -112,4 +137,38 @@ pub fn parse_puredata_from_file(filename: &str) -> AudioGraph {
     file.read_to_string(&mut s)
         .expect("Impossible to read file.");
     parse_puredata(&s)
+}
+
+#[cfg(test)]
+mod tests {
+
+    use puredata_parser::*;
+
+    #[test]
+    fn parse_test_aleatoire() {
+        let graphe_test = parse_puredata_from_file("./Samples/PD/aleatoire.pd");
+        assert_eq!(graphe_test.nb_nodes(), 9);
+        assert_eq!(graphe_test.nb_edges(), 8);
+    }
+
+    #[test]
+    fn parse_test_aleatoire2() {
+        let graphe_test = parse_puredata_from_file("./Samples/PD/aleatoire2.pd");
+        assert_eq!(graphe_test.nb_nodes(), 14);
+        assert_eq!(graphe_test.nb_edges(), 15);
+    }
+
+    #[test]
+    fn parse_test_aleatoire4() {
+        let graphe_test = parse_puredata_from_file("./Samples/PD/aleatoire4.pd");
+        assert_eq!(graphe_test.nb_nodes(), 24);
+        assert_eq!(graphe_test.nb_edges(), 27);
+    }
+
+    #[test]
+    fn parse_test_tonalite() {
+        let graphe_test = parse_puredata_from_file("./Samples/PD/Tonalite.pd");
+        assert_eq!(graphe_test.nb_nodes(), 12);
+        assert_eq!(graphe_test.nb_edges(), 15);
+    }
 }

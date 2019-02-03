@@ -78,7 +78,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
 
                     let mut edges = Vec::new();
 
-                    for (mut dst_id_r, source) in fields {
+                    for (mut dst_id_r, _source) in fields {
                         let dst_id = dst_id_r.as_str().to_string();
                         edges.push(Edge {
                             source_id: src_id,
