@@ -4,8 +4,9 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use audiograph_node::AGNode;
 use audiograph::*;
+use audiograph_edge::AGEdge;
+use audiograph_node::AGNode;
 
 use pest::Parser;
 
@@ -80,17 +81,17 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
         }
     }
 
-    let mut audio_graph = Graph::<AGNode, ()>::with_capacity(audio_nodes.len(), edges.len());
+    let mut audio_graph = Graph::<AGNode, AGEdge>::with_capacity(audio_nodes.len(), edges.len());
     let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
 
     for node in audio_nodes {
         node_refs.push(audio_graph.add_node(node));
     }
 
-    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>)> = Vec::with_capacity(edges.len());
+    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>, AGEdge)> = Vec::with_capacity(edges.len());
 
     for (source, target) in edges {
-        ag_edges.push((node_refs[source], node_refs[target]));
+        ag_edges.push((node_refs[source], node_refs[target], AGEdge::new()));
     }
 
     audio_graph.extend_with_edges(ag_edges);

@@ -1,17 +1,18 @@
 use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 
+use audiograph_edge::AGEdge;
 use audiograph_node::AGNode;
 
 /// Represents an audiograph of nodes
 pub struct AudioGraph {
-    graph: Graph<AGNode, ()>,
+    graph: Graph<AGNode, AGEdge>,
 
     buffer_size: u32, // Used for computing computation and communications costs
 }
 
 impl AudioGraph {
-    pub fn new(graph: Graph<AGNode, ()>) -> AudioGraph {
+    pub fn new(graph: Graph<AGNode, AGEdge>) -> AudioGraph {
         AudioGraph {
             graph,
             buffer_size: 512, // Default value used for now. Will be changed later.

@@ -7,6 +7,7 @@ use std::path::Path;
 use itertools::Itertools;
 
 use audiograph::AudioGraph;
+use audiograph_edge::AGEdge;
 use audiograph_node::AGNode;
 
 use petgraph::graph::NodeIndex;
@@ -97,7 +98,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
         }
     }
 
-    let mut audio_graph = Graph::<AGNode, ()>::with_capacity(audio_nodes.len(), edges.len());
+    let mut audio_graph = Graph::<AGNode, AGEdge>::with_capacity(audio_nodes.len(), edges.len());
     let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
 
     for node in audio_nodes.clone() {
