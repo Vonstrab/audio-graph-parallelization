@@ -2,8 +2,10 @@
 
 #[derive(Default, Debug, Clone)]
 pub struct AudioNode {
+    pub id: String, // `AudioNode`'s ID
+
+    // Pure Data related informations
     pub object_name: String, // Pure Data object's name
-    pub id: String,          // `AudioNode`'s ID
     pub xpos: i64,           // Pure Data node's X position
     pub ypos: i64,           // Pure Data node's Y position
     pub args: Vec<String>,   // Pure Data object's list of arguments
@@ -11,6 +13,9 @@ pub struct AudioNode {
     pub nb_outlets: i64,
     pub text: Option<String>,
     pub wcet: Option<f64>,
+
+    // Scheduling related informations
+    pub estimated_computation_cost: Option<f64>, // In milliseconds
 }
 
 impl AudioNode {
@@ -18,6 +23,7 @@ impl AudioNode {
     pub fn new() -> AudioNode {
         AudioNode {
             id: String::default(),
+
             object_name: String::default(),
             xpos: -1,
             ypos: -1,
@@ -26,6 +32,8 @@ impl AudioNode {
             nb_outlets: -1,
             text: None,
             wcet: None,
+
+            estimated_computation_cost: None,
         }
     }
 
