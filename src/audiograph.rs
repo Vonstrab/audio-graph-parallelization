@@ -6,11 +6,16 @@ use audio_node::AudioNode;
 /// Represents an audiograph of nodes
 pub struct AudioGraph {
     graph: Graph<AudioNode, ()>,
+
+    buffer_size: u32, // Used for computing computation and communications costs
 }
 
 impl AudioGraph {
     pub fn new(graph: Graph<AudioNode, ()>) -> AudioGraph {
-        AudioGraph { graph: graph }
+        AudioGraph {
+            graph,
+            buffer_size: 512, // Default value used for now. Will be changed later.
+        }
     }
 
     pub fn nb_nodes(&self) -> usize {
