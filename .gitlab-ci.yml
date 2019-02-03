@@ -6,13 +6,6 @@ cache:
     - $HOME/.cargo/
     - target/
 
-# Define a yaml template for running a build and then running your tests
-.cargo_test_template: &cargo_test
-  script:
-  - rustc --version && cargo --version
-  - cargo build
-  - cargo test --verbose --all
-
 # Set any required environment variables here
 variables:
   RUST_BACKTRACE: "FULL"
@@ -26,15 +19,10 @@ before_script:
 test:stable:
   # using rust compiled depot for gitlab
   image: "rustdocker/rust:stable"
-  <<: *cargo_test
-
-
-#We can choose rust version
-#test:beta:
-#  image: "rustdocker/rust:beta"
-#  <<: *cargo_test
-
-
+  script:
+  - rustc --version && cargo --version
+  - cargo build
+  - cargo test --verbose --all
 
 # Always want to run rustfmt and clippy against our tests, to ensure that
 # we aren't using any anti-patterns or failing to follow rust fmt style guide

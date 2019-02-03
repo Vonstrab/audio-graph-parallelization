@@ -126,7 +126,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
 
                 target = i;
             }
-            i = i + 1;
+            i += 1;
         }
         audio_edges.push((source, target));
     }
