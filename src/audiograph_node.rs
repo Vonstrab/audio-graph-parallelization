@@ -1,5 +1,7 @@
 //! This module implements a node for the audio graph
 
+use std::fmt;
+
 #[derive(Default, Debug, Clone)]
 pub struct AGNode {
     pub id: String, // `AGNode`'s ID
@@ -46,5 +48,11 @@ impl AGNode {
     /// Adds an argument to the current list
     pub fn add_arg(&mut self, arg: String) {
         self.args.push(arg);
+    }
+}
+
+impl fmt::Display for AGNode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.object_name)
     }
 }

@@ -121,12 +121,6 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
 
     audio_graph.extend_with_edges(ag_edges);
 
-    // DEBUG
-    println!(
-        "{:?}",
-        petgraph::dot::Dot::with_config(&audio_graph, &[petgraph::dot::Config::EdgeNoLabel])
-    );
-
     AudioGraph::new(audio_graph)
 }
 
