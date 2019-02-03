@@ -10,7 +10,7 @@ cache:
 .cargo_test_template: &cargo_test
   script:
   - rustc --version && cargo --version
-  - cargo build --verbose --all
+  - cargo build
   - cargo test --verbose --all
 
 # Set any required environment variables here
@@ -57,7 +57,7 @@ test:
 
 lint:rustfmt:
   image: "guangie88/rustfmt-clippy"
-  #allow_failure: true
+  allow_failure: true
   script:
     - cargo fmt -- --check
 
