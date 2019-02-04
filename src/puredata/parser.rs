@@ -14,7 +14,7 @@ use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 
 #[derive(Parser)]
-#[grammar = "puredata.pest"]
+#[grammar = "puredata/puredata.pest"]
 pub struct PuredataParser;
 
 pub fn parse_puredata(puredata: &str) -> AudioGraph {
@@ -136,7 +136,7 @@ pub fn parse_puredata_from_file(filename: &str) -> AudioGraph {
 #[cfg(test)]
 mod tests {
 
-    use puredata_parser::*;
+    use puredata::parser::*;
 
     #[test]
     fn parse_test_aleatoire() {
@@ -164,5 +164,11 @@ mod tests {
         let graphe_test = parse_puredata_from_file("./Samples/PD/Tonalite.pd");
         assert_eq!(graphe_test.nb_nodes(), 12);
         assert_eq!(graphe_test.nb_edges(), 15);
+    }
+    #[test]
+    fn parse_test_metronome() {
+        let graphe_test = parse_puredata_from_file("./Samples/PD/Metronome.pd");
+        assert_eq!(graphe_test.nb_nodes(), 386);
+        assert_eq!(graphe_test.nb_edges(), 396);
     }
 }
