@@ -4,6 +4,8 @@ use petgraph::Graph;
 use audiograph_edge::AGEdge;
 use audiograph_node::AGNode;
 
+use std::fmt;
+
 /// Represents an audiograph of nodes
 pub struct AudioGraph {
     graph: Graph<AGNode, AGEdge>,
@@ -29,5 +31,12 @@ impl AudioGraph {
 
     pub fn add_node(&mut self, node: AGNode) -> NodeIndex {
         self.graph.add_node(node)
+    }
+}
+impl fmt::Display for AudioGraph {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let dot_graph =
+            petgraph::dot::Dot::with_config(&self.graph, &[petgraph::dot::Config::EdgeNoLabel]);
+        write!(f, "(\n{}\nbuffer_size = {})", dot_graph, self.buffer_size)
     }
 }

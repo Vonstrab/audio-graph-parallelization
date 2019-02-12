@@ -78,7 +78,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
 
                     let mut edges = Vec::new();
 
-                    for (mut dst_id_r, source) in fields {
+                    for (mut dst_id_r, _source) in fields {
                         let dst_id = dst_id_r.as_str().to_string();
                         edges.push(Edge {
                             source_id: src_id,
@@ -113,8 +113,7 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
 
         let mut source = 0;
         let mut target = 0;
-        let mut i = 0;
-        for node in audio_nodes.clone() {
+        for (i, node) in audio_nodes.iter().enumerate() {
             println!(" present node{}", node.id);
 
             if edge.source_id == node.id {
@@ -126,7 +125,6 @@ pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
 
                 target = i;
             }
-            i = i + 1;
         }
         audio_edges.push((source, target));
     }

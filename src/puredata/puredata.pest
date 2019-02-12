@@ -1,0 +1,80 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+NUMBER = @{ASCII_DIGIT+|"."}
+
+SIGNUM = {("-")?~NUMBER}
+
+WORD = @{(ASCII_ALPHA_LOWER | ASCII_ALPHA_UPPER|"_"| "-" | ">" | "<"| "/" | "[" | "]"| ":" | "+" | "(" | ")" )+ }
+
+STRING = {( WORD | NUMBER|VARID)+ }
+
+//node id
+ID= @{ (WORD |  "~" | "*" | "+" )+ }
+
+//coordinates of an obj
+POSX = {SIGNUM}
+POSY = {SIGNUM}
+
+VARID = { "\\$"~NUMBER}
+
+PDEXPR = {(PDEXPRID | "if"| PDEXPRBEG | PDEXPRDEL | NUMBER |"("|")"|"<"|">"|"/"|"*"|"="|"+")+}
+
+PDEXPRID = {"$"~ID }
+PDEXPRBEG = {"\\;"}
+PDEXPRDEL = {"\\,"}
+
+
+//object arguments
+AOBJ = {(SIGNUM | "empty" |WORD~":"?| "-" | VARID | PDEXPR )}
+
+//canvas arguments overlooked for now
+CANARGS = { NUMBER~NUMBER~NUMBER~NUMBER~NUMBER }
+
+//new canva definition at SOF
+NEWCANVAS  = {"#N canvas"~STRING~";"}
+
+//node def
+OBJ = {"#X obj"~POSX~POSY~ID?~AOBJ*~";"}
+
+//connexion source
+SOURCE = {NUMBER}
+
+//connexion outlet
+OUTLET = {NUMBER}
+
+//connexion target
+TARGET = {NUMBER}
+
+//connexion inlet
+INLET = {NUMBER}
+
+//connexion def
+CON = {"#X connect"~SOURCE~OUTLET~TARGET~INLET~";"}
+
+//message def
+MSG = {"#X msg"~POSX~POSY~(STRING|PDEXPR)+~";"}
+
+FLOATATOM = {"#X floatatom"~POSX~POSY~AOBJ+~";"}
+
+SYMBOLATOM = {"#X symbolatom"~POSX~POSY~AOBJ+~";"}
+
+RESTORE = {"#X restore"~POSX~POSY~AOBJ+~";"}
+
+COORDS = {"#X coords"~AOBJ+~";"}
+
+TEXT = {"#X text"~STRING~";"}
+
+file = {
+  SOI
+  ~ (
+    TEXT |
+    COORDS |
+    RESTORE |
+    NEWCANVAS |
+    FLOATATOM |
+    SYMBOLATOM |
+    OBJ |
+    CON |
+    MSG)+
+  ~ EOI
+}
