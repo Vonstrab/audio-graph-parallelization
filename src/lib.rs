@@ -6,6 +6,7 @@ pub mod audiograph_node;
 pub mod audiograph_parser;
 
 pub mod puredata;
+pub mod scheduling;
 
 extern crate petgraph;
 
