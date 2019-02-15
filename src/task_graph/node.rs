@@ -8,3 +8,15 @@ pub struct Node {
     pub predecessors: Vec<usize>,
     pub successors: Vec<usize>,
 }
+
+impl Node {
+    pub fn new(task: Task) -> Node {
+        Node {
+            task,
+            wcet: None,
+            state: TaskState::WaitingDependencies,
+            predecessors: Vec::new(),
+            successors: Vec::new(),
+        }
+    }
+}
