@@ -1,10 +1,9 @@
 //! This module implements a schedule
 
 use scheduling::processor::Processor;
-use scheduling::timeslot::Timeslot;
 
 pub struct Schedule {
-   pub processors: Vec<Processor>,
+    pub processors: Vec<Processor>,
 }
 
 impl Schedule {
