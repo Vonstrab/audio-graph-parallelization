@@ -22,10 +22,26 @@ impl TaskGraph {
     }
 
     pub fn get_entry_nodes(&mut self) -> &Vec<usize> {
+        if self.entry_nodes.is_empty() {
+            for i in 0..self.nodes.len() {
+                if self.nodes[i].predecessors.is_empty() {
+                    self.entry_nodes.push(i);
+                }
+            }
+        }
+
         &self.entry_nodes
     }
 
-    pub fn get_exit_nodes(&self) -> &Vec<usize> {
+    pub fn get_exit_nodes(&mut self) -> &Vec<usize> {
+        if self.exit_nodes.is_empty() {
+            for i in 0..self.nodes.len() {
+                if self.nodes[i].successors.is_empty() {
+                    self.exit_nodes.push(i);
+                }
+            }
+        }
+
         &self.exit_nodes
     }
 
@@ -78,7 +94,9 @@ impl TaskGraph {
         src_node_index: usize,
         dest_node_index: usize,
     ) -> Option<f64> {
-        unimplemented!()
+        self.edges
+            .get(&(src_node_index, dest_node_index))
+            .map(|val| *val)
     }
 
     pub fn get_t_level(&self, node_index: usize) -> Option<f64> {
@@ -93,15 +111,19 @@ impl TaskGraph {
         unimplemented!()
     }
 
-    pub fn add_node(&mut self) -> usize {
-        unimplemented!()
+    pub fn add_task(&mut self, task: Task) -> usize {
+        self.nodes.push(Node::new(task));
+
+        self.nodes.len() - 1
     }
 
     pub fn add_edge(&mut self, src_node_index: usize, dest_node_index: usize) -> bool {
-        unimplemented!()
-    }
+        if src_node_index < self.nodes.len() && dest_node_index < self.nodes.len() {
+            self.edges.insert((src_node_index, dest_node_index), None);
 
-    pub fn assign_task(&mut self, node_index: usize) -> bool {
-        unimplemented!()
+            true
+        } else {
+            false
+        }
     }
 }
