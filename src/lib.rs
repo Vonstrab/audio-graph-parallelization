@@ -4,6 +4,7 @@ pub mod audiograph;
 pub mod audiograph_edge;
 pub mod audiograph_node;
 pub mod audiograph_parser;
+pub mod task_graph;
 
 pub mod puredata;
 pub mod scheduling;
