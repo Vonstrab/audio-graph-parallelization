@@ -6,7 +6,7 @@ use super::task::Task;
 
 pub struct TaskGraph {
     nodes: Vec<Node>,
-    edges: HashMap<(usize, usize), f64>,
+    edges: HashMap<(usize, usize), Option<f64>>,
     entry_nodes: Vec<usize>,
     exit_nodes: Vec<usize>,
 }
