@@ -12,7 +12,16 @@ pub struct TaskGraph {
 }
 
 impl TaskGraph {
-    pub fn get_entry_nodes(&self) -> &Vec<usize> {
+    pub fn new(nodes_count: usize, edges_count: usize) -> TaskGraph {
+        TaskGraph {
+            nodes: Vec::with_capacity(nodes_count),
+            edges: HashMap::with_capacity(edges_count),
+            entry_nodes: Vec::new(),
+            exit_nodes: Vec::new(),
+        }
+    }
+
+    pub fn get_entry_nodes(&mut self) -> &Vec<usize> {
         &self.entry_nodes
     }
 
