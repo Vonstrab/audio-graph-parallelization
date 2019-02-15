@@ -2,15 +2,15 @@
 //!
 
 #[derive(Clone, Copy)]
-pub struct Timeslot {
+pub struct TimeSlot {
     start_time: f64,
     completion_time: f64,
     node: usize,
 }
 
-impl Timeslot {
-    pub fn new(node: usize, start: f64, completion: f64) -> Timeslot {
-        Timeslot {
+impl TimeSlot {
+    pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
+        TimeSlot {
             start_time: start,
             completion_time: completion,
             node: node,
