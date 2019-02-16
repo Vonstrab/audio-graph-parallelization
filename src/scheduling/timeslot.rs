@@ -17,11 +17,11 @@ impl TimeSlot {
         }
     }
 
-    pub fn get_start(&self) -> f64 {
+    pub fn get_start_time(&self) -> f64 {
         self.start_time
     }
 
-    pub fn get_completion(&self) -> f64 {
+    pub fn get_completion_time(&self) -> f64 {
         self.completion_time
     }
 

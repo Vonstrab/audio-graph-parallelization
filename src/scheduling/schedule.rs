@@ -16,7 +16,7 @@ impl Schedule {
         self.processors.push(Processor::new())
     }
 
-    pub fn get_nb_processor(&self) -> i64 {
-        self.processors.len() as i64
+    pub fn get_nb_processor(&self) -> usize {
+        self.processors.len()
     }
 }
