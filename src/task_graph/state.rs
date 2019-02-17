@@ -2,7 +2,7 @@
 pub enum TaskState {
     WaitingDependencies,
     Ready,
-    Scheduled,
-    Processing,
-    Completed,
+    Scheduled,  // Used by static sheduling algorithms only
+    Processing, // Used by dynamic scheduling algorithms only
+    Completed,  // Used by dynamic scheduling algorithms only
 }
