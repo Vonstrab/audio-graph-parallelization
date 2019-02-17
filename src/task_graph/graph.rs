@@ -153,3 +153,56 @@ impl TaskGraph {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_topological_sort() {
+        let mut g = TaskGraph::new(8, 9);
+        let mut nodes_idx = Vec::new();
+
+        for _ in 0..8 {
+            nodes_idx.push(g.add_task(Task::A));
+        }
+
+        g.add_edge(7, 5);
+        g.add_edge(7, 6);
+        g.add_edge(5, 2);
+        g.add_edge(5, 4);
+        g.add_edge(6, 4);
+        g.add_edge(6, 3);
+        g.add_edge(2, 1);
+        g.add_edge(3, 1);
+        g.add_edge(1, 0);
+
+        let top_ord = g.get_topological_order();
+
+        assert_eq!(top_ord, vec![7, 6, 5, 4, 3, 2, 1, 0]);
+    }
+
+    #[test]
+    fn test_reverse_topological_sort() {
+        let mut g = TaskGraph::new(8, 9);
+        let mut nodes_idx = Vec::new();
+
+        for _ in 0..8 {
+            nodes_idx.push(g.add_task(Task::A));
+        }
+
+        g.add_edge(7, 5);
+        g.add_edge(7, 6);
+        g.add_edge(5, 2);
+        g.add_edge(5, 4);
+        g.add_edge(6, 4);
+        g.add_edge(6, 3);
+        g.add_edge(2, 1);
+        g.add_edge(3, 1);
+        g.add_edge(1, 0);
+
+        let top_ord = g.get_rev_topological_order();
+
+        assert_eq!(top_ord, vec![0, 1, 2, 3, 4, 5, 6, 7]);
+    }
+}
