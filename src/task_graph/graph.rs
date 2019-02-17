@@ -62,11 +62,36 @@ impl TaskGraph {
     }
 
     pub fn get_topological_order(&self) -> Vec<usize> {
-        unimplemented!()
+        let mut top_ord = self.get_rev_topological_order();
+        top_ord.reverse();
+
+        top_ord
     }
 
     pub fn get_rev_topological_order(&self) -> Vec<usize> {
-        unimplemented!()
+        let mut stack = Vec::new();
+        let mut visited: Vec<bool> = std::iter::repeat(false).take(self.nodes.len()).collect();
+
+        for node_idx in 0..self.nodes.len() {
+            if !visited[node_idx] {
+                self.dfs(node_idx, &mut stack, &mut visited);
+            }
+        }
+
+        stack
+    }
+
+    /// This method is used by the topological sort
+    fn dfs(&self, node_index: usize, stack: &mut Vec<usize>, visited: &mut Vec<bool>) {
+        visited[node_index] = true;
+
+        for succ_idx in self.get_successors(node_index).clone().unwrap() {
+            if !visited[*succ_idx] {
+                self.dfs(*succ_idx, stack, visited);
+            }
+        }
+
+        stack.push(node_index);
     }
 
     pub fn find_task(&self, taks: &Task) -> Option<usize> {
@@ -97,6 +122,7 @@ impl TaskGraph {
         self.edges
             .get(&(src_node_index, dest_node_index))
             .map(|val| *val)
+            .unwrap_or(None)
     }
 
     pub fn get_t_level(&self, node_index: usize) -> Option<f64> {
