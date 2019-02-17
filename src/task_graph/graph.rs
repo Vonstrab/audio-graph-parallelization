@@ -21,7 +21,7 @@ impl TaskGraph {
         }
     }
 
-    pub fn get_entry_nodes(&mut self) -> &Vec<usize> {
+    pub fn get_entry_nodes(&mut self) -> Vec<usize> {
         if self.entry_nodes.is_empty() {
             for i in 0..self.nodes.len() {
                 if self.nodes[i].predecessors.is_empty() {
@@ -30,10 +30,10 @@ impl TaskGraph {
             }
         }
 
-        &self.entry_nodes
+        self.entry_nodes.clone()
     }
 
-    pub fn get_exit_nodes(&mut self) -> &Vec<usize> {
+    pub fn get_exit_nodes(&mut self) -> Vec<usize> {
         if self.exit_nodes.is_empty() {
             for i in 0..self.nodes.len() {
                 if self.nodes[i].successors.is_empty() {
@@ -42,20 +42,20 @@ impl TaskGraph {
             }
         }
 
-        &self.exit_nodes
+        self.exit_nodes.clone()
     }
 
-    pub fn get_predecessors(&self, node_index: usize) -> Option<&Vec<usize>> {
+    pub fn get_predecessors(&self, node_index: usize) -> Option<Vec<usize>> {
         if node_index < self.nodes.len() {
-            Some(&self.nodes[node_index].predecessors)
+            Some(self.nodes[node_index].predecessors.clone())
         } else {
             None
         }
     }
 
-    pub fn get_successors(&self, node_index: usize) -> Option<&Vec<usize>> {
+    pub fn get_successors(&self, node_index: usize) -> Option<Vec<usize>> {
         if node_index < self.nodes.len() {
-            Some(&self.nodes[node_index].successors)
+            Some(self.nodes[node_index].successors.clone())
         } else {
             None
         }
@@ -85,9 +85,9 @@ impl TaskGraph {
     fn dfs(&self, node_index: usize, stack: &mut Vec<usize>, visited: &mut Vec<bool>) {
         visited[node_index] = true;
 
-        for succ_idx in self.get_successors(node_index).clone().unwrap() {
-            if !visited[*succ_idx] {
-                self.dfs(*succ_idx, stack, visited);
+        for succ_idx in self.get_successors(node_index).unwrap() {
+            if !visited[succ_idx] {
+                self.dfs(succ_idx, stack, visited);
             }
         }
 
@@ -126,15 +126,66 @@ impl TaskGraph {
     }
 
     pub fn get_t_level(&self, node_index: usize) -> Option<f64> {
-        unimplemented!()
+        let top_ord = self.get_topological_order();
+        let mut t_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
+
+        for i in top_ord {
+            let mut max: f64 = 0.0;
+
+            for x in self.get_predecessors(i).unwrap() {
+                if t_levels[x]
+                    + self.get_wcet(x).unwrap()
+                    + self.get_communication_cost(x, i).unwrap()
+                    > max
+                {
+                    max = t_levels[x]
+                        + self.get_wcet(x).unwrap()
+                        + self.get_communication_cost(x, i).unwrap();
+                }
+            }
+
+            t_levels[i] = max;
+        }
+
+        t_levels.get(node_index).map(|val| *val)
     }
 
     pub fn get_b_level(&self, node_index: usize) -> Option<f64> {
-        unimplemented!()
+        let rev_top_ord = self.get_rev_topological_order();
+        let mut b_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
+
+        for i in rev_top_ord {
+            let mut max: f64 = 0.0;
+
+            for y in self.get_successors(i).unwrap() {
+                if self.get_communication_cost(i, y).unwrap() + b_levels[y] > max {
+                    max = self.get_communication_cost(i, y).unwrap() + b_levels[y];
+                }
+            }
+
+            b_levels[i] = self.get_wcet(i).unwrap() + max;
+        }
+
+        b_levels.get(node_index).map(|val| *val)
     }
 
     pub fn get_static_level(&self, node_index: usize) -> Option<f64> {
-        unimplemented!()
+        let rev_top_ord = self.get_rev_topological_order();
+        let mut s_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
+
+        for i in rev_top_ord {
+            let mut max: f64 = 0.0;
+
+            for y in self.get_successors(i).unwrap() {
+                if s_levels[y] > max {
+                    max = s_levels[y];
+                }
+            }
+
+            s_levels[i] = self.get_wcet(i).unwrap() + max;
+        }
+
+        s_levels.get(node_index).map(|val| *val)
     }
 
     pub fn add_task(&mut self, task: Task) -> usize {
