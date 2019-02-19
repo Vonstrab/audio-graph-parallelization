@@ -29,7 +29,6 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
 }
 
 pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-
     let mut out_schedule = Schedule::new();
     for _ in 0..nb_processors {
         out_schedule.add_processor();
@@ -71,6 +70,72 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
             }
         }
         ready_list.remove(&first_node);
+    }
+
+    out_schedule
+}
+
+pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
+    let mut out_schedule = Schedule::new();
+    for _ in 0..nb_processors {
+        out_schedule.add_processor();
+    }
+
+    //Nb : graph is of type <& mut TaskGraph> because
+    //get_entry_node is on <& mut self>
+    let mut ready_list: Vec<usize> = Vec::from(graph.get_entry_nodes());
+
+    while !ready_list.is_empty() {
+        let mut min_proc = None;
+
+        let mut min_node: Option<usize> = None;
+        let mut min_start_time = None;
+
+        for i in 0..out_schedule.processors.len() {
+            let current_start_time = out_schedule.processors[i].get_completion_time();
+            for j in 0..ready_list.len() {
+                let current_node;
+                let current_wcet;
+                let current_blevel;
+                match &ready_list.get(j) {
+                    Some(node) => {
+                        current_node = **node;
+                        current_wcet = graph.get_wcet(**node).unwrap();
+                        current_blevel = graph.get_b_level(**node).unwrap();
+                    }
+                    None => panic!("Erreur dans l'algorithme ELT"),
+                }
+                if min_start_time == None {
+                    min_start_time = Some(current_start_time + current_wcet);
+                    min_node = Some(current_node);
+                    min_proc = Some(i);
+                }
+                if current_start_time + current_wcet == min_start_time.unwrap()
+                    && graph.get_b_level(min_node.unwrap()).unwrap() < current_blevel
+                {
+                    min_start_time = Some(current_start_time + current_wcet);
+                    min_node = Some(current_node);
+                    min_proc = Some(i);
+                }
+                if current_start_time + current_wcet < min_start_time.unwrap() {
+                    min_start_time = Some(current_start_time + current_wcet);
+                    min_node = Some(current_node);
+                    min_proc = Some(i);
+                }
+            }
+        }
+
+        let stime = out_schedule.processors[min_proc.unwrap()].get_completion_time();
+
+        out_schedule.processors[min_proc.unwrap()].add_timeslot(
+            min_node.unwrap(),
+            stime,
+            min_start_time.unwrap(),
+        );
+
+        ready_list.append(&mut graph.get_successors(min_node.unwrap()).unwrap());
+
+        ready_list.remove(min_node.unwrap());
     }
 
     out_schedule
