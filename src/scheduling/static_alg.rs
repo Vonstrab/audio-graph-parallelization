@@ -29,8 +29,8 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
 }
 
 pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-    let mut out_schedule = Schedule::new();
 
+    let mut out_schedule = Schedule::new();
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
@@ -40,15 +40,12 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     let first_nodes = graph.get_entry_nodes();
 
     let mut ready_list: HashMap<usize, f64> = HashMap::new();
-
     for node in first_nodes {
         ready_list.insert(node, graph.get_b_level(node).unwrap());
     }
 
     while !ready_list.is_empty() {
-        
         let first_node = get_max_tie_misf(&mut ready_list, graph);
-        ready_list.remove(&first_node);
 
         let mut first_proc = 0;
         let mut first_start_time = out_schedule.processors[first_proc].get_completion_time();
@@ -67,6 +64,13 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
             first_start_time + graph.get_wcet(first_node).unwrap(),
         );
 
+        let successors = graph.get_successors(first_node);
+        if successors != None {
+            for node in successors.unwrap() {
+                ready_list.insert(node, graph.get_b_level(node).unwrap());
+            }
+        }
+        ready_list.remove(&first_node);
     }
 
     out_schedule
