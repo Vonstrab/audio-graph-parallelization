@@ -1,6 +1,8 @@
 //! This module implements a TimeSlot
 //!
 
+use std::fmt::{Display, Error, Formatter};
+
 #[derive(Clone, Copy)]
 pub struct TimeSlot {
     start_time: f64,
@@ -27,5 +29,15 @@ impl TimeSlot {
 
     pub fn get_node(&self) -> usize {
         self.node
+    }
+}
+
+impl Display for TimeSlot {
+    fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
+        write!(
+            fmt,
+            "{} -- Node : {} -- {}",
+            self.start_time, self.node, self.completion_time
+        )
     }
 }

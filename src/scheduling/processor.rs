@@ -1,4 +1,5 @@
 use scheduling::timeslot::TimeSlot;
+use std::fmt::{Display, Error, Formatter};
 
 #[derive(Clone)]
 pub struct Processor {
@@ -27,5 +28,14 @@ impl Processor {
 
     pub fn get_completion_time(&self) -> f64 {
         self.completion_time
+    }
+}
+
+impl Display for Processor {
+    fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
+        for i in 0..self.time_slots.len() {
+            write!(fmt, "| {} |", self.time_slots[i]);
+        }
+        write!(fmt, "")
     }
 }
