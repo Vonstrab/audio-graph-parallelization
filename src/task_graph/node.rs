@@ -13,7 +13,7 @@ impl Node {
     pub fn new(task: Task) -> Node {
         Node {
             task,
-            wcet: None,
+            wcet: Some(1.5),
             state: TaskState::WaitingDependencies,
             predecessors: Vec::new(),
             successors: Vec::new(),

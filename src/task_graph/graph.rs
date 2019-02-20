@@ -196,6 +196,9 @@ impl TaskGraph {
 
     pub fn add_edge(&mut self, src_node_index: usize, dest_node_index: usize) -> bool {
         if src_node_index < self.nodes.len() && dest_node_index < self.nodes.len() {
+            self.nodes[src_node_index].successors.push(dest_node_index);
+            self.nodes[dest_node_index].predecessors.push(src_node_index);
+
             self.edges.insert((src_node_index, dest_node_index), None);
 
             true
