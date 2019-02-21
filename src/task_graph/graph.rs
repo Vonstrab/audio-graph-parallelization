@@ -106,7 +106,7 @@ impl TaskGraph {
         }
     }
 
-    pub fn set_wcet(& mut self, node_index: usize, value : f64 ) -> bool {
+    pub fn set_wcet(&mut self, node_index: usize, value: f64) -> bool {
         if node_index < self.nodes.len() {
             self.nodes[node_index].set_wcet(value)
         } else {

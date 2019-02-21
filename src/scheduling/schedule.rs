@@ -34,14 +34,13 @@ impl Schedule {
         None
     }
 
-    pub fn get_completion_time(& self) -> f64 {
-        let mut time  :f64 = 0.0;
+    pub fn get_completion_time(&self) -> f64 {
+        let mut time: f64 = 0.0;
         for processor in &self.processors {
             time = time.max(processor.get_completion_time());
         }
         time
     }
-    
 }
 
 impl Display for Schedule {
