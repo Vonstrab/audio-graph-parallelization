@@ -70,6 +70,57 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
     out_node.unwrap()
 }
 
+pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
+    //We build the schedule
+    let mut out_schedule = Schedule::new();
+    for _ in 0..nb_processors {
+        out_schedule.add_processor();
+    }
+
+    //we reset the status of all reachables nodes to Waitting
+    set_status_waiting(graph);
+
+    //the readylist
+    let mut ready_list = graph.get_entry_nodes();
+
+    //Main Loop
+    while !ready_list.is_empty() {
+        //We got a random node by b_level
+        let rand_indice = rand::random::<usize>() % ready_list.len();
+        let rand_node = ready_list[rand_indice];
+
+        //we got a rand proc
+        let rand_proc = rand::random::<usize>() % nb_processors;
+        let rand_proc_start_time = out_schedule.processors[rand_proc].get_completion_time();
+
+        //the start time of the node will be the the max
+        //between the proc start time and the time where all the node
+        //precursors will be completed(connextion time are overlooked)
+        let node_start_time =
+            rand_proc_start_time.max(get_ready_time(rand_node, &graph, &out_schedule));
+
+        //we schedule the node
+        out_schedule.processors[rand_proc].add_timeslot(
+            rand_node,
+            node_start_time,
+            node_start_time + graph.get_wcet(rand_node).unwrap(),
+        );
+        graph.set_state(rand_node, TaskState::Scheduled);
+
+        //we add the succesors if all theirs precursors are scheduled
+        for node in graph.get_successors(rand_node).unwrap_or(Vec::default()) {
+            if !ready_list.contains(&node) && are_pred_ready(node, &graph) {
+                ready_list.push(node);
+            }
+        }
+
+        //we remove the node
+        ready_list.remove(rand_indice);
+    }
+
+    out_schedule
+}
+
 pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     //We build the schedule
     let mut out_schedule = Schedule::new();
@@ -94,7 +145,7 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         //We got the first node by b_level
         let first_node = get_max_tie_misf(&mut ready_list, graph);
 
-        //we consider the first node
+        //we consider the first processor
         let mut chosen_proc = 0;
         let mut chosen_proc_start_time = out_schedule.processors[chosen_proc].get_completion_time();
 
@@ -226,8 +277,9 @@ mod tests {
         let mut g = TaskGraph::new(8, 9);
         let mut nodes_idx = Vec::new();
 
-        for _ in 0..8 {
+        for i in 0..8 {
             nodes_idx.push(g.add_task(Task::A));
+            g.set_wcet(i, 1.0);
         }
 
         g.add_edge(7, 5);
@@ -239,9 +291,11 @@ mod tests {
         g.add_edge(2, 1);
         g.add_edge(3, 1);
         g.add_edge(1, 0);
-        let sche = hlfet(&mut g, 2);
 
-        println!("{}", sche);
+        let sche_hlfelt = hlfet(&mut g, 2);
+        let sche_rand = random(&mut g, 2);
+        assert_eq!(sche_hlfelt.get_completion_time(), 5.0);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
     }
 
     #[test]
@@ -249,8 +303,9 @@ mod tests {
         let mut g = TaskGraph::new(8, 9);
         let mut nodes_idx = Vec::new();
 
-        for _ in 0..8 {
+        for i in 0..8 {
             nodes_idx.push(g.add_task(Task::A));
+            g.set_wcet(i, 1.0);
         }
 
         g.add_edge(7, 5);
@@ -263,6 +318,190 @@ mod tests {
         g.add_edge(3, 1);
         g.add_edge(1, 0);
 
-        let sche = etf(&mut g, 2);
+        let sche_etf = etf(&mut g, 2);
+        let sche_rand = random(&mut g, 2);
+        assert_eq!(sche_etf.get_completion_time(), 5.0);
+        assert!(sche_etf.get_completion_time() <= sche_rand.get_completion_time());
     }
+
+    #[test]
+    fn test_graph_8_node() {
+        let mut g = TaskGraph::new(8, 9);
+        let mut nodes_idx = Vec::new();
+
+        for i in 0..8 {
+            nodes_idx.push(g.add_task(Task::A));
+            g.set_wcet(i, 1.0);
+        }
+
+        g.add_edge(7, 5);
+        g.add_edge(7, 6);
+        g.add_edge(5, 2);
+        g.add_edge(5, 4);
+        g.add_edge(6, 4);
+        g.add_edge(6, 3);
+        g.add_edge(2, 1);
+        g.add_edge(3, 1);
+        g.add_edge(1, 0);
+
+        let mut sche_etf = etf(&mut g, 2);
+        let mut sche_hlfelt = hlfet(&mut g, 2);
+        let mut sche_rand = random(&mut g, 2);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 3);
+        sche_hlfelt = hlfet(&mut g, 3);
+        sche_rand = random(&mut g, 3);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 4);
+        sche_hlfelt = hlfet(&mut g, 4);
+        sche_rand = random(&mut g, 4);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+    }
+
+    #[test]
+    fn test_graph_24_node() {
+        let mut g = TaskGraph::new(24, 21);
+        let mut nodes_idx = Vec::new();
+
+        for i in 0..24 {
+            nodes_idx.push(g.add_task(Task::A));
+            g.set_wcet(i, 1.0);
+        }
+
+        g.add_edge(0, 19);
+        g.add_edge(1, 6);
+        g.add_edge(1, 2);
+        g.add_edge(2, 7);
+        g.add_edge(3, 7);
+
+        g.add_edge(4, 9);
+        g.add_edge(5, 11);
+        g.add_edge(6, 22);
+        g.add_edge(6, 8);
+        g.add_edge(7, 8);
+
+        g.add_edge(7, 10);
+        g.add_edge(8, 22);
+        g.add_edge(8, 12);
+        g.add_edge(9, 10);
+        g.add_edge(10, 15);
+
+        g.add_edge(10, 14);
+        g.add_edge(10, 13);
+        g.add_edge(11, 15);
+        g.add_edge(11, 9);
+        g.add_edge(12, 17);
+
+        g.add_edge(12, 16);
+        g.add_edge(13, 12);
+        g.add_edge(14, 0);
+        g.add_edge(14, 18);
+        g.add_edge(16, 20);
+
+        g.add_edge(17, 20);
+        g.add_edge(17, 21);
+        g.add_edge(18, 21);
+        g.add_edge(18, 17);
+        g.add_edge(18, 19);
+
+        let mut sche_etf = etf(&mut g, 2);
+        let mut sche_hlfelt = hlfet(&mut g, 2);
+        let mut sche_rand = random(&mut g, 2);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 3);
+        sche_hlfelt = hlfet(&mut g, 3);
+        sche_rand = random(&mut g, 3);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 4);
+        sche_hlfelt = hlfet(&mut g, 4);
+        sche_rand = random(&mut g, 4);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+    }
+
+    #[test]
+    fn test_graph_33_node() {
+        let mut g = TaskGraph::new(33, 34);
+        let mut nodes_idx = Vec::new();
+
+        for i in 0..33 {
+            nodes_idx.push(g.add_task(Task::A));
+            g.set_wcet(i, 1.0);
+        }
+
+        g.add_edge(0, 6);
+        g.add_edge(1, 8);
+        g.add_edge(2, 8);
+        g.add_edge(3, 9);
+        g.add_edge(4, 10);
+
+        g.add_edge(5, 11);
+        g.add_edge(6, 17);
+        g.add_edge(7, 16);
+        g.add_edge(8, 15);
+        g.add_edge(9, 14);
+
+        g.add_edge(10, 13);
+        g.add_edge(11, 12);
+        g.add_edge(17, 19);
+        g.add_edge(16, 20);
+        g.add_edge(15, 20);
+
+        g.add_edge(14, 21);
+        g.add_edge(13, 21);
+        g.add_edge(13, 22);
+        g.add_edge(12, 22);
+        g.add_edge(12, 23);
+
+        g.add_edge(19, 24);
+        g.add_edge(20, 24);
+        g.add_edge(20, 25);
+        g.add_edge(21, 25);
+        g.add_edge(21, 26);
+
+        g.add_edge(22, 26);
+        g.add_edge(23, 26);
+        g.add_edge(24, 27);
+        g.add_edge(25, 29);
+        g.add_edge(26, 29);
+
+        g.add_edge(27, 28);
+        g.add_edge(28, 31);
+        g.add_edge(29, 30);
+        g.add_edge(30, 32);
+
+        let mut sche_etf = etf(&mut g, 3);
+        let mut sche_hlfelt = hlfet(&mut g, 3);
+        let mut sche_rand = random(&mut g, 3);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 4);
+        sche_hlfelt = hlfet(&mut g, 4);
+        sche_rand = random(&mut g, 4);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 5);
+        sche_hlfelt = hlfet(&mut g, 5);
+        sche_rand = random(&mut g, 5);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+
+        sche_etf = etf(&mut g, 6);
+        sche_hlfelt = hlfet(&mut g, 6);
+        sche_rand = random(&mut g, 56);
+        assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
+        assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
+    }
+
 }
