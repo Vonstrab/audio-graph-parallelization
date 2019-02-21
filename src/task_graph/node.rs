@@ -13,10 +13,19 @@ impl Node {
     pub fn new(task: Task) -> Node {
         Node {
             task,
-            wcet: Some(1.5),
+            wcet: None,
             state: TaskState::WaitingDependencies,
             predecessors: Vec::new(),
             successors: Vec::new(),
+        }
+    }
+
+    pub fn set_wcet(& mut self, value: f64) -> bool {
+        if value > 0.0 {
+            self.wcet = Some(value);
+            true
+        } else {
+            false
         }
     }
 }

@@ -33,8 +33,18 @@ impl Processor {
 
 impl Display for Processor {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
-        for i in 0..self.time_slots.len() {
-            write!(fmt, "| {} |", self.time_slots[i]);
+        for slot in 0..self.time_slots.len() {
+            let spaces;
+            if slot == 0 {
+                spaces = "_".repeat((self.time_slots[slot].get_start_time() / 0.1) as usize);
+            } else {
+                spaces = "_".repeat(
+                    ((self.time_slots[slot].get_start_time()
+                        - self.time_slots[slot - 1].get_completion_time())
+                        / 0.1) as usize,
+                );
+            }
+            write!(fmt, "{}{}", spaces, self.time_slots[slot]);
         }
         write!(fmt, "")
     }

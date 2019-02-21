@@ -106,11 +106,28 @@ impl TaskGraph {
         }
     }
 
+    pub fn set_wcet(& mut self, node_index: usize, value : f64 ) -> bool {
+        if node_index < self.nodes.len() {
+            self.nodes[node_index].set_wcet(value)
+        } else {
+            false
+        }
+    }
+
     pub fn get_state(&self, node_index: usize) -> Option<TaskState> {
         if node_index < self.nodes.len() {
             Some(self.nodes[node_index].state)
         } else {
             None
+        }
+    }
+
+    pub fn set_state(&mut self, node_index: usize, state: TaskState) -> bool {
+        if node_index < self.nodes.len() {
+            self.nodes[node_index].state = state;
+            true
+        } else {
+            false
         }
     }
 
@@ -156,10 +173,10 @@ impl TaskGraph {
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-                for y in self.get_successors(i).unwrap_or(Vec::default()){
+            for y in self.get_successors(i).unwrap_or(Vec::default()) {
                 let comm_cost = self.get_communication_cost(i, y).unwrap_or(0.0);
 
-                if  comm_cost+ b_levels[y] > max {
+                if comm_cost + b_levels[y] > max {
                     max = comm_cost + b_levels[y];
                 }
             }

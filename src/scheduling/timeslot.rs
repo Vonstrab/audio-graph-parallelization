@@ -36,7 +36,7 @@ impl Display for TimeSlot {
     fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
         write!(
             fmt,
-            "{} -- Node : {} -- {}",
+            "|{} No:{} {}|",
             self.start_time, self.node, self.completion_time
         )
     }
