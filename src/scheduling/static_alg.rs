@@ -4,8 +4,8 @@ use task_graph::{graph::TaskGraph, state::TaskState};
 
 use scheduling::schedule::Schedule;
 
-//Return the time when all the predecessors of the node
-//will been complete
+// Returns the time when all the predecessors of the node
+// will been complete
 fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
     let predecessors = graph.get_predecessors(node).unwrap();
     let mut time: f64 = 0.0;
@@ -20,7 +20,7 @@ fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
     time
 }
 
-//Set the status of all reachable nodes from the entry
+// Sets the status of all reachable nodes from the entry
 // to TaskState::WaintingDependancies
 fn set_status_waiting(graph: &mut TaskGraph) {
     let mut todo_nodes = graph.get_entry_nodes();
@@ -35,7 +35,6 @@ fn set_status_waiting(graph: &mut TaskGraph) {
     }
 }
 
-//Return True if all the pred are in state Ready
 fn are_pred_ready(node: usize, graph: &TaskGraph) -> bool {
     let predecessors = graph.get_predecessors(node).unwrap();
     for pred in predecessors {
@@ -44,6 +43,7 @@ fn are_pred_ready(node: usize, graph: &TaskGraph) -> bool {
         }
     }
     true
+// Returns true if all predecessors are in the state Ready
 }
 
 //Return the minimum value from a ready list
@@ -71,50 +71,51 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
 }
 
 pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-    //We build the schedule
+    // Build the schedule
     let mut out_schedule = Schedule::new();
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
 
-    //we reset the status of all reachables nodes to Waitting
+    // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
 
-    //the readylist
+    // The readylist
     let mut ready_list = graph.get_entry_nodes();
 
-    //Main Loop
+    // Main Loop
     while !ready_list.is_empty() {
-        //We got a random node by b_level
+        // Get a random node
         let rand_indice = rand::random::<usize>() % ready_list.len();
         let rand_node = ready_list[rand_indice];
 
-        //we got a rand proc
+        // Get a random processor
         let rand_proc = rand::random::<usize>() % nb_processors;
         let rand_proc_start_time = out_schedule.processors[rand_proc].get_completion_time();
 
-        //the start time of the node will be the the max
-        //between the proc start time and the time where all the node
-        //precursors will be completed(connextion time are overlooked)
+        // The start time of the node will be the the maximum
+        // between the processor's start time and the time when all the node's
+        // parents will be completed (connexion time are overlooked).
         let node_start_time =
             rand_proc_start_time.max(get_ready_time(rand_node, &graph, &out_schedule));
 
-        //we schedule the node
+        // Schedule the node
         out_schedule.processors[rand_proc].add_timeslot(
             rand_node,
             node_start_time,
             node_start_time + graph.get_wcet(rand_node).unwrap(),
         );
+
         graph.set_state(rand_node, TaskState::Scheduled);
 
-        //we add the succesors if all theirs precursors are scheduled
+        // Add successors whose all parents have been scheduled
         for node in graph.get_successors(rand_node).unwrap_or(Vec::default()) {
             if !ready_list.contains(&node) && are_pred_ready(node, &graph) {
                 ready_list.push(node);
             }
         }
 
-        //we remove the node
+        // Remove the node
         ready_list.remove(rand_indice);
     }
 
@@ -122,34 +123,34 @@ pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 }
 
 pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-    //We build the schedule
+    // Build the schedule
     let mut out_schedule = Schedule::new();
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
 
-    //we reset the status of all reachables nodes to Waitting
+    // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
 
-    //the firsts nodes in the readylist
+    // The firsts nodes in the readylist
     let first_nodes = graph.get_entry_nodes();
 
-    //the ready list is a Hasmap
+    // The ready list is a HashMap
     let mut ready_list: HashMap<usize, f64> = HashMap::new();
     for node in first_nodes {
         ready_list.insert(node, graph.get_b_level(node).unwrap());
     }
 
-    //Main Loop
+    // Main Loop
     while !ready_list.is_empty() {
-        //We got the first node by b_level
+        // Get the first node by b_level
         let first_node = get_max_tie_misf(&mut ready_list, graph);
 
-        //we consider the first processor
+        //First consider the first processor
         let mut chosen_proc = 0;
         let mut chosen_proc_start_time = out_schedule.processors[chosen_proc].get_completion_time();
 
-        //if an another proc is best suited we chose it
+        // Choose another processor if it is better suited
         for i in 1..out_schedule.processors.len() {
             let current_proc_start_time = out_schedule.processors[i].get_completion_time();
             if current_proc_start_time < chosen_proc_start_time {
@@ -158,13 +159,13 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
             }
         }
 
-        //the start time of the node will be the the max
-        //between the proc start time and the time where all the node
-        //precursors will be completed(connextion time are overlooked)
+        // The start time of the node will be the the maximum
+        // between the processor's start time and the time when all the node's
+        // parents will be completed (connexion time are overlooked).
         let node_start_time =
             chosen_proc_start_time.max(get_ready_time(first_node, &graph, &out_schedule));
 
-        //we schedule the node
+        // Schedule the node
         out_schedule.processors[chosen_proc].add_timeslot(
             first_node,
             node_start_time,
@@ -172,14 +173,14 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         );
         graph.set_state(first_node, TaskState::Scheduled);
 
-        //we add the succesors if all theirs precursors are scheduled
+        // Add the successors if all theirs predecessors are scheduled
         for node in graph.get_successors(first_node).unwrap_or(Vec::default()) {
             if !ready_list.contains_key(&node) && are_pred_ready(node, &graph) {
                 ready_list.insert(node, graph.get_b_level(node).unwrap());
             }
         }
 
-        //we remove the node
+        // Remove the node
         ready_list.remove(&first_node);
     }
 
@@ -187,21 +188,21 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 }
 
 pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-    //We build the schedule
+    // Build the schedule
     let mut out_schedule = Schedule::new();
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
 
-    //we reset the status of all reachables nodes to Waitting
+    // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
 
-    //the firsts nodes in the readylist
+    // The firsts nodes in the readylist
     let mut ready_list: Vec<usize> = Vec::from(graph.get_entry_nodes());
 
-    //Main Loop
+    // Main loop
     while !ready_list.is_empty() {
-        //we will chose the couple node-proc with the best start time
+        // Choose the couple node-proc with the best start time
         let mut min_proc = None;
         let mut min_node: Option<usize> = None;
         let mut min_start_time = None;

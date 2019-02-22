@@ -16,13 +16,14 @@ impl Processor {
     }
 
     pub fn add_timeslot(&mut self, node: usize, start_time: f64, completion_time: f64) -> bool {
-        //this condition expect we allway append a TimeSlot
+        // This condition expects we always append a TimeSlot
         if self.completion_time <= start_time {
             self.time_slots
                 .push(TimeSlot::new(node, start_time, completion_time));
             self.completion_time = completion_time;
             return true;
         }
+
         return false;
     }
 
