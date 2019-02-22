@@ -35,15 +35,13 @@ fn set_status_waiting(graph: &mut TaskGraph) {
     }
 }
 
-    let predecessors = graph.get_predecessors(node).unwrap();
-    for pred in predecessors {
-        if graph.get_state(pred).unwrap() != TaskState::Scheduled {
-            return false;
-        }
-    }
-    true
 // Returns true if all predecessors are in the state Ready
 fn predecessors_scheduled(node: usize, graph: &TaskGraph) -> bool {
+    graph
+        .get_predecessors(node)
+        .unwrap()
+        .iter()
+        .all(|pred| graph.get_state(*pred).unwrap() == TaskState::Scheduled)
 }
 
 //Return the minimum value from a ready list
