@@ -52,7 +52,7 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
     let mut out_node: Option<usize> = None;
 
     for (node, b_level) in ready_list {
-        if out_node == None {
+        if out_node.is_none() {
             out_node = Some(*node);
         } else {
             if *b_level == *ready_list.get(&out_node.unwrap()).unwrap() {
@@ -218,7 +218,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                 let current_start_time =
                     proc_start_time.max(get_ready_time(current_node, &graph, &out_schedule));
 
-                if min_start_time == None {
+                if min_start_time.is_none() {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
