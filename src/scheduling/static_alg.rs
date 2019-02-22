@@ -35,7 +35,6 @@ fn set_status_waiting(graph: &mut TaskGraph) {
     }
 }
 
-fn are_pred_ready(node: usize, graph: &TaskGraph) -> bool {
     let predecessors = graph.get_predecessors(node).unwrap();
     for pred in predecessors {
         if graph.get_state(pred).unwrap() != TaskState::Scheduled {
@@ -44,6 +43,7 @@ fn are_pred_ready(node: usize, graph: &TaskGraph) -> bool {
     }
     true
 // Returns true if all predecessors are in the state Ready
+fn predecessors_scheduled(node: usize, graph: &TaskGraph) -> bool {
 }
 
 //Return the minimum value from a ready list
@@ -110,7 +110,7 @@ pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 
         // Add successors whose all parents have been scheduled
         for node in graph.get_successors(rand_node).unwrap_or(Vec::default()) {
-            if !ready_list.contains(&node) && are_pred_ready(node, &graph) {
+            if !ready_list.contains(&node) && predecessors_scheduled(node, &graph) {
                 ready_list.push(node);
             }
         }
@@ -175,7 +175,7 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 
         // Add the successors if all theirs predecessors are scheduled
         for node in graph.get_successors(first_node).unwrap_or(Vec::default()) {
-            if !ready_list.contains_key(&node) && are_pred_ready(node, &graph) {
+            if !ready_list.contains_key(&node) && predecessors_scheduled(node, &graph) {
                 ready_list.insert(node, graph.get_b_level(node).unwrap());
             }
         }
@@ -257,7 +257,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
             .unwrap_or(Vec::default());
 
         for node in successors {
-            if !ready_list.contains(&node) && are_pred_ready(node, &graph) {
+            if !ready_list.contains(&node) && predecessors_scheduled(node, &graph) {
                 ready_list.push(node);
             }
         }
