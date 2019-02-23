@@ -19,4 +19,13 @@ impl Node {
             successors: Vec::new(),
         }
     }
+
+    pub fn set_wcet(&mut self, value: f64) -> bool {
+        if value > 0.0 {
+            self.wcet = Some(value);
+            true
+        } else {
+            false
+        }
+    }
 }

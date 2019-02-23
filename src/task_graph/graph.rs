@@ -106,11 +106,28 @@ impl TaskGraph {
         }
     }
 
+    pub fn set_wcet(&mut self, node_index: usize, value: f64) -> bool {
+        if node_index < self.nodes.len() {
+            self.nodes[node_index].set_wcet(value)
+        } else {
+            false
+        }
+    }
+
     pub fn get_state(&self, node_index: usize) -> Option<TaskState> {
         if node_index < self.nodes.len() {
             Some(self.nodes[node_index].state)
         } else {
             None
+        }
+    }
+
+    pub fn set_state(&mut self, node_index: usize, state: TaskState) -> bool {
+        if node_index < self.nodes.len() {
+            self.nodes[node_index].state = state;
+            true
+        } else {
+            false
         }
     }
 
@@ -132,15 +149,15 @@ impl TaskGraph {
         for i in top_ord {
             let mut max: f64 = 0.0;
 
-            for x in self.get_predecessors(i).unwrap() {
+            for x in self.get_predecessors(i).unwrap_or(Vec::default()) {
                 if t_levels[x]
                     + self.get_wcet(x).unwrap()
-                    + self.get_communication_cost(x, i).unwrap()
+                    + self.get_communication_cost(x, i).unwrap_or(0.0)
                     > max
                 {
                     max = t_levels[x]
                         + self.get_wcet(x).unwrap()
-                        + self.get_communication_cost(x, i).unwrap();
+                        + self.get_communication_cost(x, i).unwrap_or(0.0);
                 }
             }
 
@@ -153,13 +170,14 @@ impl TaskGraph {
     pub fn get_b_level(&self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut b_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
-
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-            for y in self.get_successors(i).unwrap() {
-                if self.get_communication_cost(i, y).unwrap() + b_levels[y] > max {
-                    max = self.get_communication_cost(i, y).unwrap() + b_levels[y];
+            for y in self.get_successors(i).unwrap_or(Vec::default()) {
+                let comm_cost = self.get_communication_cost(i, y).unwrap_or(0.0);
+
+                if comm_cost + b_levels[y] > max {
+                    max = comm_cost + b_levels[y];
                 }
             }
 
@@ -176,7 +194,7 @@ impl TaskGraph {
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-            for y in self.get_successors(i).unwrap() {
+            for y in self.get_successors(i).unwrap_or(Vec::default()) {
                 if s_levels[y] > max {
                     max = s_levels[y];
                 }
@@ -196,6 +214,11 @@ impl TaskGraph {
 
     pub fn add_edge(&mut self, src_node_index: usize, dest_node_index: usize) -> bool {
         if src_node_index < self.nodes.len() && dest_node_index < self.nodes.len() {
+            self.nodes[src_node_index].successors.push(dest_node_index);
+            self.nodes[dest_node_index]
+                .predecessors
+                .push(src_node_index);
+
             self.edges.insert((src_node_index, dest_node_index), None);
 
             true
