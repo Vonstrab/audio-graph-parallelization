@@ -206,8 +206,8 @@ impl TaskGraph {
         s_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn add_task(&mut self, task: Task) -> usize {
-        self.nodes.push(Node::new(task));
+    pub fn add_task(&mut self, task: &Task) -> usize {
+        self.nodes.push(Node::new(task.clone()));
 
         self.nodes.len() - 1
     }

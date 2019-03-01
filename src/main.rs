@@ -6,12 +6,14 @@ use agp_lib::task_graph::task::Task;
 use agp_lib::scheduling::static_alg::*;
 
 fn main() {
+
+
     //println!("Hello , No main here Yet");
     let mut g = TaskGraph::new(8, 9);
     let mut nodes_idx = Vec::new();
 
     for i in 0..8 {
-        nodes_idx.push(g.add_task(Task::A));
+        nodes_idx.push(g.add_task(& Task::A));
         g.set_wcet(i, 1.0);
     }
 
@@ -48,7 +50,7 @@ fn main() {
     nodes_idx = Vec::new();
 
     for i in 0..24 {
-        nodes_idx.push(g.add_task(Task::A));
+        nodes_idx.push(g.add_task(&Task::A));
         g.set_wcet(i, 1.0);
     }
 
@@ -109,7 +111,7 @@ fn main() {
     nodes_idx = Vec::new();
 
     for i in 0..33 {
-        nodes_idx.push(g.add_task(Task::A));
+        nodes_idx.push(g.add_task(&Task::A));
         g.set_wcet(i, 1.0);
     }
 

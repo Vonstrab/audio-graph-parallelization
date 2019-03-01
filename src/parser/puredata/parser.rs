@@ -4,6 +4,9 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use task_graph::graph;
+use task_graph::task;
+
 use audiograph::*;
 use audiograph_edge::AGEdge;
 use audiograph_node::AGNode;
@@ -14,14 +17,15 @@ use petgraph::graph::NodeIndex;
 use petgraph::Graph;
 
 #[derive(Parser)]
-#[grammar = "puredata/puredata.pest"]
+#[grammar = "parser/puredata/puredata.pest"]
 pub struct PuredataParser;
 
-pub fn parse_puredata(puredata: &str) -> AudioGraph {
+pub fn parse_puredata(puredata: &str) -> graph::TaskGraph {
     let parse_result =
         PuredataParser::parse(Rule::file, puredata).unwrap_or_else(|e| panic!("{}", e));
 
-    let mut audio_nodes: Vec<AGNode> = Vec::new();
+    let mut nb_nodes =0 ;
+    let mut tasks: Vec<task::Task> = Vec::new();
     let mut edges: Vec<(usize, usize)> = Vec::new();
 
     for file in parse_result {
@@ -55,7 +59,7 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
                     }
 
                     node.set_pos(posx, posy);
-                    audio_nodes.push(node);
+                    nb_nodes += 1;
                 }
                 Rule::CON => {
                     let fields = def.into_inner();
@@ -97,7 +101,7 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
                     }
 
                     node.set_pos(posx, posy);
-                    audio_nodes.push(node);
+                    nb_nodes += 1;
                 }
 
                 _ => {}
@@ -105,26 +109,20 @@ pub fn parse_puredata(puredata: &str) -> AudioGraph {
         }
     }
 
-    let mut audio_graph = Graph::<AGNode, AGEdge>::with_capacity(audio_nodes.len(), edges.len());
-    let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
+    let mut graph_out = graph::TaskGraph::new(nb_nodes, edges.len());
 
-    for node in audio_nodes {
-        node_refs.push(audio_graph.add_node(node));
+    for i in 0..tasks.len() {
+        graph_out.add_task(& tasks[i]);
     }
-
-    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>, AGEdge)> =
-        Vec::with_capacity(edges.len());
 
     for (source, target) in edges {
-        ag_edges.push((node_refs[source], node_refs[target], AGEdge::new()));
+        graph_out.add_edge(source, target);
     }
 
-    audio_graph.extend_with_edges(ag_edges);
-
-    AudioGraph::new(audio_graph)
+    graph_out
 }
 
-pub fn parse_puredata_from_file(filename: &str) -> AudioGraph {
+pub fn parse(filename: &str) -> graph::TaskGraph {
     let path = Path::new(filename);
     let mut file = File::open(&path).expect("Impossible to open file.");
     let mut s = String::new();
