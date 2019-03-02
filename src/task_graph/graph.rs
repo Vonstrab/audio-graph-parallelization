@@ -1,4 +1,8 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+use std::process::Command;
 
 use super::node::Node;
 use super::state::TaskState;
@@ -226,6 +230,48 @@ impl TaskGraph {
             false
         }
     }
+
+    pub fn output_dot(&self, filename: &str) {
+        let mut dot_file = String::new();
+        dot_file.push_str("strict digraph{\n");
+        for i in 0..self.nodes.len() - 1 {
+            let ligne = format!("{};\n", i);
+            dot_file.push_str(ligne.as_str());
+        }
+        for ((s, t), _) in &self.edges {
+            let ligne = format!("{} -> {};\n", s, t);
+            dot_file.push_str(ligne.as_str());
+        }
+        dot_file.push_str("}\n");
+        let path = Path::new(filename);
+        let mut file = File::create(&path).expect("Impossible to create file.");
+        let _result = write!(file, "{}", dot_file);
+    }
+}
+
+pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
+    let mut tmp_dot = String::from(graph_name);
+    tmp_dot.push_str(".dot");
+    tmp_dot = format!("visual/{}", tmp_dot);
+
+    let _mkdir = Command::new("mkdir")
+        .arg("visual")
+        .output()
+        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
+
+    graph.output_dot(tmp_dot.as_str());
+
+    let mut ps_filename = String::from(graph_name);
+    ps_filename.push_str(".ps");
+    ps_filename = format!("visual/{}", ps_filename);
+
+    let _script = Command::new("dot")
+        .arg("-Tps")
+        .arg(tmp_dot)
+        .arg("-o")
+        .arg(ps_filename)
+        .output()
+        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
 }
 
 #[cfg(test)]
@@ -279,4 +325,5 @@ mod tests {
 
         assert_eq!(top_ord, vec![0, 1, 2, 3, 4, 5, 6, 7]);
     }
+
 }
