@@ -5,16 +5,10 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use task_graph::graph;
-use task_graph::task;
-
-use audiograph::*;
-use audiograph_edge::AGEdge;
-use audiograph_node::AGNode;
+use task_graph::task::Task;
 
 use pest::Parser;
 
-use petgraph::graph::NodeIndex;
-use petgraph::Graph;
 
 #[derive(Parser)]
 #[grammar = "parser/puredata/puredata.pest"]
@@ -25,7 +19,7 @@ pub fn parse_puredata(puredata: &str) -> graph::TaskGraph {
         PuredataParser::parse(Rule::file, puredata).unwrap_or_else(|e| panic!("{}", e));
 
     let mut nb_nodes =0 ;
-    let mut tasks: Vec<task::Task> = Vec::new();
+    let mut tasks: Vec<Task> = Vec::new();
     let mut edges: Vec<(usize, usize)> = Vec::new();
 
     for file in parse_result {
@@ -36,14 +30,16 @@ pub fn parse_puredata(puredata: &str) -> graph::TaskGraph {
                 Rule::OBJ => {
                     let fields = def.into_inner();
 
-                    let mut node = AGNode::new();
 
                     let mut posx: i64 = -1;
                     let mut posy: i64 = -1;
+                    let mut id = String::default();
+                    let mut args :Vec<String> =  Vec::new();
+
 
                     for field in fields {
                         if field.as_rule() == Rule::ID {
-                            node.object_name = field.as_str().to_string();
+                            id= field.as_str().to_string();
                         }
                         if field.as_rule() == Rule::POSX {
                             posx = field.as_str().parse::<i64>().unwrap();
@@ -53,12 +49,18 @@ pub fn parse_puredata(puredata: &str) -> graph::TaskGraph {
                         }
                         if field.as_rule() == Rule::AOBJ {
                             for aobj in field.as_str().split_whitespace() {
-                                node.add_arg(aobj.to_string());
+                                args.push(aobj.to_string());
                             }
                         }
                     }
 
-                    node.set_pos(posx, posy);
+                    let mut task =Task::Puredata{
+                        object_name:id,
+                        xpos: posx,
+                        ypos: posy,
+                        args:args,
+                    }; 
+                    tasks.push(task);
                     nb_nodes += 1;
                 }
                 Rule::CON => {
@@ -82,15 +84,15 @@ pub fn parse_puredata(puredata: &str) -> graph::TaskGraph {
                 Rule::MSG => {
                     let fields = def.into_inner();
 
-                    let mut node = AGNode::new();
-
                     let mut posx: i64 = -1;
                     let mut posy: i64 = -1;
+                    let mut id = String::default();
+                    let mut args :Vec<String> =  Vec::new();
 
                     for field in fields {
                         if field.as_rule() == Rule::STRING {
-                            node.object_name = "msg".to_string();
-                            node.add_arg(field.as_str().to_string());
+                            id = "msg".to_string();
+                            args.push(field.to_string());
                         }
                         if field.as_rule() == Rule::POSX {
                             posx = field.as_str().parse::<i64>().unwrap();
@@ -100,7 +102,14 @@ pub fn parse_puredata(puredata: &str) -> graph::TaskGraph {
                         }
                     }
 
-                    node.set_pos(posx, posy);
+
+                    let mut task =Task::Puredata{
+                        object_name:id,
+                        xpos: posx,
+                        ypos: posy,
+                        args:args,
+                    }; 
+                    tasks.push(task);
                     nb_nodes += 1;
                 }
 

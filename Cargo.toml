@@ -11,9 +11,6 @@ path = "src/main.rs"
 name = "agp_lib"
 
 [dependencies]
-petgraph = "*"
-ucd-trie = "0.1.1"
 pest = "2.1.0"
 pest_derive = "2.1.0"
-itertools = "*"
 rand = "*"
