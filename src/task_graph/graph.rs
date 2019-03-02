@@ -134,7 +134,7 @@ impl TaskGraph {
             .unwrap_or(None)
     }
 
-    pub fn get_t_level(&self, node_index: usize) -> Option<f64> {
+    pub fn get_t_level(&mut self, node_index: usize) -> Option<f64> {
         let top_ord = self.get_topological_order();
         let mut t_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
 
@@ -159,7 +159,7 @@ impl TaskGraph {
         t_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn get_b_level(&self, node_index: usize) -> Option<f64> {
+    pub fn get_b_level(&mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut b_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
         for i in rev_top_ord {
@@ -179,7 +179,7 @@ impl TaskGraph {
         b_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn get_static_level(&self, node_index: usize) -> Option<f64> {
+    pub fn get_static_level(& mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut s_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
 
@@ -230,7 +230,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
+            nodes_idx.push(g.add_task( & Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -254,7 +254,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
+            nodes_idx.push(g.add_task(& Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
