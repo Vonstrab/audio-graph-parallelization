@@ -44,8 +44,6 @@ fn main() {
     println!("Random schedule{}", random(&mut g, 4));
     println!("hlfet schedule{}", hlfet(&mut g, 4));
 
-    agp_lib::task_graph::graph::run_dot(&g, "G1");
-
     println!("\n\nGraphe 2 ******************************");
 
     g = TaskGraph::new(24, 21);
@@ -106,8 +104,6 @@ fn main() {
     println!("EFT schedule{}", etf(&mut g, 4));
     println!("Random schedule{}", random(&mut g, 4));
     println!("hlfet schedule{}", hlfet(&mut g, 4));
-
-    agp_lib::task_graph::graph::run_dot(&g, "G2");
 
     println!("\n\nGraphe 3 ******************************");
 
@@ -174,6 +170,4 @@ fn main() {
     println!("EFT schedule{}", etf(&mut g, 5));
     println!("Random schedule{}", random(&mut g, 5));
     println!("hlfet schedule{}", hlfet(&mut g, 5));
-
-    agp_lib::task_graph::graph::run_dot(&g, "G3");
 }
