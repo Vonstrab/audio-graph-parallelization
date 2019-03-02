@@ -98,19 +98,11 @@ impl TaskGraph {
         unimplemented!()
     }
 
-    pub fn get_wcet(&self, node_index: usize) -> Option<f64> {
+    pub fn get_wcet(&mut self, node_index: usize) -> Option<f64> {
         if node_index < self.nodes.len() {
-            self.nodes[node_index].wcet
+            self.nodes[node_index].get_wcet()
         } else {
             None
-        }
-    }
-
-    pub fn set_wcet(&mut self, node_index: usize, value: f64) -> bool {
-        if node_index < self.nodes.len() {
-            self.nodes[node_index].set_wcet(value)
-        } else {
-            false
         }
     }
 

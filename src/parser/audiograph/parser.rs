@@ -4,15 +4,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use itertools::Itertools;
-
-use audiograph::AudioGraph;
-use audiograph_edge::AGEdge;
-use audiograph_node::AGNode;
-
-use petgraph::graph::NodeIndex;
-use petgraph::Graph;
-
 #[derive(Debug)]
 pub struct Edge {
     source_id: String,
