@@ -8,27 +8,27 @@ char = {
     | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
 }
 
-ident = @{ ASCII_ALPHA ~ ASCII_ALPHANUMERIC* }
+ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "-")* }
 port = {ASCII_DIGIT+}
 
 WHITESPACE = _{ " " | "\t" | NEWLINE }
 
 port_ident = ${ident ~ "." ~ port}
 
-edges = {port_ident ~ "->" ~ (edges | port_ident)~ ";"}
+edges = {port_ident ~ "->" ~ (edges | port_ident)}
 
 
 
-deadline = { "deadline" ~ "=" ~ fnumber~ ";"}
+deadline = { "deadline" ~ "=" ~ fnumber}
 
 attribute = {ident ~ ":" ~ (fnumber | inumber | string) ~ ","}
 
-node = {ident ~ "=" ~ "{" ~ attribute* ~ "}" ~ ";"}
+node = {ident ~ "=" ~ "{" ~ attribute* ~ "}"}
 
 statement = {(node | edges | deadline) ~ ";" }
 
 file = {
   SOI
-  ~ (node | edges | deadline)*
+  ~ statement*
   ~ EOI
 }

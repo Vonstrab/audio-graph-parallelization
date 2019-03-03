@@ -1,8 +1,8 @@
 #![crate_type = "lib"]
 
-pub mod task_graph;
 pub mod parser;
 pub mod scheduling;
+pub mod task_graph;
 
 extern crate pest;
 #[macro_use]

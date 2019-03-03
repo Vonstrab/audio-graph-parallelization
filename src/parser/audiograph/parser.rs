@@ -1,145 +1,141 @@
 //! Parse a fileformat describing audiographs
-use pest::Parser;
+
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use task_graph::graph;
+use task_graph::task::Task;
+
+use pest::error::Error as ParseError;
+use pest::Parser;
+
 #[derive(Debug)]
 pub struct Edge {
-    source_id: String,
-    destination_id: String,
+    src_id: String,
+    src_port: u32,
+    dst_id: String,
+    dst_port: u32,
 }
 
 #[derive(Parser)]
-#[grammar = "audiograph.pest"]
+#[grammar = "parser/audiograph/audiograph.pest"]
 pub struct AudiographParser;
 
-pub fn parse_audiograph(audiograph: &str) -> AudioGraph {
-    let parse_result =
-        AudiographParser::parse(Rule::file, audiograph).unwrap_or_else(|e| panic!("{}", e));
+pub fn parse_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
+    let audiograph = AudiographParser::parse(Rule::file, audiograph)?
+        .next()
+        .unwrap();
 
-    let mut audio_nodes: Vec<AGNode> = Vec::new();
-    let edges: Vec<Edge> = Vec::new();
-    let mut audio_edges: Vec<(usize, usize)> = Vec::new();
+    use pest::iterators::*;
 
-    for file in parse_result {
-        let statements = file.into_inner();
+    fn parse_node(pair: Pair<Rule>) -> Task {
+        let mut inner_rules = pair.into_inner();
+        let id: String;
+        let mut nb_inlets: u32=0;
+        let mut nb_outlets: u32=0;
+        let mut class_name: String = String::default();
+        let mut text: Option<String> = None;
+        let mut wcet: Option<f64> = None;
+        let mut more: HashMap<String, String> = HashMap::new();
+        let mut volume: f32 = 0.0;
 
-        for statement in statements {
-            match statement.as_rule() {
-                Rule::node => {
-                    let fields = statement.into_inner();
-                    let mut node = AGNode::new();
+        id = inner_rules.next().unwrap().as_str().to_string();
 
-                    for field in fields {
-                        if field.as_rule() == Rule::ident {
-                            node.id = field.as_str().to_string();
-                        }
-                        if field.as_rule() == Rule::attribute {
-                            let mut attribute = field.as_str().split(|c| (c == ':') || (c == ','));
-
-                            let id = attribute.next().unwrap();
-                            let mut v = attribute.next().unwrap();
-                            v = v.trim();
-
-                            match id {
-                                "in" => node.nb_inlets = v.parse::<i64>().unwrap(),
-                                "out" => node.nb_outlets = v.parse::<i64>().unwrap(),
-                                "text" => node.text = Some(v.to_string()),
-                                "kind" => node.object_name = v.to_string(),
-                                "wcet" => node.wcet = Some(v.parse().unwrap()),
-                                _ => {
-                                    //Add more field
-                                }
-                            }
-                        }
-                    }
-                    audio_nodes.push(node);
-                }
-                Rule::edges => {
-                    println!("ICI 1");
-                    println!("ICI 2 {:?}", statement.clone().into_inner().as_str());
-                    let mut fields = statement.into_inner().tuples();
-
-                    let (src_id_r, _src_forget) = fields.next().unwrap();
-                    let mut src_id = src_id_r.as_str().to_string();
-
-                    println!("ICI 3 {:?}", src_id);
-                    println!("ICI 4 {:?}", _src_forget.as_str());
-
-                    let mut edges = Vec::new();
-
-                    for (mut dst_id_r, _source) in fields {
-                        let dst_id = dst_id_r.as_str().to_string();
-                        edges.push(Edge {
-                            source_id: src_id,
-                            destination_id: dst_id.clone(),
-                        });
-                        src_id = dst_id;
-                    }
-                }
-                Rule::deadline => {
-                    //A ajouter
-                }
+        //Attributes
+        for attribute in inner_rules {
+            let mut attr = attribute.into_inner();
+            let token = attr.next().unwrap().as_str().trim_matches('\"');
+            let v = attr.next().unwrap().as_str().trim_matches('\"');
+            match token {
+                "in" => nb_inlets = v.parse().unwrap(),
+                "out" => nb_outlets = v.parse().unwrap(),
+                "text" => text = Some(v.to_string()),
+                "kind" => class_name = v.to_string(),
+                "wcet" => wcet = Some(v.parse().unwrap()),
+                "volume" => volume = v.parse().unwrap(),
                 _ => {
-                    //DEBUG
-                    println!("KO 1 : {:?}", statement.as_rule());
+                    more.insert(token.to_string(), v.to_string());
                 }
             }
         }
-    }
 
-    let mut audio_graph = Graph::<AGNode, AGEdge>::with_capacity(audio_nodes.len(), edges.len());
-    let mut node_refs: Vec<NodeIndex<u32>> = Vec::with_capacity(audio_nodes.len());
-
-    for node in audio_nodes.clone() {
-        node_refs.push(audio_graph.add_node(node));
-    }
-
-    println!(" edges taille {}", edges.len());
-    //find the coresponding indices
-    for edge in &edges {
-        println!("\n source {}", edge.source_id);
-        println!(" target {}", edge.destination_id);
-
-        let mut source = 0;
-        let mut target = 0;
-        for (i, node) in audio_nodes.iter().enumerate() {
-            println!(" present node{}", node.id);
-
-            if edge.source_id == node.id {
-                source = i;
-                println!("la");
-            }
-            if edge.destination_id == node.id {
-                println!("ici",);
-
-                target = i;
-            }
+        Task::Audiograph {
+            id,
+            nb_inlets,
+            nb_outlets,
+            class_name,
+            text,
+            wcet,
+            more,
+            volume,
         }
-        audio_edges.push((source, target));
     }
 
-    println!("{}", audio_edges.len());
+    use std::vec::IntoIter;
 
-    let mut ag_edges: Vec<(NodeIndex<u32>, NodeIndex<u32>)> = Vec::with_capacity(edges.len());
+    fn parse_edge(pair: Pair<Rule>) -> IntoIter<Edge> {
+        let mut inner_rules = pair.into_inner();
+        let mut port_ident = inner_rules.next().unwrap().into_inner();
+        let mut src_id = port_ident.next().unwrap().as_str().to_string();
+        let mut src_port = port_ident.next().unwrap().as_str().parse().unwrap();
 
-    for (source, target) in audio_edges {
-        ag_edges.push((node_refs[source], node_refs[target]));
+        let mut edges = Vec::new();
+
+        for inner_rule in inner_rules {
+            port_ident = inner_rule.into_inner();
+            let dst_id = port_ident.next().unwrap().as_str().to_string();
+            let dst_port = port_ident.next().unwrap().as_str().parse().unwrap();
+            edges.push(Edge {
+                src_id,
+                src_port,
+                dst_id: dst_id.clone(),
+                dst_port,
+            });
+            src_id = dst_id;
+            src_port = dst_port;
+        }
+        edges.into_iter()
     }
 
-    audio_graph.extend_with_edges(ag_edges);
+    //let to_print = audiograph.clone().into_inner().flat_map()
 
-    // DEBUG
-    println!(
-        "{:?}",
-        petgraph::dot::Dot::with_config(&audio_graph, &[petgraph::dot::Config::EdgeNoLabel])
-    );
+    let (nodes, edges): (Vec<_>, Vec<_>) = audiograph
+        .into_inner()
+        .flat_map(|r| r.into_inner())
+        .filter(|ref r| r.as_rule() != Rule::deadline)
+        //.inspect(|x| println!("Statement: {:?}.", x))
+        .partition(|ref r| r.as_rule() == Rule::node);
 
-    AudioGraph::new(audio_graph)
+    let nodes = nodes.into_iter().map(parse_node).collect::<Vec<_>>();
+    let edges = edges.into_iter().flat_map(parse_edge).collect::<Vec<_>>();
+    let mut node_indexes: HashMap<String, usize> = HashMap::new();
+
+    let mut taskgraph = graph::TaskGraph::new(nodes.len(), edges.len());
+
+    for task in nodes.into_iter() {
+        let task_id;
+
+        match &task {
+            Task::Audiograph { id, .. } => task_id = id.clone(),
+            _ => panic!("Not an Audiograph"),
+        }
+
+        let node_index = taskgraph.add_task(&task);
+        node_indexes.insert(task_id, node_index);
+    }
+
+    for edge in edges.iter() {
+        let src_node = node_indexes[&edge.src_id];
+        let dst_node = node_indexes[&edge.dst_id];
+        taskgraph.add_edge(src_node, dst_node);
+    }
+
+    Ok(taskgraph)
 }
 
-pub fn parse_audiograph_from_file(filename: &str) -> AudioGraph {
+pub fn parse(filename: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
     let path = Path::new(filename);
     let mut file = File::open(&path).expect("Impossible to open file.");
     let mut s = String::new();

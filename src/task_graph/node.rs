@@ -6,6 +6,7 @@ use super::task::Task;
 use self::rand::Rng;
 // use rand::seq::SliceRandom;
 
+#[derive(Debug)]
 pub struct Node {
     pub task: Task,
     pub wcet: Option<f64>, // Worst case execution time
@@ -25,7 +26,7 @@ impl Node {
         }
     }
 
-    pub fn get_wcet(&mut self) ->Option< f64> {
+    pub fn get_wcet(&mut self) -> Option<f64> {
         if !self.wcet.is_none() {
             return self.wcet;
         }
@@ -38,24 +39,26 @@ impl Node {
                 self.wcet = Some(x);
                 return self.wcet;
             }
-            Task::Random(start,end) => {
-                if end < start  {
+            Task::Random(start, end) => {
+                if end < start {
                     panic!("Erreur Wcet Random mauvais intervalle");
                 }
                 if start < 0.0 {
                     panic!("Erreur Wcet Random start négatif");
-                }if end < 0.0 {
+                }
+                if end < 0.0 {
                     panic!("Erreur Wcet Random end négatif");
                 }
 
                 let mut rng = rand::thread_rng();
-                let x : f64 = rng.gen_range(start, end);
+                let x: f64 = rng.gen_range(start, end);
                 self.wcet = Some(x);
                 return self.wcet;
             }
-            _ =>{
+            _ => {
                 //TODO Calcul for Puredata and Audiograph
-                return None;
+                self.wcet = Some(1.0);
+                return self.wcet;
             }
         }
     }

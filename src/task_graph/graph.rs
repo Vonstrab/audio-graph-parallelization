@@ -4,6 +4,7 @@ use super::node::Node;
 use super::state::TaskState;
 use super::task::Task;
 
+#[derive(Debug)]
 pub struct TaskGraph {
     nodes: Vec<Node>,
     edges: HashMap<(usize, usize), Option<f64>>,
@@ -179,7 +180,7 @@ impl TaskGraph {
         b_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn get_static_level(& mut self, node_index: usize) -> Option<f64> {
+    pub fn get_static_level(&mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut s_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
 
@@ -230,7 +231,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task( & Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -254,7 +255,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(& Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
