@@ -16,12 +16,12 @@ pub enum Task {
     },
 
     Audiograph {
+        wcet: Option<f64>,
         id: String, // `AGNode`'s ID
         nb_inlets: u32,
         nb_outlets: u32,
         class_name: String,
         text: Option<String>,
-        wcet: Option<f64>,
         more: HashMap<String, String>,
         volume: f32,
     },

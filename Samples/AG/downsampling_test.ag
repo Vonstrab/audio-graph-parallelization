@@ -4,7 +4,7 @@ n1 =
 	in: 0,
 	out : 1,
 	text : "salut",
-	wcet : 20.0,
+	wcet : 2.0,
 };
 
 n2 = { kind : "plop", in : 1, out:1, wcet : 21.0,};

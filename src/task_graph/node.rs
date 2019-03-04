@@ -55,6 +55,10 @@ impl Node {
                 self.wcet = Some(x);
                 return self.wcet;
             }
+            Task::Audiograph{wcet , .. }=>{
+                self.wcet = wcet;
+                return self.wcet;
+            }
             _ => {
                 //TODO Calcul for Puredata and Audiograph
                 self.wcet = Some(1.0);
