@@ -82,29 +82,29 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
                 Rule::MSG => {
                     let fields = def.into_inner();
 
-                    let mut posx: i64 = -1;
-                    let mut posy: i64 = -1;
-                    let mut id = String::default();
+                    let mut xpos: i64 = -1;
+                    let mut ypos: i64 = -1;
+                    let mut object_name = String::default();
                     let mut args: Vec<String> = Vec::new();
 
                     for field in fields {
                         if field.as_rule() == Rule::STRING {
-                            id = "msg".to_string();
+                            object_name = "msg".to_string();
                             args.push(field.to_string());
                         }
                         if field.as_rule() == Rule::POSX {
-                            posx = field.as_str().parse::<i64>().unwrap();
+                            xpos = field.as_str().parse::<i64>().unwrap();
                         }
                         if field.as_rule() == Rule::POSY {
-                            posy = field.as_str().parse::<i64>().unwrap();
+                            ypos = field.as_str().parse::<i64>().unwrap();
                         }
                     }
 
                     let mut task = Task::Puredata {
-                        object_name: id,
-                        xpos: posx,
-                        ypos: posy,
-                        args: args,
+                        object_name,
+                        xpos,
+                        ypos,
+                        args,
                     };
                     tasks.push(task);
                     nb_nodes += 1;

@@ -95,7 +95,7 @@ impl TaskGraph {
         stack.push(node_index);
     }
 
-    pub fn find_task(&self, taks: &Task) -> Option<usize> {
+    pub fn find_task(&self, _taks: &Task) -> Option<usize> {
         unimplemented!()
     }
 
@@ -142,7 +142,7 @@ impl TaskGraph {
         for i in top_ord {
             let mut max: f64 = 0.0;
 
-            for x in self.get_predecessors(i).unwrap_or(Vec::default()) {
+            for x in self.get_predecessors(i).unwrap_or_default() {
                 if t_levels[x]
                     + self.get_wcet(x).unwrap()
                     + self.get_communication_cost(x, i).unwrap_or(0.0)
@@ -166,7 +166,7 @@ impl TaskGraph {
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-            for y in self.get_successors(i).unwrap_or(Vec::default()) {
+            for y in self.get_successors(i).unwrap_or_default() {
                 let comm_cost = self.get_communication_cost(i, y).unwrap_or(0.0);
 
                 if comm_cost + b_levels[y] > max {
@@ -187,7 +187,7 @@ impl TaskGraph {
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-            for y in self.get_successors(i).unwrap_or(Vec::default()) {
+            for y in self.get_successors(i).unwrap_or_default() {
                 if s_levels[y] > max {
                     max = s_levels[y];
                 }

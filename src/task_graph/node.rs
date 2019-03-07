@@ -27,7 +27,7 @@ impl Node {
     }
 
     pub fn get_wcet(&mut self) -> Option<f64> {
-        if !self.wcet.is_none() {
+        if self.wcet.is_some() {
             return self.wcet;
         }
 
@@ -55,7 +55,7 @@ impl Node {
                 self.wcet = Some(x);
                 return self.wcet;
             }
-            Task::Audiograph{wcet , .. }=>{
+            Task::Audiograph { wcet, .. } => {
                 self.wcet = wcet;
                 return self.wcet;
             }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub enum Task {
     //Ranodom time between
     Random(f64, f64),

@@ -33,8 +33,8 @@ pub fn parse_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError
     fn parse_node(pair: Pair<Rule>) -> Task {
         let mut inner_rules = pair.into_inner();
         let id: String;
-        let mut nb_inlets: u32=0;
-        let mut nb_outlets: u32=0;
+        let mut nb_inlets: u32 = 0;
+        let mut nb_outlets: u32 = 0;
         let mut class_name: String = String::default();
         let mut text: Option<String> = None;
         let mut wcet: Option<f64> = None;
@@ -84,7 +84,7 @@ pub fn parse_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError
         let mut edges = Vec::new();
 
         for inner_rule in inner_rules {
-            port_ident = inner_rule.into_inner();
+            port_ident = inner_rule.into_inner().next().unwrap().into_inner();
             let dst_id = port_ident.next().unwrap().as_str().to_string();
             let dst_port = port_ident.next().unwrap().as_str().parse().unwrap();
             edges.push(Edge {
