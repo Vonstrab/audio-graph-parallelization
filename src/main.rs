@@ -62,9 +62,9 @@ fn main() {
     println!("Random schedule{}", srandom);
     println!("hlfet schedule{}", shlfet);
 
-    setf.output("visual/etf4.txt");
-    srandom.output("visual/rand44.txt");
-    shlfet.output("visual/hlfet4.txt");
+    setf.output("tmp/etf4.txt");
+    srandom.output("tmp/rand44.txt");
+    shlfet.output("tmp/hlfet4.txt");
 
     //    agp_lib::task_graph::graph::run_dot(&g, "G1");
 

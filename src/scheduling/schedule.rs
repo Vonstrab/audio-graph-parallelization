@@ -52,16 +52,20 @@ impl Schedule {
     pub fn output(&self, filename: &str) {
         let mut out_file = String::new();
         for i in 0..self.processors.len() {
-            for slot in & self.processors[i].time_slots{
-            let ligne = format!("Proc{} {} {}\n", i,slot.get_start_time(),slot.get_completion_time());
-            out_file.push_str(ligne.as_str());
-
+            for slot in &self.processors[i].time_slots {
+                let ligne = format!(
+                    "{} {} {}\n",
+                    i,
+                    slot.get_start_time(),
+                    slot.get_completion_time()
+                );
+                out_file.push_str(ligne.as_str());
             }
         }
         let path = Path::new(filename);
         let mut file = File::create(&path).expect("Impossible to create file.");
         let _result = write!(file, "{}", out_file);
-    } 
+    }
 }
 
 impl Display for Schedule {
