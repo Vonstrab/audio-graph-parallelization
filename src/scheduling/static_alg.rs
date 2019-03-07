@@ -53,7 +53,7 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
         if out_node.is_none() {
             out_node = Some(*node);
         } else {
-            if *b_level == ready_list[& out_node.unwrap()] {
+            if *b_level == ready_list[&out_node.unwrap()] {
                 if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
                     out_node = Some(*node);
                 }
@@ -142,7 +142,7 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     // Main Loop
     while !ready_list.is_empty() {
         // Get the first node by b_level
-        let first_node = get_max_tie_misf(& ready_list, graph);
+        let first_node = get_max_tie_misf(&ready_list, graph);
 
         //First consider the first processor
         let mut chosen_proc = 0;
@@ -250,9 +250,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 
         graph.set_state(min_node.unwrap(), TaskState::Scheduled);
 
-        let successors = graph
-            .get_successors(min_node.unwrap())
-            .unwrap_or_default();
+        let successors = graph.get_successors(min_node.unwrap()).unwrap_or_default();
 
         for node in successors {
             if !ready_list.contains(&node) && predecessors_scheduled(node, &graph) {
