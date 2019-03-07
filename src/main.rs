@@ -27,51 +27,46 @@ fn main() {
 
     println!("Graphe 1 ******************************");
 
-let mut setf = etf(&mut g, 2);
-let mut srandom = random(&mut g, 2);
-let mut shlfet = hlfet(&mut g, 2);
+    let mut setf = etf(&mut g, 2);
+    let mut srandom = random(&mut g, 2);
+    let mut shlfet = hlfet(&mut g, 2);
 
     println!("Avec 2 proc :");
     println!("EFT schedule{}", setf);
     println!("Random schedule{}", srandom);
     println!("HLFET schedule{}", shlfet);
 
+    setf.output("visual/etf.txt");
+    srandom.output("visual/rand.txt");
+    shlfet.output("visual/hlfet.txt");
 
-setf.output("visual/etf.txt");
-srandom.output("visual/rand.txt");
-shlfet.output("visual/hlfet.txt");
-
-
-setf = etf(&mut g, 3);
-srandom = random(&mut g, 3);
-shlfet = hlfet(&mut g, 3);
+    setf = etf(&mut g, 3);
+    srandom = random(&mut g, 3);
+    shlfet = hlfet(&mut g, 3);
 
     println!("Avec 3 proc :");
     println!("EFT schedule{}", setf);
     println!("Random schedule{}", srandom);
     println!("hlfet schedule{}", shlfet);
 
+    setf.output("visual/etf3.txt");
+    srandom.output("visual/rand3.txt");
+    shlfet.output("visual/hlfet3.txt");
 
-setf.output("visual/etf3.txt");
-srandom.output("visual/rand3.txt");
-shlfet.output("visual/hlfet3.txt");
-
-
-setf = etf(&mut g, 4);
-srandom = random(&mut g, 4);
-shlfet = hlfet(&mut g, 4);
+    setf = etf(&mut g, 4);
+    srandom = random(&mut g, 4);
+    shlfet = hlfet(&mut g, 4);
 
     println!("Avec 4 proc :");
     println!("EFT schedule{}", setf);
     println!("Random schedule{}", srandom);
     println!("hlfet schedule{}", shlfet);
 
-setf.output("visual/etf4.txt");
-srandom.output("visual/rand44.txt");
-shlfet.output("visual/hlfet4.txt");
+    setf.output("visual/etf4.txt");
+    srandom.output("visual/rand44.txt");
+    shlfet.output("visual/hlfet4.txt");
 
-
-//    agp_lib::task_graph::graph::run_dot(&g, "G1");
+    //    agp_lib::task_graph::graph::run_dot(&g, "G1");
 
     // println!("\n\nGraphe 2 ******************************");
 
