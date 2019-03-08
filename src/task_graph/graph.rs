@@ -267,7 +267,9 @@ pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
         .output()
         .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
 
-    graph.output_dot(tmp_dot.as_str());
+    graph
+        .output_dot(tmp_dot.as_str())
+        .unwrap_or_else(|e| panic!("failed to output graph: {}", e));
 
     let mut pdf_filename = String::from(graph_name);
     pdf_filename.push_str(".pdf");
