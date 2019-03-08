@@ -98,7 +98,7 @@ impl TaskGraph {
         stack.push(node_index);
     }
 
-    pub fn find_task(&self, taks: &Task) -> Option<usize> {
+    pub fn find_task(&self, task: &Task) -> Option<usize> {
         unimplemented!()
     }
 
@@ -231,21 +231,29 @@ impl TaskGraph {
         }
     }
 
-    pub fn output_dot(&self, filename: &str) {
+    pub fn output_dot(&self, filename: &str) -> Result<(), std::io::Error> {
         let mut dot_file = String::new();
+
         dot_file.push_str("strict digraph{\n");
-        for i in 0..self.nodes.len() - 1 {
+
+        for i in 0..(self.nodes.len() - 1) {
             let ligne = format!("{};\n", i);
+
             dot_file.push_str(ligne.as_str());
         }
+
         for ((s, t), _) in &self.edges {
             let ligne = format!("{} -> {};\n", s, t);
+
             dot_file.push_str(ligne.as_str());
         }
+
         dot_file.push_str("}\n");
+
         let path = Path::new(filename);
         let mut file = File::create(&path).expect("Impossible to create file.");
-        let _result = write!(file, "{}", dot_file);
+
+        write!(file, "{}", dot_file)
     }
 }
 
