@@ -48,8 +48,9 @@ impl Schedule {
         time
     }
 
-    pub fn output(&self, filename: &str) {
+    pub fn output(&self, filename: &str) -> Result<(), std::io::Error> {
         let mut out_file = String::new();
+
         for i in 0..self.processors.len() {
             for slot in &self.processors[i].time_slots {
                 let ligne = format!(
@@ -61,16 +62,18 @@ impl Schedule {
                 out_file.push_str(ligne.as_str());
             }
         }
+
         let path = Path::new(filename);
         // FIXME: This makes the program crashes if the folders "tmp" or "visual"
         // doesn't exist.
         let mut file = File::create(&path).expect("Impossible to create file.");
-        let _result = write!(file, "{}", out_file);
+
+        write!(file, "{}", out_file)
     }
 }
 
-impl Display for Schedule {
-    fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
+impl fmt::Display for Schedule {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         writeln!(fmt, "")?;
 
         for (i, processor) in self.processors.iter().enumerate() {
