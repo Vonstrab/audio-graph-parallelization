@@ -258,11 +258,9 @@ impl TaskGraph {
 }
 
 pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
-    let mut tmp_dot = String::from(graph_name);
-    tmp_dot.push_str(".dot");
-    tmp_dot = format!("tmp/{}", tmp_dot);
+    let tmp_dot = format!("tmp/{}.got", graph_name);
 
-    let _mkdir = Command::new("mkdir")
+    Command::new("mkdir")
         .arg("visual")
         .output()
         .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
@@ -271,11 +269,9 @@ pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
         .output_dot(tmp_dot.as_str())
         .unwrap_or_else(|e| panic!("failed to output graph: {}", e));
 
-    let mut pdf_filename = String::from(graph_name);
-    pdf_filename.push_str(".pdf");
-    pdf_filename = format!("tmp/{}", pdf_filename);
+    let pdf_filename = format!("tmp/{}.pdf", graph_name);
 
-    let _script = Command::new("dot")
+    Command::new("dot")
         .arg("-Tpdf")
         .arg(tmp_dot)
         .arg("-o")
