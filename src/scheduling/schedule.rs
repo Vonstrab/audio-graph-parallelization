@@ -1,13 +1,12 @@
 //! This module implements a schedule
 
+use std::fmt;
 use std::fs::File;
+use std::io::prelude::*;
 use std::path::Path;
 
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
-use std::io::prelude::*;
-
-use std::fmt::{Display, Error, Formatter};
 
 pub struct Schedule {
     pub processors: Vec<Processor>,
