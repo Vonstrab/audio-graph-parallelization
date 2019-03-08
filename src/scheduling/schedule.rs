@@ -62,6 +62,8 @@ impl Schedule {
             }
         }
         let path = Path::new(filename);
+        // FIXME: This makes the program crashes if the folders "tmp" or "visual"
+        // doesn't exist.
         let mut file = File::create(&path).expect("Impossible to create file.");
         let _result = write!(file, "{}", out_file);
     }
