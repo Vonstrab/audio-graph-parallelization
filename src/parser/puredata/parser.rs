@@ -49,12 +49,13 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
                         }
                     }
 
-                    let mut task = Task::Puredata {
+                    let task = Task::Puredata {
                         object_name,
                         xpos,
                         ypos,
                         args,
                     };
+
                     tasks.push(task);
                     nb_nodes += 1;
                 }
@@ -94,12 +95,13 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
                         }
                     }
 
-                    let mut task = Task::Puredata {
+                    let task = Task::Puredata {
                         object_name,
                         xpos,
                         ypos,
                         args,
                     };
+
                     tasks.push(task);
                     nb_nodes += 1;
                 }
@@ -126,7 +128,9 @@ pub fn parse(filename: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
     let path = Path::new(filename);
     let mut file = File::open(&path).expect("Impossible to open file.");
     let mut s = String::new();
+
     file.read_to_string(&mut s)
         .expect("Impossible to read file.");
+
     parse_puredata(&s)
 }
