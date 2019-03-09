@@ -275,7 +275,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -300,7 +300,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -325,7 +325,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -363,7 +363,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..24 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(0, 19);
@@ -427,7 +427,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..33 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(0, 6);
