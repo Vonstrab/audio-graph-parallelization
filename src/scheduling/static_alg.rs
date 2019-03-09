@@ -205,7 +205,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         let mut min_node: Option<usize> = None;
         let mut min_start_time = None;
 
-        let mut node_indice: usize = 0;
+        let mut node_index: usize = 0;
 
         for i in 0..out_schedule.processors.len() {
             let proc_start_time = out_schedule.processors[i].get_completion_time();
@@ -220,7 +220,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
-                    node_indice = j;
+                    node_index = j;
                 }
 
                 if current_start_time == min_start_time.unwrap()
@@ -229,18 +229,18 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
-                    node_indice = j;
+                    node_index = j;
                 }
                 if current_start_time < min_start_time.unwrap() {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
-                    node_indice = j;
+                    node_index = j;
                 }
             }
         }
 
-        let end_time = min_start_time.unwrap() + graph.get_wcet(ready_list[node_indice]).unwrap();
+        let end_time = min_start_time.unwrap() + graph.get_wcet(ready_list[node_index]).unwrap();
 
         out_schedule.processors[min_proc.unwrap()].add_timeslot(
             min_node.unwrap(),
@@ -258,7 +258,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
             }
         }
 
-        ready_list.remove(node_indice);
+        ready_list.remove(node_index);
     }
 
     out_schedule
