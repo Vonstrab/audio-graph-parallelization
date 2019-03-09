@@ -36,19 +36,16 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
                     let mut args: Vec<String> = Vec::new();
 
                     for field in fields {
-                        if field.as_rule() == Rule::ID {
-                            object_name = field.as_str().to_string();
-                        }
-                        if field.as_rule() == Rule::POSX {
-                            xpos = field.as_str().parse::<i64>().unwrap();
-                        }
-                        if field.as_rule() == Rule::POSY {
-                            ypos = field.as_str().parse::<i64>().unwrap();
-                        }
-                        if field.as_rule() == Rule::AOBJ {
-                            for aobj in field.as_str().split_whitespace() {
-                                args.push(aobj.to_string());
+                        match field.as_rule() {
+                            Rule::ID => object_name = field.as_str().to_string(),
+                            Rule::POSX => xpos = field.as_str().parse::<i64>().unwrap(),
+                            Rule::POSY => ypos = field.as_str().parse::<i64>().unwrap(),
+                            Rule::AOBJ => {
+                                for aobj in field.as_str().split_whitespace() {
+                                    args.push(aobj.to_string());
+                                }
                             }
+                            _ => {}
                         }
                     }
 
@@ -68,12 +65,10 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
                     let mut target = 0;
 
                     for field in fields {
-                        if field.as_rule() == Rule::SOURCE {
-                            source = field.as_str().parse().unwrap();
-                        }
-
-                        if field.as_rule() == Rule::TARGET {
-                            target = field.as_str().parse().unwrap();
+                        match field.as_rule() {
+                            Rule::SOURCE => source = field.as_str().parse().unwrap(),
+                            Rule::TARGET => target = field.as_str().parse().unwrap(),
+                            _ => {}
                         }
                     }
 
@@ -88,15 +83,14 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
                     let mut args: Vec<String> = Vec::new();
 
                     for field in fields {
-                        if field.as_rule() == Rule::STRING {
-                            object_name = "msg".to_string();
-                            args.push(field.to_string());
-                        }
-                        if field.as_rule() == Rule::POSX {
-                            xpos = field.as_str().parse::<i64>().unwrap();
-                        }
-                        if field.as_rule() == Rule::POSY {
-                            ypos = field.as_str().parse::<i64>().unwrap();
+                        match field.as_rule() {
+                            Rule::STRING => {
+                                object_name = "msg".to_string();
+                                args.push(field.to_string());
+                            }
+                            Rule::POSX => xpos = field.as_str().parse::<i64>().unwrap(),
+                            Rule::POSY => ypos = field.as_str().parse::<i64>().unwrap(),
+                            _ => {}
                         }
                     }
 
