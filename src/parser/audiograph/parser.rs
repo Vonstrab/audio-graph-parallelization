@@ -1,4 +1,4 @@
-//! Parse a fileformat describing audiographs
+//! Parse files containing audiographs
 
 use std::collections::HashMap;
 use std::fs::File;
