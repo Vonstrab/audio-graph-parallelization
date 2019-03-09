@@ -4,7 +4,6 @@ use super::state::TaskState;
 use super::task::Task;
 
 use self::rand::Rng;
-// use rand::seq::SliceRandom;
 
 #[derive(Debug)]
 pub struct Node {
@@ -34,24 +33,28 @@ impl Node {
         match self.task {
             Task::Constant(x) => {
                 if x < 0.0 {
-                    panic!("Erreur Wcet Constant négatif");
+                    panic!("Error: negative constant WCET\n");
                 }
+
                 self.wcet = Some(x);
                 return self.wcet;
             }
             Task::Random(start, end) => {
                 if end < start {
-                    panic!("Erreur Wcet Random mauvais intervalle");
+                    panic!("Error: bad interval for random WCET\n");
                 }
+
                 if start < 0.0 {
-                    panic!("Erreur Wcet Random start négatif");
+                    panic!("Error: negative start for random WCET\n");
                 }
+
                 if end < 0.0 {
-                    panic!("Erreur Wcet Random end négatif");
+                    panic!("Error: negative end for random WCET\n");
                 }
 
                 let mut rng = rand::thread_rng();
                 let x: f64 = rng.gen_range(start, end);
+
                 self.wcet = Some(x);
                 return self.wcet;
             }
