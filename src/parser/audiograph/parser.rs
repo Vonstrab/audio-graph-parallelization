@@ -4,12 +4,14 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::vec::IntoIter;
+
+use pest::error::Error as ParseError;
+use pest::iterators::*;
+use pest::Parser;
 
 use task_graph::graph;
 use task_graph::task::Task;
-
-use pest::error::Error as ParseError;
-use pest::Parser;
 
 #[derive(Debug)]
 pub struct Edge {
