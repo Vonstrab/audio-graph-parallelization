@@ -9,12 +9,12 @@ fn main() {
 
     println!("WCET Test ******************************");
 
-    println!("Avec 2 proc :");
+    println!("With 2 processors:");
     println!("EFT schedule{}", etf(&mut simple_ag, 2));
     println!("Random schedule{}", random(&mut simple_ag, 2));
     println!("HLFET schedule{}", hlfet(&mut simple_ag, 2));
 
-    println!("Avec 3 proc :");
+    println!("With 3 processors:");
     println!("EFT schedule{}", etf(&mut simple_ag, 3));
     println!("Random schedule{}", random(&mut simple_ag, 3));
     println!("hlfet schedule{}", hlfet(&mut simple_ag, 3));
@@ -23,12 +23,12 @@ fn main() {
 
     println!("downsampling ******************************");
 
-    println!("Avec 2 proc :");
+    println!("With 2 processors:");
     println!("Random schedule{}", random(&mut simple_ag, 2));
     println!("EFT schedule{}", etf(&mut simple_ag, 2));
     println!("HLFET schedule{}", hlfet(&mut simple_ag, 2));
 
-    println!("Avec 3 proc :");
+    println!("With 3 processors:");
     println!("Random schedule{}", random(&mut simple_ag, 3));
     println!("EFT schedule{}", etf(&mut simple_ag, 3));
     println!("hlfet schedule{}", hlfet(&mut simple_ag, 3));
