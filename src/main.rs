@@ -1,8 +1,6 @@
 extern crate agp_lib;
 
 use agp_lib::parser;
-use agp_lib::task_graph::graph::TaskGraph;
-use agp_lib::task_graph::task::Task;
 
 use agp_lib::scheduling::static_alg::*;
 
