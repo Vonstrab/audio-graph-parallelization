@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub enum Task {
-    //Ranodom time between
+    // Random time interval
     Random(f64, f64),
-    //Constant time
+    // Constant time
     Constant(f64),
 
     Puredata {
