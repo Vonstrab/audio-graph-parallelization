@@ -37,7 +37,7 @@ impl Node {
                 }
 
                 self.wcet = Some(x);
-                return self.wcet;
+                self.wcet
             }
             Task::Random(start, end) => {
                 if end < start {
@@ -56,16 +56,16 @@ impl Node {
                 let x: f64 = rng.gen_range(start, end);
 
                 self.wcet = Some(x);
-                return self.wcet;
+                self.wcet
             }
             Task::Audiograph { wcet, .. } => {
                 self.wcet = wcet;
-                return self.wcet;
+                self.wcet
             }
             _ => {
-                //TODO Calcul for Puredata and Audiograph
+                // TODO: Estimations for Puredata and Audiograph
                 self.wcet = Some(1.0);
-                return self.wcet;
+                self.wcet
             }
         }
     }
