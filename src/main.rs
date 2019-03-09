@@ -5,7 +5,8 @@ use agp_lib::parser;
 use agp_lib::scheduling::static_alg::*;
 
 fn main() {
-    let mut simple_ag = parser::parse("Samples/AG/audiograph_wcet_test.ag");
+    let mut simple_ag = parser::parse("Samples/AG/audiograph_wcet_test.ag")
+        .expect("Failed parsing the audio graph\n");
 
     println!("WCET Test ******************************");
 
@@ -19,7 +20,8 @@ fn main() {
     println!("Random schedule{}", random(&mut simple_ag, 3));
     println!("hlfet schedule{}", hlfet(&mut simple_ag, 3));
 
-    let mut simple_ag = parser::parse("Samples/AG/downsampling_test.ag");
+    let mut simple_ag =
+        parser::parse("Samples/AG/downsampling_test.ag").expect("Failed parsing the audio graph\n");
 
     println!("downsampling ******************************");
 
