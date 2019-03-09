@@ -4,11 +4,11 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use task_graph::graph;
-use task_graph::task::Task;
-
 use pest::error::Error as ParseError;
 use pest::Parser;
+
+use task_graph::graph;
+use task_graph::task::Task;
 
 #[derive(Parser)]
 #[grammar = "parser/puredata/puredata.pest"]
