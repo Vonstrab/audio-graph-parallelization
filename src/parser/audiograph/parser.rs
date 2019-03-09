@@ -112,7 +112,7 @@ pub fn parse_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError
 
     let nodes = nodes.into_iter().map(parse_node).collect::<Vec<_>>();
     let edges = edges.into_iter().flat_map(parse_edge).collect::<Vec<_>>();
-    let mut node_indexes: HashMap<String, usize> = HashMap::new();
+    let mut node_indices: HashMap<String, usize> = HashMap::new();
 
     let mut taskgraph = graph::TaskGraph::new(nodes.len(), edges.len());
 
@@ -124,13 +124,15 @@ pub fn parse_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError
             _ => panic!("Not an Audiograph"),
         }
 
-        let node_index = taskgraph.add_task(&task);
-        node_indexes.insert(task_id, node_index);
+        let node_index = taskgraph.add_task(task);
+
+        node_indices.insert(task_id, node_index);
     }
 
     for edge in edges.iter() {
-        let src_node = node_indexes[&edge.src_id];
-        let dst_node = node_indexes[&edge.dst_id];
+        let src_node = node_indices[&edge.src_id];
+        let dst_node = node_indices[&edge.dst_id];
+
         taskgraph.add_edge(src_node, dst_node);
     }
 
@@ -141,6 +143,7 @@ pub fn parse(filename: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
     let path = Path::new(filename);
     let mut file = File::open(&path).expect("Impossible to open file.");
     let mut s = String::new();
+
     file.read_to_string(&mut s)
         .expect("Impossible to read file.");
     parse_audiograph(&s)
