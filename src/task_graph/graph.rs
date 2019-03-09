@@ -199,8 +199,8 @@ impl TaskGraph {
         s_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn add_task(&mut self, task: &Task) -> usize {
-        self.nodes.push(Node::new(task.clone()));
+    pub fn add_task(&mut self, task: Task) -> usize {
+        self.nodes.push(Node::new(task));
 
         self.nodes.len() - 1
     }
@@ -231,7 +231,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -255,7 +255,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(&Task::Constant(1.0)));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);

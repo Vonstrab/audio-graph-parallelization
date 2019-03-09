@@ -112,7 +112,7 @@ pub fn parse_puredata(puredata: &str) -> Result<graph::TaskGraph, ParseError<Rul
     let mut graph_out = graph::TaskGraph::new(nb_nodes, edges.len());
 
     for i in 0..tasks.len() {
-        graph_out.add_task(&tasks[i]);
+        graph_out.add_task(tasks[i].clone());
     }
 
     for (source, target) in edges {
