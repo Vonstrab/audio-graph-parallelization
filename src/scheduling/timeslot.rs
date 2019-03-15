@@ -41,3 +41,26 @@ impl Display for TimeSlot {
         )
     }
 }
+
+#[cfg(test)]
+mod timeslot_test {
+    use super::*;
+
+    #[test]
+    fn test_constructor() {
+        let ts = TimeSlot::new(5, 1.0, 2.0);
+
+        assert_eq!(ts.completion_time, 2.0);
+        assert_eq!(ts.start_time, 1.0);
+        assert_eq!(ts.node, 5);
+    }
+
+    #[test]
+    fn test_getters() {
+        let ts = TimeSlot::new(5, 1.0, 2.0);
+
+        assert_eq!(ts.get_completion_time(), 2.0);
+        assert_eq!(ts.get_start_time(), 1.0);
+        assert_eq!(ts.get_node(), 5);
+    }
+}
