@@ -1,6 +1,5 @@
 //! This module implements a schedule
 
-use std::fmt;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -8,15 +7,16 @@ use std::path::Path;
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
 
+use std::fmt::{Display, Error, Formatter};
+
+#[derive(Default)]
 pub struct Schedule {
     pub processors: Vec<Processor>,
 }
 
 impl Schedule {
     pub fn new() -> Schedule {
-        Schedule {
-            processors: Vec::new(),
-        }
+        Schedule::default()
     }
 
     pub fn add_processor(&mut self) -> usize {
@@ -123,14 +123,53 @@ impl Schedule {
     }
 }
 
-impl fmt::Display for Schedule {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        writeln!(fmt, "")?;
+impl Display for Schedule {
+    fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
+        writeln!(fmt)?;
 
         for (i, processor) in self.processors.iter().enumerate() {
             writeln!(fmt, "processor {} * {}", i, processor)?;
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod schedule_test {
+    use super::*;
+    #[test]
+    fn test_constructor() {
+        let sche = Schedule::new();
+        assert_eq!(sche.processors.len(), 0);
+    }
+
+    #[test]
+    fn test_add_processor() {
+        let mut sche = Schedule::new();
+        sche.add_processor();
+        sche.add_processor();
+        sche.add_processor();
+        sche.add_processor();
+        assert_eq!(sche.processors.len(), 4);
+    }
+
+    #[test]
+    fn test_getters() {
+        let mut sche = Schedule::new();
+
+        sche.add_processor();
+        sche.add_processor();
+        sche.add_processor();
+        sche.add_processor();
+        assert_eq!(sche.get_nb_processor(), 4);
+
+        sche.processors[3].add_timeslot(5, 1.0, 2.0);
+        sche.processors[2].add_timeslot(7, 4.0, 5.0);
+        assert_eq!(sche.get_completion_time(), 5.0);
+
+        assert!(sche.get_time_slot(1).is_none());
+        assert!(sche.get_time_slot(5).unwrap() == TimeSlot::new(5, 1.0, 2.0));
+        assert!(sche.get_time_slot(7).unwrap() == TimeSlot::new(7, 4.0, 5.0));
     }
 }

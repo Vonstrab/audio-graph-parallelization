@@ -143,22 +143,18 @@ fn optimal_proc(
 
 //Return the minimum value from a ready list
 //ties broken by number of successors (most first)
-fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> usize {
+fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, graph: &TaskGraph) -> usize {
     let mut out_node: Option<usize> = None;
 
     for (node, b_level) in ready_list {
         if out_node.is_none() {
             out_node = Some(*node);
-        } else {
-            if *b_level == ready_list[&out_node.unwrap()] {
-                if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
-                    out_node = Some(*node);
-                }
-            } else {
-                if *b_level > *ready_list.get(&out_node.unwrap()).unwrap() {
-                    out_node = Some(*node);
-                }
+        } else if *b_level == ready_list[&out_node.unwrap()] {
+            if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
+                out_node = Some(*node);
             }
+        } else if *b_level > *ready_list.get(&out_node.unwrap()).unwrap() {
+            out_node = Some(*node);
         }
     }
 
@@ -293,7 +289,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     set_status_waiting(graph);
 
     // The firsts nodes in the readylist
-    let mut ready_list: Vec<usize> = Vec::from(graph.get_entry_nodes());
+    let mut ready_list: Vec<usize> = graph.get_entry_nodes();
 
     // Main loop
     while !ready_list.is_empty() {

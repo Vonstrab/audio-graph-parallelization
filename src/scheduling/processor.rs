@@ -9,10 +9,7 @@ pub struct Processor {
 
 impl Processor {
     pub fn new() -> Processor {
-        Processor {
-            time_slots: Vec::new(),
-            completion_time: 0.0,
-        }
+        Processor::default()
     }
 
     //duplcate from a Processor
@@ -103,7 +100,7 @@ impl Display for Processor {
 }
 
 #[cfg(test)]
-mod processot_test {
+mod processor_test {
     use super::*;
     #[test]
     fn test_constructor() {
