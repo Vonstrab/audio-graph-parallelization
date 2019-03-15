@@ -12,7 +12,7 @@ pub struct TimeSlot {
 
 impl TimeSlot {
     pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
-        if start >= completion{
+        if start >= completion {
             panic!("TimeSlot::new() : completions < start")
         }
         TimeSlot {
