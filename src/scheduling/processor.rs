@@ -30,7 +30,7 @@ impl Processor {
             return true;
         }
 
-        return false;
+        false
     }
 
     pub fn get_completion_time(&self) -> f64 {
@@ -100,4 +100,37 @@ impl Display for Processor {
 
         Ok(())
     }
+}
+
+#[cfg(test)]
+mod processot_test {
+    use super::*;
+    #[test]
+    fn test_constructor() {
+        let pro = Processor::new();
+        assert_eq!(pro.completion_time,0.0 );
+        assert_eq!(pro.time_slots.len(),0 );
+    }
+
+    #[test]
+    fn test_add_timeslot() {
+        let mut pro = Processor::new();
+        assert!(pro.add_timeslot(5, 1.0, 2.0));
+        assert!(pro.add_timeslot(6, 2.5, 3.0));
+        assert_eq!(pro.completion_time,3.0);
+        assert_eq!(pro.time_slots.len(),2);
+        assert!(pro.time_slots[0]==TimeSlot::new(5, 1.0, 2.0));
+        assert!(pro.time_slots[1]==TimeSlot::new(6, 2.5, 3.0));
+
+    }
+
+    #[test]
+    fn test_getter(){
+        let mut pro = Processor::new();
+        assert!(pro.add_timeslot(5, 1.0, 2.0));
+        assert!(pro.add_timeslot(6, 2.5, 3.0));   
+        assert!(pro.add_timeslot(7, 3.5, 4.0));   
+        assert_eq!(pro.get_completion_time(),4.0);
+    }
+
 }
