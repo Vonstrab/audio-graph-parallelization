@@ -3,7 +3,7 @@
 
 use std::fmt::{Display, Error, Formatter};
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy,PartialEq, Default)]
 pub struct TimeSlot {
     start_time: f64,
     completion_time: f64,
@@ -12,10 +12,13 @@ pub struct TimeSlot {
 
 impl TimeSlot {
     pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
+        if start >= completion{
+            panic!("TimeSlot::new() : completions < start")
+        }
         TimeSlot {
             start_time: start,
             completion_time: completion,
-            node: node,
+            node,
         }
     }
 
