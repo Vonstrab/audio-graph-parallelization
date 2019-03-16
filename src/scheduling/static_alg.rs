@@ -149,7 +149,8 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, graph: &TaskGraph) -> usiz
     for (node, b_level) in ready_list {
         if out_node.is_none() {
             out_node = Some(*node);
-        } else if *b_level == ready_list[&out_node.unwrap()] {
+        } else if (*b_level - ready_list[&out_node.unwrap()]).abs() < std::f64::EPSILON {
+            //Not stric comparaison, but within error margin
             if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
                 out_node = Some(*node);
             }
@@ -315,8 +316,8 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                     min_proc = Some(i);
                     node_index = j;
                 }
-
-                if current_start_time == min_start_time.unwrap()
+                //Not stric comparaison, but within error margin
+                if (current_start_time - min_start_time.unwrap()).abs() < std::f64::EPSILON
                     && graph.get_b_level(min_node.unwrap()).unwrap() < current_blevel
                 {
                     min_start_time = Some(current_start_time);
