@@ -33,7 +33,7 @@ impl Node {
         match self.task {
             Task::Constant(x) => {
                 if x < 0.0 {
-                    panic!("Error: negative constant WCET\n");
+                    panic!("Error: negative constant WCET");
                 }
 
                 self.wcet = Some(x);
@@ -41,15 +41,15 @@ impl Node {
             }
             Task::Random(start, end) => {
                 if end < start {
-                    panic!("Error: bad interval for random WCET\n");
+                    panic!("Error: bad interval for Random WCET");
                 }
 
                 if start < 0.0 {
-                    panic!("Error: negative start for random WCET\n");
+                    panic!("Error: negative start for Random WCET\n");
                 }
 
                 if end < 0.0 {
-                    panic!("Error: negative end for random WCET\n");
+                    panic!("Error: negative end for Random WCET\n");
                 }
 
                 let mut rng = rand::thread_rng();
@@ -58,7 +58,6 @@ impl Node {
                 self.wcet = Some(x);
                 self.wcet
             }
-            // TODO: Estimations for Puredata and Audiograph
             Task::Audiograph { wcet, .. } => {
                 if wcet.is_some() {
                     self.wcet = wcet;
@@ -68,6 +67,7 @@ impl Node {
                     self.wcet
                 }
             }
+            
             _ => {
                 // TODO: Estimations for Puredata and Audiograph
                 self.wcet = Some(1.0);
@@ -78,31 +78,32 @@ impl Node {
 }
 
 #[cfg(test)]
-mod node_test {
+mod node_test{
     use super::*;
 
     #[test]
     fn test_constructor() {
         let node = Node::new(Task::Constant(5.0));
-        assert_eq!(node.task, Task::Constant(5.0));
-        assert_eq!(node.wcet, None);
-        assert_eq!(node.predecessors.len(), 0);
-        assert_eq!(node.successors.len(), 0);
-        assert_eq!(node.state, TaskState::WaitingDependencies);
+        assert_eq!(node.task ,Task::Constant(5.0));
+        assert_eq!(node.wcet ,None);
+        assert_eq!(node.predecessors.len() ,0);
+        assert_eq!(node.successors.len() ,0);
+        assert_eq!(node.state ,TaskState::WaitingDependencies);
     }
 
     #[test]
     fn test_wcet_constant() {
         let mut node = Node::new(Task::Constant(5.0));
-        assert_eq!(node.get_wcet(), Some(5.0));
+        assert_eq!(node.get_wcet(), Some(5.0) );
     }
 
     #[test]
     fn test_wcet_random() {
-        let mut node = Node::new(Task::Random(1.0, 5.0));
+        let mut node = Node::new(Task::Random(1.0,5.0));
         let wcet = node.get_wcet().unwrap();
-        assert!(wcet <= 5.0);
-        assert!(wcet >= 1.0);
+        assert!( wcet <= 5.0);
+        assert!( wcet >= 1.0);
+
     }
 
     //TODo test for the wcet
