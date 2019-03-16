@@ -4,10 +4,10 @@ n1 =
 	in: 1,
 	out : 2,
 	text : "salut",
-	wcet : 20.0,
+	wcet : 2.0,
 };
 
-n2 = { kind : "plop2", in : 1,};
+n2 = { kind : "plop2", in : 1,wcet:5.0,};
 
 n1.2 -> n2.1;
 

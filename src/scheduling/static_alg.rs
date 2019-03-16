@@ -53,7 +53,7 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, ref graph: &TaskGraph) -> 
         if out_node.is_none() {
             out_node = Some(*node);
         } else {
-            if *b_level == *ready_list.get(&out_node.unwrap()).unwrap() {
+            if *b_level == ready_list[&out_node.unwrap()] {
                 if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
                     out_node = Some(*node);
                 }
@@ -107,7 +107,7 @@ pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         graph.set_state(rand_node, TaskState::Scheduled);
 
         // Add successors whose all parents have been scheduled
-        for node in graph.get_successors(rand_node).unwrap_or(Vec::default()) {
+        for node in graph.get_successors(rand_node).unwrap_or_default() {
             if !ready_list.contains(&node) && predecessors_scheduled(node, &graph) {
                 ready_list.push(node);
             }
@@ -142,7 +142,7 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     // Main Loop
     while !ready_list.is_empty() {
         // Get the first node by b_level
-        let first_node = get_max_tie_misf(&mut ready_list, graph);
+        let first_node = get_max_tie_misf(&ready_list, graph);
 
         //First consider the first processor
         let mut chosen_proc = 0;
@@ -172,7 +172,7 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         graph.set_state(first_node, TaskState::Scheduled);
 
         // Add the successors if all theirs predecessors are scheduled
-        for node in graph.get_successors(first_node).unwrap_or(Vec::default()) {
+        for node in graph.get_successors(first_node).unwrap_or_default() {
             if !ready_list.contains_key(&node) && predecessors_scheduled(node, &graph) {
                 ready_list.insert(node, graph.get_b_level(node).unwrap());
             }
@@ -205,13 +205,13 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         let mut min_node: Option<usize> = None;
         let mut min_start_time = None;
 
-        let mut node_indice: usize = 0;
+        let mut node_index: usize = 0;
 
         for i in 0..out_schedule.processors.len() {
             let proc_start_time = out_schedule.processors[i].get_completion_time();
 
             for j in 0..ready_list.len() {
-                let current_node = *ready_list.get(j).unwrap();
+                let current_node = ready_list[j];
                 let current_blevel = graph.get_b_level(current_node).unwrap();
                 let current_start_time =
                     proc_start_time.max(get_ready_time(current_node, &graph, &out_schedule));
@@ -220,7 +220,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
-                    node_indice = j;
+                    node_index = j;
                 }
 
                 if current_start_time == min_start_time.unwrap()
@@ -229,18 +229,18 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
-                    node_indice = j;
+                    node_index = j;
                 }
                 if current_start_time < min_start_time.unwrap() {
                     min_start_time = Some(current_start_time);
                     min_node = Some(current_node);
                     min_proc = Some(i);
-                    node_indice = j;
+                    node_index = j;
                 }
             }
         }
 
-        let end_time = min_start_time.unwrap() + graph.get_wcet(node_indice).unwrap();
+        let end_time = min_start_time.unwrap() + graph.get_wcet(ready_list[node_index]).unwrap();
 
         out_schedule.processors[min_proc.unwrap()].add_timeslot(
             min_node.unwrap(),
@@ -250,9 +250,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 
         graph.set_state(min_node.unwrap(), TaskState::Scheduled);
 
-        let successors = graph
-            .get_successors(min_node.unwrap())
-            .unwrap_or(Vec::default());
+        let successors = graph.get_successors(min_node.unwrap()).unwrap_or_default();
 
         for node in successors {
             if !ready_list.contains(&node) && predecessors_scheduled(node, &graph) {
@@ -260,7 +258,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
             }
         }
 
-        ready_list.remove(node_indice);
+        ready_list.remove(node_index);
     }
 
     out_schedule
@@ -276,9 +274,8 @@ mod tests {
         let mut g = TaskGraph::new(8, 9);
         let mut nodes_idx = Vec::new();
 
-        for i in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
-            g.set_wcet(i, 1.0);
+        for _ in 0..8 {
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -302,9 +299,8 @@ mod tests {
         let mut g = TaskGraph::new(8, 9);
         let mut nodes_idx = Vec::new();
 
-        for i in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
-            g.set_wcet(i, 1.0);
+        for _ in 0..8 {
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -328,9 +324,8 @@ mod tests {
         let mut g = TaskGraph::new(8, 9);
         let mut nodes_idx = Vec::new();
 
-        for i in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
-            g.set_wcet(i, 1.0);
+        for _ in 0..8 {
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -367,9 +362,8 @@ mod tests {
         let mut g = TaskGraph::new(24, 21);
         let mut nodes_idx = Vec::new();
 
-        for i in 0..24 {
-            nodes_idx.push(g.add_task(Task::A));
-            g.set_wcet(i, 1.0);
+        for _ in 0..24 {
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(0, 19);
@@ -432,9 +426,8 @@ mod tests {
         let mut g = TaskGraph::new(33, 34);
         let mut nodes_idx = Vec::new();
 
-        for i in 0..33 {
-            nodes_idx.push(g.add_task(Task::A));
-            g.set_wcet(i, 1.0);
+        for _ in 0..33 {
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(0, 6);

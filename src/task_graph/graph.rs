@@ -1,13 +1,10 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-use std::process::Command;
 
 use super::node::Node;
 use super::state::TaskState;
 use super::task::Task;
 
+#[derive(Debug)]
 pub struct TaskGraph {
     nodes: Vec<Node>,
     edges: HashMap<(usize, usize), Option<f64>>,
@@ -98,23 +95,15 @@ impl TaskGraph {
         stack.push(node_index);
     }
 
-    pub fn find_task(&self, task: &Task) -> Option<usize> {
+    pub fn find_task(&self, _taks: &Task) -> Option<usize> {
         unimplemented!()
     }
 
-    pub fn get_wcet(&self, node_index: usize) -> Option<f64> {
+    pub fn get_wcet(&mut self, node_index: usize) -> Option<f64> {
         if node_index < self.nodes.len() {
-            self.nodes[node_index].wcet
+            self.nodes[node_index].get_wcet()
         } else {
             None
-        }
-    }
-
-    pub fn set_wcet(&mut self, node_index: usize, value: f64) -> bool {
-        if node_index < self.nodes.len() {
-            self.nodes[node_index].set_wcet(value)
-        } else {
-            false
         }
     }
 
@@ -146,14 +135,14 @@ impl TaskGraph {
             .unwrap_or(None)
     }
 
-    pub fn get_t_level(&self, node_index: usize) -> Option<f64> {
+    pub fn get_t_level(&mut self, node_index: usize) -> Option<f64> {
         let top_ord = self.get_topological_order();
         let mut t_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
 
         for i in top_ord {
             let mut max: f64 = 0.0;
 
-            for x in self.get_predecessors(i).unwrap_or(Vec::default()) {
+            for x in self.get_predecessors(i).unwrap_or_default() {
                 if t_levels[x]
                     + self.get_wcet(x).unwrap()
                     + self.get_communication_cost(x, i).unwrap_or(0.0)
@@ -171,13 +160,13 @@ impl TaskGraph {
         t_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn get_b_level(&self, node_index: usize) -> Option<f64> {
+    pub fn get_b_level(&mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut b_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-            for y in self.get_successors(i).unwrap_or(Vec::default()) {
+            for y in self.get_successors(i).unwrap_or_default() {
                 let comm_cost = self.get_communication_cost(i, y).unwrap_or(0.0);
 
                 if comm_cost + b_levels[y] > max {
@@ -191,14 +180,14 @@ impl TaskGraph {
         b_levels.get(node_index).map(|val| *val)
     }
 
-    pub fn get_static_level(&self, node_index: usize) -> Option<f64> {
+    pub fn get_static_level(&mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut s_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
 
         for i in rev_top_ord {
             let mut max: f64 = 0.0;
 
-            for y in self.get_successors(i).unwrap_or(Vec::default()) {
+            for y in self.get_successors(i).unwrap_or_default() {
                 if s_levels[y] > max {
                     max = s_levels[y];
                 }
@@ -290,7 +279,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -314,7 +303,7 @@ mod tests {
         let mut nodes_idx = Vec::new();
 
         for _ in 0..8 {
-            nodes_idx.push(g.add_task(Task::A));
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
         }
 
         g.add_edge(7, 5);
@@ -331,5 +320,4 @@ mod tests {
 
         assert_eq!(top_ord, vec![0, 1, 2, 3, 4, 5, 6, 7]);
     }
-
 }
