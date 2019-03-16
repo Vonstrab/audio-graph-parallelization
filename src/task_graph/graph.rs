@@ -219,6 +219,54 @@ impl TaskGraph {
             false
         }
     }
+
+    pub fn output_dot(&self, filename: &str) -> Result<(), std::io::Error> {
+        let mut dot_file = String::new();
+
+        dot_file.push_str("strict digraph{\n");
+
+        for i in 0..(self.nodes.len() - 1) {
+            let ligne = format!("{};\n", i);
+
+            dot_file.push_str(ligne.as_str());
+        }
+
+        for ((s, t), _) in &self.edges {
+            let ligne = format!("{} -> {};\n", s, t);
+
+            dot_file.push_str(ligne.as_str());
+        }
+
+        dot_file.push_str("}\n");
+
+        let path = Path::new(filename);
+        let mut file = File::create(&path).expect("Impossible to create file.");
+
+        write!(file, "{}", dot_file)
+    }
+}
+
+pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
+    let tmp_dot = format!("tmp/{}.got", graph_name);
+
+    Command::new("mkdir")
+        .arg("visual")
+        .output()
+        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
+
+    graph
+        .output_dot(tmp_dot.as_str())
+        .unwrap_or_else(|e| panic!("failed to output graph: {}", e));
+
+    let pdf_filename = format!("tmp/{}.pdf", graph_name);
+
+    Command::new("dot")
+        .arg("-Tpdf")
+        .arg(tmp_dot)
+        .arg("-o")
+        .arg(pdf_filename)
+        .output()
+        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
 }
 
 #[cfg(test)]

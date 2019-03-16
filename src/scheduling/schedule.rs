@@ -1,9 +1,12 @@
 //! This module implements a schedule
 
+use std::fmt;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
-
-use std::fmt::{Display, Error, Formatter};
 
 pub struct Schedule {
     pub processors: Vec<Processor>,
@@ -44,10 +47,33 @@ impl Schedule {
 
         time
     }
+
+    pub fn output(&self, filename: &str) -> Result<(), std::io::Error> {
+        let mut out_file = String::new();
+
+        for i in 0..self.processors.len() {
+            for slot in &self.processors[i].time_slots {
+                let ligne = format!(
+                    "{} {} {}\n",
+                    i,
+                    slot.get_start_time(),
+                    slot.get_completion_time()
+                );
+                out_file.push_str(ligne.as_str());
+            }
+        }
+
+        let path = Path::new(filename);
+        // FIXME: This makes the program crashes if the folders "tmp" or "visual"
+        // doesn't exist.
+        let mut file = File::create(&path).expect("Impossible to create file.");
+
+        write!(file, "{}", out_file)
+    }
 }
 
-impl Display for Schedule {
-    fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
+impl fmt::Display for Schedule {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         writeln!(fmt, "")?;
 
         for (i, processor) in self.processors.iter().enumerate() {
