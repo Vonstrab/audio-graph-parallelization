@@ -67,7 +67,7 @@ impl Node {
                     self.wcet
                 }
             }
-            
+
             _ => {
                 // TODO: Estimations for Puredata and Audiograph
                 self.wcet = Some(1.0);
@@ -78,32 +78,31 @@ impl Node {
 }
 
 #[cfg(test)]
-mod node_test{
+mod node_test {
     use super::*;
 
     #[test]
     fn test_constructor() {
         let node = Node::new(Task::Constant(5.0));
-        assert_eq!(node.task ,Task::Constant(5.0));
-        assert_eq!(node.wcet ,None);
-        assert_eq!(node.predecessors.len() ,0);
-        assert_eq!(node.successors.len() ,0);
-        assert_eq!(node.state ,TaskState::WaitingDependencies);
+        assert_eq!(node.task, Task::Constant(5.0));
+        assert_eq!(node.wcet, None);
+        assert_eq!(node.predecessors.len(), 0);
+        assert_eq!(node.successors.len(), 0);
+        assert_eq!(node.state, TaskState::WaitingDependencies);
     }
 
     #[test]
     fn test_wcet_constant() {
         let mut node = Node::new(Task::Constant(5.0));
-        assert_eq!(node.get_wcet(), Some(5.0) );
+        assert_eq!(node.get_wcet(), Some(5.0));
     }
 
     #[test]
     fn test_wcet_random() {
-        let mut node = Node::new(Task::Random(1.0,5.0));
+        let mut node = Node::new(Task::Random(1.0, 5.0));
         let wcet = node.get_wcet().unwrap();
-        assert!( wcet <= 5.0);
-        assert!( wcet >= 1.0);
-
+        assert!(wcet <= 5.0);
+        assert!(wcet >= 1.0);
     }
 
     //TODo test for the wcet
