@@ -4,34 +4,158 @@ use agp_lib::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
+fn random_dag(nb_nodes: usize) -> agp_lib::task_graph::graph::TaskGraph {
+    let mut edges: Vec<(usize, usize)> = Vec::new();
+
+    for i in 0..nb_nodes {
+        for j in 0..i {
+            if (rand::random::<usize>() % 100) < 5 {
+                edges.push((i, j));
+            }
+        }
+    }
+
+    println!("Nombre de edges {}", edges.len());
+
+    let mut graph = agp_lib::task_graph::graph::TaskGraph::new(nb_nodes, edges.len());
+
+    for _ in 0..nb_nodes {
+        graph.add_task(agp_lib::task_graph::task::Task::Constant(1.0));
+    }
+
+    for (s, d) in edges {
+        graph.add_edge(s, d);
+    }
+    graph
+}
+
 fn main() {
-    let mut simple_ag = parser::parse("Samples/AG/audiograph_wcet_test.ag")
-        .expect("Failed parsing the audio graph\n");
+    // let mut metro =
+    //     parser::parse("Samples/PD/Metronome.pd").expect("Failed parsing the audio graph\n");
 
-    println!("WCET Test ******************************");
+    // agp_lib::task_graph::graph::run_dot(&metro, "metro");
 
-    println!("With 2 processors:");
-    println!("EFT schedule{}", etf(&mut simple_ag, 2));
-    println!("Random schedule{}", random(&mut simple_ag, 2));
-    println!("HLFET schedule{}", hlfet(&mut simple_ag, 2));
+    let mut g50 = random_dag(200);
+    agp_lib::task_graph::graph::run_dot(&g50, "g50");
 
-    println!("With 3 processors:");
-    println!("EFT schedule{}", etf(&mut simple_ag, 3));
-    println!("Random schedule{}", random(&mut simple_ag, 3));
-    println!("hlfet schedule{}", hlfet(&mut simple_ag, 3));
+    println!("200 noeuds ******************************");
 
-    let mut simple_ag =
-        parser::parse("Samples/AG/downsampling_test.ag").expect("Failed parsing the audio graph\n");
+    println!("\nWith 2 processors:");
+    let dur = std::time::SystemTime::now();
+    println!("EFT schedule :{}", etf(&mut g50, 2).get_completion_time());
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
 
-    println!("downsampling ******************************");
+    println!(
+        "Random schedule :{}",
+        random(&mut g50, 2).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
 
-    println!("With 2 processors:");
-    println!("Random schedule{}", random(&mut simple_ag, 2));
-    println!("EFT schedule{}", etf(&mut simple_ag, 2));
-    println!("HLFET schedule{}", hlfet(&mut simple_ag, 2));
+    let dur = std::time::SystemTime::now();
 
-    println!("With 3 processors:");
-    println!("Random schedule{}", random(&mut simple_ag, 3));
-    println!("EFT schedule{}", etf(&mut simple_ag, 3));
-    println!("hlfet schedule{}", hlfet(&mut simple_ag, 3));
+    println!(
+        "HLFET schedule :{}",
+        hlfet(&mut g50, 2).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+
+    println!("\nWith 3 processors:");
+    println!(
+        "Random schedule : {}",
+        random(&mut g50, 3).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+    println!("EFT schedule : {}", etf(&mut g50, 3).get_completion_time());
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+    println!(
+        "hlfet schedule : {}",
+        hlfet(&mut g50, 3).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+
+    let dur = std::time::SystemTime::now();
+    println!("\nWith 4 processors:");
+    println!(
+        "Random schedule : {}",
+        random(&mut g50, 4).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+    println!("EFT schedule : {}", etf(&mut g50, 4).get_completion_time());
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+    println!(
+        "hlfet schedule : {}",
+        hlfet(&mut g50, 4).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+
+    let dur = std::time::SystemTime::now();
+    println!("\nWith 5 processors:");
+    println!(
+        "Random schedule : {}",
+        random(&mut g50, 5).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+    println!("EFT schedule : {}", etf(&mut g50, 5).get_completion_time());
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+    let dur = std::time::SystemTime::now();
+    println!(
+        "hlfet schedule : {}",
+        hlfet(&mut g50, 5).get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
 }
