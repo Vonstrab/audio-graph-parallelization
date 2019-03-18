@@ -48,7 +48,7 @@ impl Schedule {
         time
     }
 
-    pub fn output(&self, filename: &str) -> Result<(), std::io::Error> {
+    pub fn output(&self, ganttname: &str) -> Result<(), std::io::Error> {
         let mut out_file = String::new();
 
         for i in 0..self.processors.len() {
@@ -63,9 +63,15 @@ impl Schedule {
             }
         }
 
-        let path = Path::new(filename);
-        // FIXME: This makes the program crashes if the folders "tmp" or "visual"
-        // doesn't exist.
+        let tmp_dot = format!("tmp/{}.txt", ganttname);
+        let path = Path::new(tmp_dot.as_str());
+
+        if !Path::new("./tmp").exists() {
+            std::fs::DirBuilder::new()
+                .create("./tmp")
+                .expect("failed to create tmp firectory");
+        }
+        
         let mut file = File::create(&path).expect("Impossible to create file.");
 
         write!(file, "{}", out_file)

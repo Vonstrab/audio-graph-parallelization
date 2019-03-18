@@ -1,5 +1,10 @@
 use std::collections::HashMap;
 
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
+use std::process::Command;
+
 use super::node::Node;
 use super::state::TaskState;
 use super::task::Task;
@@ -247,12 +252,13 @@ impl TaskGraph {
 }
 
 pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
-    let tmp_dot = format!("tmp/{}.got", graph_name);
+    let tmp_dot = format!("tmp/{}.dot", graph_name);
 
-    Command::new("mkdir")
-        .arg("visual")
-        .output()
-        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
+    if !Path::new("./tmp").exists() {
+        std::fs::DirBuilder::new()
+            .create("./tmp")
+            .expect("failed to create tmp firectory");
+    }
 
     graph
         .output_dot(tmp_dot.as_str())
