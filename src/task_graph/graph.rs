@@ -180,6 +180,9 @@ impl TaskGraph {
             }
 
             b_levels[i] = self.get_wcet(i).unwrap() + max;
+            if i == node_index {
+                break;
+            }
         }
 
         b_levels.get(node_index).map(|val| *val)
