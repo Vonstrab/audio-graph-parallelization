@@ -4,6 +4,67 @@ use task_graph::{graph::TaskGraph, state::TaskState};
 
 use scheduling::schedule::Schedule;
 
+//return the cpn , ibn , obn and the cp dominant sequence
+fn get_cpn_sequence(graph: &mut TaskGraph) -> (Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>) {
+    //add the parents list to the sequence
+    fn add_node(
+        graph: &mut TaskGraph,
+        ibn: &mut Vec<usize>,
+        sequence: &mut Vec<usize>,
+        node: usize,
+    ) {
+        let mut not_in_seq_parents = Vec::new();
+
+        for pre in graph.get_predecessors(node).unwrap_or_default() {
+            if !sequence.contains(&pre) {
+                not_in_seq_parents.push(pre);
+            }
+        }
+
+        if not_in_seq_parents.is_empty() {
+            sequence.push(node);
+            if !ibn.contains(&node) {
+                ibn.push(node);
+            }
+        } else {
+            let mut max_parent = not_in_seq_parents[0];
+            let mut max_parent_blevel = graph.get_b_level(max_parent);
+            for parent in not_in_seq_parents {
+                let blevel = graph.get_b_level(parent);
+                if blevel < max_parent_blevel {
+                    max_parent = parent;
+                    max_parent_blevel = blevel
+                }
+            }
+            add_node(graph, ibn, sequence, max_parent);
+            add_node(graph, ibn, sequence, node);
+        }
+    }
+
+    let mut cpn = graph.get_entry_nodes();
+    let mut ibn = Vec::new();
+    let mut obn = Vec::new();
+
+    let mut sequence = graph.get_entry_nodes();
+    let sortie_nodes = graph.get_exit_nodes();
+
+    for cp in sortie_nodes {
+        cpn.push(cp);
+        add_node(graph,&mut ibn,&mut sequence,cp)
+    }
+
+    for node in graph.get_topological_order() {
+        if !sequence.contains(&node) {
+            sequence.push(node);
+            if !obn.contains(&node) {
+                obn.push(node);
+            }
+        }
+    }
+
+    (cpn, ibn, obn, sequence)
+}
+
 // Returns the time when all the predecessors of the node
 // will been complete
 fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
@@ -259,6 +320,81 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         }
 
         ready_list.remove(node_index);
+    }
+
+    out_schedule
+}
+
+pub fn cpfd(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
+    // Build the schedule
+    let mut out_schedule = Schedule::new();
+
+    // for _ in 0..nb_processors {
+    //     out_schedule.add_processor();
+    // }
+
+    // Reset the status of all reachable nodes to `WaitingDependencies`
+    set_status_waiting(graph);
+
+    // The firsts nodes in the readylist
+    let mut ready_list: Vec<usize> = Vec::from(graph.get_entry_nodes());
+
+    let mut cpn: Vec<usize>;
+    let mut obn: Vec<usize>;
+    let mut ibn: Vec<usize>;
+    let mut cpn_sequence: Vec<usize>;
+
+    match get_cpn_sequence(graph) {
+        (output_cpn, output_ibn, output_obn, output_cpn_sequence) => {
+            cpn = output_cpn;
+            obn = output_obn;
+            ibn = output_ibn;
+            cpn_sequence = output_cpn_sequence;
+        }
+    }
+
+    println!("CPN {:?}", cpn);
+    println!("CPN size {}", cpn.len());
+
+    println!("IBN {:?}", ibn);
+    println!("IBN size {}", ibn.len());
+
+    println!("OBN {:?}", obn);
+    println!("OBN size {}", obn.len());
+
+    println!("CPN Dominant sequence {:?}", cpn_sequence);
+    println!("CPN Dominant sequence size {}", cpn_sequence.len());
+
+    for candidate in cpn_sequence {
+        let pred = graph.get_predecessors(candidate).unwrap_or_default();
+        let p_set = out_schedule.get_p_set(&pred, candidate);
+        let mut st = None;
+        let mut proce = 0;
+        for p in p_set {
+            if out_schedule.processors[p].contains_list_node(&pred) {
+                if st.is_none() {
+                    st = Some(out_schedule.processors[p].get_completion_time());
+                    proce = p;
+                } else if out_schedule.processors[p].get_completion_time() < st.unwrap() {
+                    st = Some(out_schedule.processors[p].get_completion_time());
+                    proce = p;
+                }
+            } else {
+                if st.is_none() {
+                    st = Some(get_ready_time(candidate, graph, &out_schedule));
+                    proce = p;
+                } else if get_ready_time(candidate, graph, &out_schedule) < st.unwrap() {
+                    st = Some(get_ready_time(candidate, graph, &out_schedule));
+                    proce = p;
+                }
+            }
+        }
+
+        out_schedule.processors[proce].add_timeslot(
+            candidate,
+            st.unwrap(),
+            st.unwrap() + graph.get_wcet(candidate).unwrap(),
+        );
     }
 
     out_schedule

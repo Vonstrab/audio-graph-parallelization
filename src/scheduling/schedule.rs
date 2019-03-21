@@ -8,6 +8,8 @@ use std::path::Path;
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
 
+use task_graph::graph::TaskGraph;
+
 pub struct Schedule {
     pub processors: Vec<Processor>,
 }
@@ -18,8 +20,10 @@ impl Schedule {
             processors: Vec::new(),
         }
     }
-    pub fn add_processor(&mut self) {
+
+    pub fn add_processor(&mut self) -> usize {
         self.processors.push(Processor::new());
+        self.processors.len() - 1
     }
 
     pub fn get_nb_processor(&self) -> usize {
@@ -71,10 +75,25 @@ impl Schedule {
                 .create("./tmp")
                 .expect("failed to create tmp firectory");
         }
-        
+
         let mut file = File::create(&path).expect("Impossible to create file.");
 
         write!(file, "{}", out_file)
+    }
+
+    pub fn get_p_set(&mut self, predecesssors: &Vec<usize>, node_index: usize) -> Vec<usize> {
+        let mut p_set = Vec::new();
+        for (proc_index, processor) in self.processors.iter().enumerate() {
+            if processor.contains_list_node(&predecesssors) {
+                p_set.push(proc_index);
+            }
+        }
+        if self.processors.is_empty() || !self.processors.last().unwrap().time_slots.is_empty(){
+            p_set.push(self.add_processor());
+        }else {
+            p_set.push(self.processors.len()-1);
+        }
+        p_set
     }
 }
 

@@ -30,6 +30,25 @@ impl Processor {
     pub fn get_completion_time(&self) -> f64 {
         self.completion_time
     }
+
+    pub fn contains_node(&self, node_index: usize) -> bool {
+        for timeslot in &self.time_slots {
+            if timeslot.get_node() == node_index {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn contains_list_node(&self, list_node_index: &Vec<usize>) -> bool {
+        for node in list_node_index {
+            if !self.contains_node(*node) {
+                return false;
+            }
+        }
+
+        true
+    }
 }
 
 impl Display for Processor {
