@@ -4,13 +4,16 @@ use agp_lib::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
+use agp_lib::task_graph::graph::TaskGraph;
+use agp_lib::task_graph::task::Task;
+
 fn random_dag(nb_nodes: usize) -> agp_lib::task_graph::graph::TaskGraph {
     let mut edges: Vec<(usize, usize)> = Vec::new();
 
     for i in 0..nb_nodes {
         for j in 0..i {
             if (rand::random::<usize>() % 1000) < 300 {
-                edges.push((i , j ));
+                edges.push((i, j));
             }
         }
     }
@@ -30,21 +33,20 @@ fn random_dag(nb_nodes: usize) -> agp_lib::task_graph::graph::TaskGraph {
 }
 
 fn main() {
-    let mut g50 =
-        parser::parse("Samples/PD/Metronome.pd").expect("Failed parsing the audio graph\n");
+    let mut g50 = parser::parse("Samples/AG/random_graphs03/rand-10-node-graph-0-ex-7.ag")
+        .expect("Failed parsing the audio graph\n");
 
-    // agp_lib::task_graph::graph::run_dot(&metro, "metro");
 
     // let mut g50 = random_dag(50);
-    agp_lib::task_graph::graph::run_dot(&g50, "g50");
+    agp_lib::task_graph::graph::run_dot(&g50, "rand10");
 
-    println!("edges: {}",g50.get_topological_order().len());
+    println!("edges: {}", g50.get_topological_order().len());
 
     let dur = std::time::SystemTime::now();
-    println!("\nWith 5 processors:");
+    println!("\nWith 3 processors:");
     println!(
         "Random schedule : {}",
-        random(&mut g50, 5).get_completion_time()
+        random(&mut g50, 3).get_completion_time()
     );
     println!(
         "in :{}s {} ms",
@@ -52,7 +54,7 @@ fn main() {
         dur.elapsed().unwrap().subsec_millis()
     );
     let dur = std::time::SystemTime::now();
-    println!("EFT schedule : {}", etf(&mut g50, 5).get_completion_time());
+    println!("EFT schedule : {}", etf(&mut g50, 3).get_completion_time());
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
@@ -61,7 +63,7 @@ fn main() {
     let dur = std::time::SystemTime::now();
     println!(
         "hlfet schedule : {}",
-        hlfet(&mut g50, 5).get_completion_time()
+        hlfet(&mut g50, 3).get_completion_time()
     );
     println!(
         "in :{}s {} ms",
@@ -71,12 +73,23 @@ fn main() {
 
     let dur = std::time::SystemTime::now();
 
-    let cpfd_schedule = cpfd(&mut g50, 5);
+    let cpfd_schedule = cpfd(&mut g50, 3, 0.0);
 
-    println!("cpfd schedule time : {}", cpfd_schedule);
+    println!("cpfd schedule: {}", cpfd_schedule);
 
+    println!(
+        "cpfd schedule time : {}",
+        cpfd_schedule.get_completion_time()
+    );
 
-    println!("cpfd schedule time : {}", cpfd_schedule.get_completion_time());
+    let cpfd_schedule = cpfd(&mut g50, 3, 0.10);
+
+    println!("cpfd schedule: {}", cpfd_schedule);
+
+    println!(
+        "cpfd schedule time : {}",
+        cpfd_schedule.get_completion_time()
+    );
 
     println!("with : {} Processors", cpfd_schedule.processors.len());
     println!(

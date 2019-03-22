@@ -89,7 +89,6 @@ impl Schedule {
         write!(file, "{}", out_file)
     }
 
-
     //return the timeslot if any containing the predecessor with the last completion
     pub fn get_last_predecessor(&self, predecesssors: &Vec<usize>) -> Option<TimeSlot> {
         if predecesssors.is_empty() {
@@ -100,6 +99,9 @@ impl Schedule {
 
         for pred in predecesssors {
             let pred_ts = self.get_time_slot(*pred);
+            if pred_ts.is_none(){
+                continue;
+            }
             if output.is_none() {
                 output = pred_ts;
             } else if output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
@@ -111,7 +113,7 @@ impl Schedule {
         output
     }
 
-    //return the set of processors that allocate the predecesssors 
+    //return the set of processors that allocate the predecesssors
     pub fn get_p_set(&mut self, predecesssors: &Vec<usize>, node_index: usize) -> Vec<usize> {
         let mut p_set = Vec::new();
         for (proc_index, processor) in self.processors.iter().enumerate() {

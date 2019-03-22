@@ -16,7 +16,7 @@ impl Processor {
     }
 
     //duplcate from a Processor
-    pub fn duplication_from(&mut self, dup_proc: Processor) {
+    pub fn duplication_from(&mut self, dup_proc: & Processor) {
         self.time_slots = dup_proc.time_slots.clone();
         self.completion_time = dup_proc.completion_time;
     }
@@ -47,8 +47,19 @@ impl Processor {
         false
     }
 
-    //true if its allocate all nodes
+    //true if its allocate one of nodes
     pub fn contains_list_node(&self, list_node_index: &Vec<usize>) -> bool {
+        for node in list_node_index {
+            if self.contains_node(*node) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    //true if its allocate all of nodes
+    pub fn contains_all_list_node(&self, list_node_index: &Vec<usize>) -> bool {
         for node in list_node_index {
             if !self.contains_node(*node) {
                 return false;
@@ -56,6 +67,18 @@ impl Processor {
         }
 
         true
+    }
+
+    //return all the nodes not in the processor
+    pub fn nodes_not_in_proc(&self, list_node_index: &Vec<usize>) -> Vec<usize> {
+        let mut output = Vec::new();
+        for node in list_node_index {
+            if !self.contains_node(*node) {
+                output.push(*node);
+            }
+        }
+
+        output
     }
 }
 
