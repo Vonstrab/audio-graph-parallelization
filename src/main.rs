@@ -36,7 +36,6 @@ fn main() {
     let mut g50 = parser::parse("Samples/AG/random_graphs03/rand-10-node-graph-0-ex-7.ag")
         .expect("Failed parsing the audio graph\n");
 
-
     // let mut g50 = random_dag(50);
     agp_lib::task_graph::graph::run_dot(&g50, "rand10");
 
@@ -73,7 +72,7 @@ fn main() {
 
     let dur = std::time::SystemTime::now();
 
-    let cpfd_schedule = cpfd(&mut g50, 3, 0.0);
+    let cpfd_schedule = cpfd(&mut g50, 0.0);
 
     println!("cpfd schedule: {}", cpfd_schedule);
 
@@ -82,7 +81,7 @@ fn main() {
         cpfd_schedule.get_completion_time()
     );
 
-    let cpfd_schedule = cpfd(&mut g50, 3, 0.10);
+    let cpfd_schedule = cpfd(&mut g50, 0.10);
 
     println!("cpfd schedule: {}", cpfd_schedule);
 

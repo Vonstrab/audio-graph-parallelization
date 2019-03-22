@@ -2,17 +2,14 @@ use std::collections::HashMap;
 
 use task_graph::{graph::TaskGraph, state::TaskState};
 
+use scheduling::processor::Processor;
 use scheduling::schedule::Schedule;
+use scheduling::timeslot::TimeSlot;
 
-//return the cpn , ibn , obn and the cp dominant sequence
-fn get_cpn_sequence(graph: &mut TaskGraph) -> (Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>) {
+//return the cpn dominant sequence
+fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
     //add the parents list to the sequence
-    fn add_node(
-        graph: &mut TaskGraph,
-        ibn: &mut Vec<usize>,
-        sequence: &mut Vec<usize>,
-        node: usize,
-    ) {
+    fn add_node(graph: &mut TaskGraph, sequence: &mut Vec<usize>, node: usize) {
         let mut not_in_seq_parents = Vec::new();
 
         for pre in graph.get_predecessors(node).unwrap_or_default() {
@@ -23,9 +20,6 @@ fn get_cpn_sequence(graph: &mut TaskGraph) -> (Vec<usize>, Vec<usize>, Vec<usize
 
         if not_in_seq_parents.is_empty() {
             sequence.push(node);
-            if !ibn.contains(&node) {
-                ibn.push(node);
-            }
         } else {
             let mut max_parent = not_in_seq_parents[0];
             let mut max_parent_blevel = graph.get_b_level(max_parent);
@@ -36,47 +30,36 @@ fn get_cpn_sequence(graph: &mut TaskGraph) -> (Vec<usize>, Vec<usize>, Vec<usize
                     max_parent_blevel = blevel
                 }
             }
-            add_node(graph, ibn, sequence, max_parent);
-            add_node(graph, ibn, sequence, node);
+            add_node(graph, sequence, max_parent);
+            add_node(graph, sequence, node);
         }
     }
-
-    let mut cpn = graph.get_entry_nodes();
-    let mut ibn = Vec::new();
-    let mut obn = Vec::new();
 
     let mut sequence = graph.get_entry_nodes();
     let sortie_nodes = graph.get_exit_nodes();
 
     for cp in sortie_nodes {
-        cpn.push(cp);
-        add_node(graph,&mut ibn,&mut sequence,cp)
+        add_node(graph, &mut sequence, cp)
     }
 
     for node in graph.get_topological_order() {
         if !sequence.contains(&node) {
             sequence.push(node);
-            if !obn.contains(&node) {
-                obn.push(node);
-            }
         }
     }
 
-    (cpn, ibn, obn, sequence)
+    sequence
 }
 
 // Returns the time when all the predecessors of the node
 // will been complete
 fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
     let predecessors = graph.get_predecessors(node).unwrap();
-    let mut time: f64 = 0.0;
 
-    for pred in predecessors {
-        let pred_timeslot = sched.get_time_slot(pred).unwrap();
-        if pred_timeslot.get_completion_time() > time {
-            time = pred_timeslot.get_completion_time();
-        }
-    }
+    let mut time = sched
+        .get_last_predecessor(&predecessors)
+        .unwrap_or_default()
+        .get_completion_time();
 
     time
 }
@@ -103,6 +86,83 @@ fn predecessors_scheduled(node: usize, graph: &TaskGraph) -> bool {
         .unwrap()
         .iter()
         .all(|pred| graph.get_state(*pred).unwrap() == TaskState::Scheduled)
+}
+
+//return the node whom the message will be the last to arrive
+fn get_last_message(
+    nodes: Vec<usize>,
+    schedule: &Schedule,
+    communication_cost: f64,
+) -> Option<TimeSlot> {
+    if nodes.is_empty() {
+        return None;
+    }
+    let mut last = None;
+    for node in nodes {
+        if last.is_none() {
+            last = schedule.get_time_slot(node);
+        } else if last.unwrap().get_completion_time() + communication_cost
+            < schedule.get_time_slot(node).unwrap().get_completion_time() + communication_cost
+        {
+            last = schedule.get_time_slot(node);
+        }
+    }
+    last
+}
+
+//return the best Processor possible using the duplication method
+fn optimal_proc(
+    graph: &mut TaskGraph,
+    control: &Processor,
+    candidate: usize,
+    communication_cost: f64,
+    schedule: &Schedule,
+) -> Processor {
+    let mut duplicate_proc = Processor::new();
+    duplicate_proc.duplication_from(control);
+
+    let mut start_time =
+        get_ready_time(candidate, graph, schedule).max(control.get_completion_time());
+    let predecessors = graph.get_predecessors(candidate).unwrap_or_default();
+    let last_pred = get_last_message(predecessors.clone(), schedule, communication_cost);
+
+    if predecessors.is_empty() {
+        duplicate_proc.add_timeslot(
+            candidate,
+            start_time,
+            start_time + graph.get_wcet(candidate).unwrap(),
+        );
+    } else {
+        if !duplicate_proc.contains_all_list_node(&predecessors) {
+            start_time = (get_ready_time(candidate, graph, schedule) + communication_cost)
+                .max(control.get_completion_time());
+
+            for not_in_proc_pred in duplicate_proc.nodes_not_in_proc(&predecessors) {
+                duplicate_proc = optimal_proc(
+                    graph,
+                    &duplicate_proc,
+                    not_in_proc_pred,
+                    communication_cost,
+                    schedule,
+                );
+                let pred_dup_start_time = duplicate_proc.get_completion_time();
+
+                if pred_dup_start_time > start_time {
+                    duplicate_proc.duplication_from(control);
+                } else {
+                    start_time = pred_dup_start_time;
+                }
+            }
+        }
+    }
+
+    duplicate_proc.add_timeslot(
+        candidate,
+        start_time,
+        start_time + graph.get_wcet(candidate).unwrap(),
+    );
+
+    duplicate_proc
 }
 
 //Return the minimum value from a ready list
@@ -325,76 +385,82 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     out_schedule
 }
 
-pub fn cpfd(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-    // Build the schedule
+pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
+    //initialise the schedule
     let mut out_schedule = Schedule::new();
-
-    // for _ in 0..nb_processors {
-    //     out_schedule.add_processor();
-    // }
 
     // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
 
-    // The firsts nodes in the readylist
-    let mut ready_list: Vec<usize> = Vec::from(graph.get_entry_nodes());
-
-    let mut cpn: Vec<usize>;
-    let mut obn: Vec<usize>;
-    let mut ibn: Vec<usize>;
-    let mut cpn_sequence: Vec<usize>;
-
-    match get_cpn_sequence(graph) {
-        (output_cpn, output_ibn, output_obn, output_cpn_sequence) => {
-            cpn = output_cpn;
-            obn = output_obn;
-            ibn = output_ibn;
-            cpn_sequence = output_cpn_sequence;
-        }
-    }
-
-    println!("CPN {:?}", cpn);
-    println!("CPN size {}", cpn.len());
-
-    println!("IBN {:?}", ibn);
-    println!("IBN size {}", ibn.len());
-
-    println!("OBN {:?}", obn);
-    println!("OBN size {}", obn.len());
+    //the cpn_dominant sequence
+    let cpn_sequence: Vec<usize> = get_cpn_dominant_sequence(graph);
 
     println!("CPN Dominant sequence {:?}", cpn_sequence);
     println!("CPN Dominant sequence size {}", cpn_sequence.len());
 
     for candidate in cpn_sequence {
         let pred = graph.get_predecessors(candidate).unwrap_or_default();
+        //construction of the p_set
         let p_set = out_schedule.get_p_set(&pred, candidate);
-        let mut st = None;
+
+        // println!("\nschedule {}", out_schedule);
+
+        // println!("\ncandidate {}", candidate);
+        // println!("\npred {:?}", pred);
+        // println!("p_set {:?}", p_set);
+
+        //test with an empty proc
+        let empty_proc = optimal_proc(
+            graph,
+            &Processor::new(),
+            candidate,
+            communication_cost,
+            &out_schedule,
+        );
+
+        let empty_proc_et = empty_proc.get_completion_time();
+
+        // println!("empty_proc_et {:?}", empty_proc_et);
+        // println!("empty_proc {}", empty_proc);
+
+        let mut et = None;
         let mut proce = 0;
+        let mut best_proc: Processor = Processor::default();
+
         for p in p_set {
-            if out_schedule.processors[p].contains_list_node(&pred) {
-                if st.is_none() {
-                    st = Some(out_schedule.processors[p].get_completion_time());
-                    proce = p;
-                } else if out_schedule.processors[p].get_completion_time() < st.unwrap() {
-                    st = Some(out_schedule.processors[p].get_completion_time());
-                    proce = p;
-                }
-            } else {
-                if st.is_none() {
-                    st = Some(get_ready_time(candidate, graph, &out_schedule));
-                    proce = p;
-                } else if get_ready_time(candidate, graph, &out_schedule) < st.unwrap() {
-                    st = Some(get_ready_time(candidate, graph, &out_schedule));
-                    proce = p;
-                }
+            //best configuration with current proc
+            let p_proc = optimal_proc(
+                graph,
+                &out_schedule.processors[p],
+                candidate,
+                communication_cost,
+                &out_schedule,
+            );
+            if et.is_none() {
+                et = Some(best_proc.get_completion_time());
+                proce = p;
+                best_proc = p_proc;
+            } else if best_proc.get_completion_time() < et.unwrap() {
+                et = Some(out_schedule.processors[p].get_completion_time());
+                proce = p;
+                best_proc = p_proc;
             }
         }
 
-        out_schedule.processors[proce].add_timeslot(
-            candidate,
-            st.unwrap(),
-            st.unwrap() + graph.get_wcet(candidate).unwrap(),
-        );
+        // println!("et {:?}", et);
+        // println!("proce {:?}", proce);
+
+        //if only the empty_proc
+        if et.is_none() {
+            out_schedule.processors.push(empty_proc.clone());
+        } else {
+            //else we get the best
+            if empty_proc_et < et.unwrap() {
+                out_schedule.processors.push(empty_proc);
+            } else {
+                out_schedule.processors[proce].duplication_from(&best_proc);
+            }
+        }
     }
 
     out_schedule

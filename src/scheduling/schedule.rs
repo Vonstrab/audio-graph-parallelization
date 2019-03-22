@@ -99,7 +99,7 @@ impl Schedule {
 
         for pred in predecesssors {
             let pred_ts = self.get_time_slot(*pred);
-            if pred_ts.is_none(){
+            if pred_ts.is_none() {
                 continue;
             }
             if output.is_none() {

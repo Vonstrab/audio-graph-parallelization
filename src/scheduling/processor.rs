@@ -16,7 +16,7 @@ impl Processor {
     }
 
     //duplcate from a Processor
-    pub fn duplication_from(&mut self, dup_proc: & Processor) {
+    pub fn duplication_from(&mut self, dup_proc: &Processor) {
         self.time_slots = dup_proc.time_slots.clone();
         self.completion_time = dup_proc.completion_time;
     }
