@@ -159,6 +159,10 @@ impl TaskGraph {
                 }
             }
 
+            if i == node_index {
+                break;
+            }
+
             t_levels[i] = max;
         }
 
@@ -202,6 +206,10 @@ impl TaskGraph {
             }
 
             s_levels[i] = self.get_wcet(i).unwrap() + max;
+
+            if i == node_index {
+                break;
+            }
         }
 
         s_levels.get(node_index).map(|val| *val)
