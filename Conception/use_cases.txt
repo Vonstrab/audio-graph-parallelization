@@ -1,0 +1,55 @@
+Cahier des charges,  Uses Cases, fiches détaillées
+
+Objectif : la réalisation d’un logiciel qui reçoit des Graphes audios et qui en propose une parallélisation possible.
+
+(Note format de graphe : Puredata (.pd) AudioGraph (.ag) )
+
+Use case 1 ) - J’ai un fichier de graphe audio et je veux un schéma d’ordonnancement possible
+
+Use case 2 ) - J’ai  un fichier de graphe audio et je veux le temps d’exécution Séquentiel du Graphe
+
+Use case 3 inclus 1) - J’ai un fichier de graphe audio et je veux le temps d’exécution Parallèle selon un schéma d’exécution ainsi que des informations sur cette exécution
+
+
+Fiches détaillées :
+
+Use case 1 :
+
+Acteur : Utilisateur
+
+Pré-condition:	
+	L’utilisateur possède un fichier au format .pd ou .ag
+
+Scénario :
+	1 – l’utilisateur rentre la commande avec le fichier en argument
+	2 – le système vérifie la validité du fichier
+	3 – le système affiche un menu
+	4 – l’utilisateur choisis un algorithme
+	5 – le système affiche un schéma d’ordonnancement
+
+Use case 2 :
+
+Acteur : Utilisateur
+
+Pré-condition:	
+	L’utilisateur possède un fichier au format .pd ou .ag
+
+Scénario :
+	1 – l’utilisateur rentre la commande avec le fichier en argument
+	2 – le système vérifie la validité du fichier
+	3 – le système affiche un menu
+	4 – l’utilisateur choisis d’afficher le temps séquentiel
+	5 – le système le temps voulu
+
+Use case 3 :
+
+Acteur : Utilisateur
+
+Pré-condition:	
+	L’utilisateur possède un fichier au format .pd ou .ag
+
+Scénario :
+	1 – use case 1
+	2 – l’utilisateur choisis d’exécuter le schéma affiché
+	3 – le système exécute le schéma d’ordonnancement et affiche le temps et des informations utiles 
+	

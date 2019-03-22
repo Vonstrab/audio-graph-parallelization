@@ -1,0 +1,37 @@
+Déroulé:
+    
+    -Réunion 18 Janvier
+
+        Code:
+            -Prise en compte Basique de Puredata(.pd) et d'Audiograph(.ag)
+            -Construction du Graphe a partir d'un fichier
+
+        Articles:
+
+    
+
+    -Réunion 1 Février 
+
+        Code:
+
+            -Ajout du CI gitlab
+        
+        Conception:
+
+            -Réalisation des uses caises et des fiches détaillées
+            -Réalisation du diagramme classes metier
+            -Réalisation du diagramme composants
+
+
+    -Réunion 15 Février 
+
+        Code:
+            - Implémentation de Schedule
+            - Implémentation de TaskGraph
+            - Implémentation l'algorithme d'ordonnancement HLFET.
+            - Implémentation l'algorithme d'ordonnancement ELT.
+
+
+
+
+Choses a faire:
