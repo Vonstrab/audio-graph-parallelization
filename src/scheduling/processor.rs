@@ -1,7 +1,7 @@
 use scheduling::timeslot::TimeSlot;
 use std::fmt::{Display, Error, Formatter};
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Processor {
     pub time_slots: Vec<TimeSlot>,
     completion_time: f64,
@@ -13,6 +13,12 @@ impl Processor {
             time_slots: Vec::new(),
             completion_time: 0.0,
         }
+    }
+
+    //duplcate from a Processor
+    pub fn duplication_from(&mut self, dup_proc: Processor) {
+        self.time_slots = dup_proc.time_slots.clone();
+        self.completion_time = dup_proc.completion_time;
     }
 
     pub fn add_timeslot(&mut self, node: usize, start_time: f64, completion_time: f64) -> bool {
@@ -31,6 +37,7 @@ impl Processor {
         self.completion_time
     }
 
+    //true if its allocate a certain node
     pub fn contains_node(&self, node_index: usize) -> bool {
         for timeslot in &self.time_slots {
             if timeslot.get_node() == node_index {
@@ -40,6 +47,7 @@ impl Processor {
         false
     }
 
+    //true if its allocate all nodes
     pub fn contains_list_node(&self, list_node_index: &Vec<usize>) -> bool {
         for node in list_node_index {
             if !self.contains_node(*node) {

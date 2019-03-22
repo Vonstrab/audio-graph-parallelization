@@ -30,16 +30,24 @@ impl Schedule {
         self.processors.len()
     }
 
+    //return the timeslot of the node with the earliest completion time
     pub fn get_time_slot(&self, node_index: usize) -> Option<TimeSlot> {
+        let mut output = None;
         for procs in &self.processors {
             for ts in &procs.time_slots {
                 if ts.get_node() == node_index {
-                    return Some(*ts);
+                    if output.is_none() {
+                        output = Some(*ts);
+                    } else {
+                        if output.unwrap().get_completion_time() > ts.get_completion_time() {
+                            output = Some(*ts);
+                        }
+                    }
                 }
             }
         }
 
-        None
+        output
     }
 
     pub fn get_completion_time(&self) -> f64 {
@@ -81,17 +89,35 @@ impl Schedule {
         write!(file, "{}", out_file)
     }
 
+
+    //return the timeslot if any containing the predecessor with the last completion
+    pub fn get_last_predecessor(&self, predecesssors: &Vec<usize>) -> Option<TimeSlot> {
+        if predecesssors.is_empty() {
+            return None;
+        }
+
+        let mut output = None;
+
+        for pred in predecesssors {
+            let pred_ts = self.get_time_slot(*pred);
+            if output.is_none() {
+                output = pred_ts;
+            } else if output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
+            {
+                output = pred_ts;
+            }
+        }
+
+        output
+    }
+
+    //return the set of processors that allocate the predecesssors 
     pub fn get_p_set(&mut self, predecesssors: &Vec<usize>, node_index: usize) -> Vec<usize> {
         let mut p_set = Vec::new();
         for (proc_index, processor) in self.processors.iter().enumerate() {
             if processor.contains_list_node(&predecesssors) {
                 p_set.push(proc_index);
             }
-        }
-        if self.processors.is_empty() || !self.processors.last().unwrap().time_slots.is_empty(){
-            p_set.push(self.add_processor());
-        }else {
-            p_set.push(self.processors.len()-1);
         }
         p_set
     }

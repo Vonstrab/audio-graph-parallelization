@@ -3,7 +3,7 @@
 
 use std::fmt::{Display, Error, Formatter};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct TimeSlot {
     start_time: f64,
     completion_time: f64,

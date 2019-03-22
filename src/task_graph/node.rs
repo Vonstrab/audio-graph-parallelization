@@ -58,9 +58,15 @@ impl Node {
                 self.wcet = Some(x);
                 self.wcet
             }
+            // TODO: Estimations for Puredata and Audiograph
             Task::Audiograph { wcet, .. } => {
-                self.wcet = wcet;
-                self.wcet
+                if wcet.is_some() {
+                    self.wcet = wcet;
+                    self.wcet
+                } else {
+                    self.wcet = Some(0.0);
+                    self.wcet
+                }
             }
             _ => {
                 // TODO: Estimations for Puredata and Audiograph
