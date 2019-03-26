@@ -1,0 +1,51 @@
+id-5 = {
+	in : 0,
+	out : 1,
+	kind : "osc",
+	wcet : 3.5,
+	freq : "440",};
+id-2 = {
+	in : 2,
+	out : 1,
+	kind : "mix",};
+id-9 = {
+	in : 0,
+	out : 2,
+	kind : "source",};
+id-7 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-0 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-1 = {
+	in : 2,
+	out : 0,
+	kind : "sink",};
+id-4 = {
+	in : 2,
+	out : 1,
+	kind : "mix",};
+id-6 = {
+	in : 3,
+	out : 0,
+	kind : "sink",
+	wcet : 0.288,};
+id-8 = {
+	in : 0,
+	out : 4,
+	kind : "source",
+	wcet : 0.734,};
+id-5.1 -> id-6.3;
+id-2.1 -> id-1.2;
+id-9.1 -> id-0.1;
+id-9.2 -> id-4.2;
+id-9.1 -> id-6.1;
+id-4.1 -> id-2.2;
+id-4.1 -> id-6.2;
+id-8.2 -> id-2.1;
+id-8.4 -> id-7.1;
+id-8.1 -> id-1.1;
+id-8.3 -> id-4.1;

@@ -1,0 +1,59 @@
+id-7 = {
+	in : 0,
+	out : 1,
+	kind : "osc",
+	wcet : 3.5,
+	freq : "440",};
+id-2 = {
+	in : 3,
+	out : 1,
+	kind : "mix",
+	wcet : 0.288,};
+id-9 = {
+	in : 4,
+	out : 0,
+	kind : "sink",
+	wcet : 0.326,};
+id-8 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-1 = {
+	in : 0,
+	out : 1,
+	kind : "osc",
+	wcet : 3.5,
+	freq : "440",};
+id-4 = {
+	in : 1,
+	out : 1,
+	kind : "mod",
+	wcet : 3.5,
+	freq : "6000",};
+id-0 = {
+	in : 2,
+	out : 2,
+	kind : "mix",
+	wcet : 0.424,};
+id-6 = {
+	in : 0,
+	out : 2,
+	kind : "source",};
+id-5 = {
+	in : 1,
+	out : 1,
+	kind : "mod",
+	wcet : 3.5,
+	freq : "6000",};
+id-7.1 -> id-4.1;
+id-7.1 -> id-0.2;
+id-2.1 -> id-8.1;
+id-1.1 -> id-2.2;
+id-1.1 -> id-9.2;
+id-4.1 -> id-9.3;
+id-4.1 -> id-0.1;
+id-0.1 -> id-2.1;
+id-0.2 -> id-9.1;
+id-6.2 -> id-9.4;
+id-6.1 -> id-5.1;
+id-5.1 -> id-2.3;

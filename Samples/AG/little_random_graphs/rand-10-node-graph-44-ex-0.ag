@@ -1,0 +1,18 @@
+id-7 = {
+	in : 1,
+	out : 1,
+	kind : "mod",
+	wcet : 3.5,
+	freq : "6000",};
+id-9 = {
+	in : 0,
+	out : 1,
+	kind : "osc",
+	wcet : 3.5,
+	freq : "440",};
+id-8 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-7.1 -> id-8.1;
+id-9.1 -> id-7.1;
