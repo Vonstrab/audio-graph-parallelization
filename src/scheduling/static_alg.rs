@@ -4,7 +4,6 @@ use task_graph::{graph::TaskGraph, state::TaskState};
 
 use scheduling::processor::Processor;
 use scheduling::schedule::Schedule;
-use scheduling::timeslot::TimeSlot;
 
 //return the cpn dominant sequence
 fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
@@ -35,7 +34,7 @@ fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
         }
     }
 
-    let mut sequence = graph.get_entry_nodes();
+    let mut sequence = Vec::new(); //graph.get_entry_nodes();
     let sortie_nodes = graph.get_exit_nodes();
 
     for cp in sortie_nodes {
@@ -56,7 +55,7 @@ fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
 fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
     let predecessors = graph.get_predecessors(node).unwrap();
 
-    let mut time = sched
+    let time = sched
         .get_last_predecessor(&predecessors)
         .unwrap_or_default()
         .get_completion_time();
@@ -88,28 +87,6 @@ fn predecessors_scheduled(node: usize, graph: &TaskGraph) -> bool {
         .all(|pred| graph.get_state(*pred).unwrap() == TaskState::Scheduled)
 }
 
-//return the node whom the message will be the last to arrive
-fn get_last_message(
-    nodes: Vec<usize>,
-    schedule: &Schedule,
-    communication_cost: f64,
-) -> Option<TimeSlot> {
-    if nodes.is_empty() {
-        return None;
-    }
-    let mut last = None;
-    for node in nodes {
-        if last.is_none() {
-            last = schedule.get_time_slot(node);
-        } else if last.unwrap().get_completion_time() + communication_cost
-            < schedule.get_time_slot(node).unwrap().get_completion_time() + communication_cost
-        {
-            last = schedule.get_time_slot(node);
-        }
-    }
-    last
-}
-
 //return the best Processor possible using the duplication method
 fn optimal_proc(
     graph: &mut TaskGraph,
@@ -124,7 +101,6 @@ fn optimal_proc(
     let mut start_time =
         get_ready_time(candidate, graph, schedule).max(control.get_completion_time());
     let predecessors = graph.get_predecessors(candidate).unwrap_or_default();
-    let last_pred = get_last_message(predecessors.clone(), schedule, communication_cost);
 
     if predecessors.is_empty() {
         duplicate_proc.add_timeslot(
@@ -395,13 +371,13 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
     //the cpn_dominant sequence
     let cpn_sequence: Vec<usize> = get_cpn_dominant_sequence(graph);
 
-    println!("CPN Dominant sequence {:?}", cpn_sequence);
-    println!("CPN Dominant sequence size {}", cpn_sequence.len());
+    // println!("CPN Dominant sequence {:?}", cpn_sequence);
+    // println!("CPN Dominant sequence size {}", cpn_sequence.len());
 
     for candidate in cpn_sequence {
         let pred = graph.get_predecessors(candidate).unwrap_or_default();
         //construction of the p_set
-        let p_set = out_schedule.get_p_set(&pred, candidate);
+        let p_set = out_schedule.get_p_set(&pred);
 
         // println!("\nschedule {}", out_schedule);
 

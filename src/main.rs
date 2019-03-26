@@ -4,65 +4,66 @@ use agp_lib::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
-use agp_lib::task_graph::graph::TaskGraph;
-use agp_lib::task_graph::task::Task;
+fn main() {
 
-fn random_dag(nb_nodes: usize) -> agp_lib::task_graph::graph::TaskGraph {
-    let mut edges: Vec<(usize, usize)> = Vec::new();
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() == 1{
+        panic!("Need a file");
+    } 
 
-    for i in 0..nb_nodes {
-        for j in 0..i {
-            if (rand::random::<usize>() % 1000) < 300 {
-                edges.push((i, j));
-            }
+    println!("File : {:?}", args[1]);
+
+    println!("Parsing");
+
+    let mut graph = parser::parse(&args[1])
+        .expect("Failed parsing the audio graph\n");
+
+
+    println!("\nOutpout the dot representation in tmp/graph.dot");
+
+    agp_lib::task_graph::graph::run_dot(&graph, "graph");
+
+    println!("\nCalcul of nodes number");
+
+    println!("Number of nodes: {}", graph.get_topological_order().len());
+
+    println!("\nCalcul of ETF");
+
+    let dur = std::time::SystemTime::now();
+
+    let mut nb_procs = 1;
+    println!("Round {}",nb_procs );
+    let mut etf_schedule = etf(&mut graph, nb_procs);
+    let mut cond = true;
+    let mut dur  = std::time::SystemTime::now();;
+
+    while  cond {
+        nb_procs +=1;
+        println!("Round {}",nb_procs );
+        let new_etf = etf(&mut graph, nb_procs);
+        dur = std::time::SystemTime::now();
+        if !(new_etf.get_completion_time() < etf_schedule.get_completion_time()){
+            cond = false;
+        }else{
+            etf_schedule = new_etf;
         }
     }
 
-    println!("Nombre de edges {}", edges.len());
-
-    let mut graph = agp_lib::task_graph::graph::TaskGraph::new(nb_nodes, edges.len());
-
-    for _ in 0..nb_nodes {
-        graph.add_task(agp_lib::task_graph::task::Task::Constant(1.0));
-    }
-
-    for (s, d) in edges {
-        graph.add_edge(s as usize, d as usize);
-    }
-    graph
-}
-
-fn main() {
-    let mut g50 = parser::parse("Samples/AG/random_graphs03/rand-10-node-graph-0-ex-7.ag")
-        .expect("Failed parsing the audio graph\n");
-
-    // let mut g50 = random_dag(50);
-    agp_lib::task_graph::graph::run_dot(&g50, "rand10");
-
-    println!("edges: {}", g50.get_topological_order().len());
-
-    let dur = std::time::SystemTime::now();
-    println!("\nWith 3 processors:");
-    println!(
-        "Random schedule : {}",
-        random(&mut g50, 3).get_completion_time()
-    );
+    println!("\nWith {} processors:",nb_procs);
+    println!("EFT schedule : {}", etf_schedule.get_completion_time());
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
-    let dur = std::time::SystemTime::now();
-    println!("EFT schedule : {}", etf(&mut g50, 3).get_completion_time());
+
+    println!("\nCalcul of RANDOM");
+
+    dur = std::time::SystemTime::now();
+    let random_schedule = random(&mut graph, nb_procs); 
     println!(
-        "in :{}s {} ms",
-        dur.elapsed().unwrap().as_secs(),
-        dur.elapsed().unwrap().subsec_millis()
-    );
-    let dur = std::time::SystemTime::now();
-    println!(
-        "hlfet schedule : {}",
-        hlfet(&mut g50, 3).get_completion_time()
+        "Random schedule : {} s",
+        random_schedule.get_completion_time()
     );
     println!(
         "in :{}s {} ms",
@@ -70,23 +71,45 @@ fn main() {
         dur.elapsed().unwrap().subsec_millis()
     );
 
-    let dur = std::time::SystemTime::now();
+    println!("\nCalcul of HLFET");
 
-    let cpfd_schedule = cpfd(&mut g50, 0.0);
-
-    println!("cpfd schedule: {}", cpfd_schedule);
+    dur = std::time::SystemTime::now();
+    let hlfet_schedule = hlfet(&mut graph, nb_procs);
 
     println!(
-        "cpfd schedule time : {}",
-        cpfd_schedule.get_completion_time()
+        "hlfet schedule : {} s",
+        hlfet_schedule.get_completion_time()
+    );
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
     );
 
-    let cpfd_schedule = cpfd(&mut g50, 0.10);
+    println!("\nCalcul of CPFD no communication cost");
 
-    println!("cpfd schedule: {}", cpfd_schedule);
+    dur = std::time::SystemTime::now();
+
+    let cpfd_schedule = cpfd(&mut graph, 0.0);
+
+    println!("cpfd no cost schedule: {} s", cpfd_schedule.get_completion_time());
+
+    println!("with : {} Processors", cpfd_schedule.processors.len());
+    println!(
+        "in :{}s {} ms",
+        dur.elapsed().unwrap().as_secs(),
+        dur.elapsed().unwrap().subsec_millis()
+    );
+
+    println!("\nCalcul of CPFD cost  = 1.0");
+
+
+    dur = std::time::SystemTime::now();
+
+    let cpfd_schedule = cpfd(&mut graph, 1.0);
 
     println!(
-        "cpfd schedule time : {}",
+        "cpfd schedule : {} s",
         cpfd_schedule.get_completion_time()
     );
 

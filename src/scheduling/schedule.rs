@@ -8,8 +8,6 @@ use std::path::Path;
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
 
-use task_graph::graph::TaskGraph;
-
 pub struct Schedule {
     pub processors: Vec<Processor>,
 }
@@ -114,7 +112,7 @@ impl Schedule {
     }
 
     //return the set of processors that allocate the predecesssors
-    pub fn get_p_set(&mut self, predecesssors: &Vec<usize>, node_index: usize) -> Vec<usize> {
+    pub fn get_p_set(&mut self, predecesssors: &Vec<usize>) -> Vec<usize> {
         let mut p_set = Vec::new();
         for (proc_index, processor) in self.processors.iter().enumerate() {
             if processor.contains_list_node(&predecesssors) {

@@ -265,11 +265,14 @@ impl TaskGraph {
 pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
     let tmp_dot = format!("tmp/{}.dot", graph_name);
 
+    println!("Creation of the tmp dir");
     if !Path::new("./tmp").exists() {
         std::fs::DirBuilder::new()
             .create("./tmp")
             .expect("failed to create tmp firectory");
     }
+
+    println!("output the graph to dot file");
 
     graph
         .output_dot(tmp_dot.as_str())
@@ -277,13 +280,28 @@ pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
 
     let pdf_filename = format!("tmp/{}.pdf", graph_name);
 
-    Command::new("dot")
+    println!("Run dot command");
+
+    //using sfdp instead of dot , uglier but a lot quicker in big graphs
+    
+    Command::new("sfdp")
+        .arg("-x")
+        .arg("-Goverlap=scale")
         .arg("-Tpdf")
         .arg(tmp_dot)
-        .arg("-o")
+        .arg(">")
         .arg(pdf_filename)
         .output()
         .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
+
+
+    // Command::new("dot")
+    //     .arg("-Tpdf")
+    //     .arg(tmp_dot)
+    //     .arg("-o")
+    //     .arg(pdf_filename)
+    //     .output()
+    //     .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
 }
 
 #[cfg(test)]
