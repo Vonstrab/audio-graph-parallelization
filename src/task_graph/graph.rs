@@ -284,24 +284,24 @@ pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
 
     //using sfdp instead of dot , uglier but a lot quicker in big graphs
     
-    Command::new("sfdp")
-        .arg("-x")
-        .arg("-Goverlap=scale")
-        .arg("-Tpdf")
-        .arg(tmp_dot)
-        .arg(">")
-        .arg(pdf_filename)
-        .output()
-        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
-
-
-    // Command::new("dot")
-    //     .arg("-Tpdf")
+    // Command::new("sfdp")
+    //     .arg("-x")
+    //     .arg("-Goverlap=scale")
+    //     .arg("-Tpng")
     //     .arg(tmp_dot)
-    //     .arg("-o")
+    //     .arg(" > ")
     //     .arg(pdf_filename)
     //     .output()
     //     .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
+
+
+    Command::new("dot")
+        .arg("-Tpdf")
+        .arg(tmp_dot)
+        .arg("-o")
+        .arg(pdf_filename)
+        .output()
+        .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
 }
 
 #[cfg(test)]

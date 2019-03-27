@@ -428,7 +428,8 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
             out_schedule.processors.push(empty_proc.clone());
         } else {
             //else we get the best
-            if empty_proc_et < et.unwrap() {
+            //we test  <= because we benefit the duplications on an empty proc
+            if (empty_proc_et - et.unwrap()) > 0.5 {
                 out_schedule.processors.push(empty_proc);
             } else {
                 out_schedule.processors[proce].duplication_from(&best_proc);
@@ -492,6 +493,29 @@ mod tests {
         let sche_rand = random(&mut g, 2);
         assert_eq!(sche_etf.get_completion_time(), 5.0);
         assert!(sche_etf.get_completion_time() <= sche_rand.get_completion_time());
+    }
+
+    #[test]
+     fn test_cpdf() {
+        let mut g = TaskGraph::new(8, 9);
+        let mut nodes_idx = Vec::new();
+
+        for _ in 0..8 {
+            nodes_idx.push(g.add_task(Task::Constant(1.0)));
+        }
+
+        g.add_edge(7, 5);
+        g.add_edge(7, 6);
+        g.add_edge(5, 2);
+        g.add_edge(5, 4);
+        g.add_edge(6, 4);
+        g.add_edge(6, 3);
+        g.add_edge(2, 1);
+        g.add_edge(3, 1);
+        g.add_edge(1, 0);
+
+        let sche_cpfd = cpfd(&mut g, 0.0);
+        assert_eq!(sche_cpfd.get_completion_time(), 5.0);
     }
 
     #[test]

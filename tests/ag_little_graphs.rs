@@ -4,7 +4,7 @@ use agp_lib::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
-pub fn static_schedule_file(filepath:&str){
+fn static_schedule_file(filepath:&str){
 
     println!("File : {:?}", filepath);
 
@@ -87,14 +87,14 @@ pub fn static_schedule_file(filepath:&str){
 
     dur = std::time::SystemTime::now();
 
-    let cpfd_schedule = cpfd(&mut graph, 0.0);
+    let cpfd_schedule_no_com = cpfd(&mut graph, 0.0);
 
     println!(
         "cpfd no cost time: {} s",
-        cpfd_schedule.get_completion_time()
+        cpfd_schedule_no_com.get_completion_time()
     );
-    println!("cpfd no cost schedule: {}", cpfd_schedule);
-    println!("with : {} Processors", cpfd_schedule.processors.len());
+    println!("cpfd no cost schedule: {}", cpfd_schedule_no_com);
+    println!("with : {} Processors", cpfd_schedule_no_com.processors.len());
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
@@ -120,12 +120,20 @@ pub fn static_schedule_file(filepath:&str){
         dur.elapsed().unwrap().subsec_millis()
     );
 
+    //not true for random-6-ex-20.ag
+    // assert!(etf_schedule.get_completion_time()<=hlfet_schedule.get_completion_time());
+    
+    //not true for random-16-ex-162.ag
+    // assert!(hlfet_schedule.get_completion_time()<=random_schedule.get_completion_time());
+    assert!(cpfd_schedule_no_com.get_completion_time()<=cpfd_schedule.get_completion_time());
+
 }
 
-fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() == 1 {
-        panic!("Need a file");
+#[test]
+fn test_little_graphs() -> std::io::Result<()>{
+    for file in std::fs::read_dir("Samples/AG/little_random_graphs")?{
+        let file = file?;
+        static_schedule_file(file.path().to_str().unwrap());
     }
-    static_schedule_file(&args[1]);
+    Ok(())
 }
