@@ -504,7 +504,7 @@ mod tests {
     }
 
     #[test]
-     fn test_cpdf() {
+    fn test_cpdf() {
         let mut g = TaskGraph::new(8, 9);
         let mut nodes_idx = Vec::new();
 

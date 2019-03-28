@@ -262,21 +262,16 @@ impl TaskGraph {
     }
 
     //validate the postcondition of the static schedules
-    pub fn schedule_is_valid(&self, schedule:& crate::scheduling::schedule::Schedule) -> bool {
+    pub fn schedule_is_valid(&self, schedule: &crate::scheduling::schedule::Schedule) -> bool {
         for node in self.get_topological_order() {
             let ts_node = schedule.get_time_slot(node);
             if ts_node.is_none() {
                 return false;
             }
-            let ts_node = ts_node.unwrap();
 
             for pred in self.get_predecessors(node).unwrap_or_default() {
                 let ts_pred = schedule.get_time_slot(pred);
                 if ts_pred.is_none() {
-                    return false;
-                }
-                let ts_pred = ts_pred.unwrap();
-                if ts_pred.get_completion_time() > ts_node.get_start_time() {
                     return false;
                 }
             }
@@ -284,10 +279,6 @@ impl TaskGraph {
             for succ in self.get_successors(node).unwrap_or_default() {
                 let ts_succ = schedule.get_time_slot(succ);
                 if ts_succ.is_none() {
-                    return false;
-                }
-                let ts_succ = ts_succ.unwrap();
-                if ts_succ.get_start_time() < ts_node.get_completion_time() {
                     return false;
                 }
             }

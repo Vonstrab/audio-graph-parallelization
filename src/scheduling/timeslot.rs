@@ -11,20 +11,23 @@ pub struct TimeSlot {
 }
 
 impl TimeSlot {
-    fn precond_new(start: f64, completion: f64) -> bool {
+    fn pre_new(start: f64, completion: f64) -> bool {
         start < completion
     }
 
     pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
+        //check pre-condition
         debug_assert!(
-            TimeSlot::precond_new(start, completion),
+            TimeSlot::pre_new(start, completion),
             "TimeSlot::new() : completions < start"
         );
+
         let ts = TimeSlot {
             start_time: start,
             completion_time: completion,
             node,
         };
+        //check invariant
         debug_assert!(ts.check_invariants(), "TimeSlot::new() : Invariants Error");
         ts
     }
@@ -42,8 +45,8 @@ impl TimeSlot {
     }
 
     fn check_invariants(&self) -> bool {
-        self.start_time > 0.0
-            && self.completion_time > 0.0
+        self.start_time >= 0.0
+            && self.completion_time >= 0.0
             && self.start_time <= self.completion_time
     }
 }

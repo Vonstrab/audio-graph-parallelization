@@ -19,10 +19,10 @@ mod parser_test {
 
     #[test]
     fn parse_audiograph() {
-        let graph_1 = parse("Samples/AG/downsampling_test.ag").unwrap();
-        assert_eq!(graph_1.get_topological_order().len(), 5);
-        let graph_2 = parse("Samples/AG/audiograph_wcet_test.ag").unwrap();
-        assert_eq!(graph_2.get_topological_order().len(), 3);
+        let graph_1 = parse("Samples/AG/little_random_graphs/rand-10-node-graph-1-ex-3.ag").unwrap();
+        assert_eq!(graph_1.get_topological_order().len(), 15);
+        let graph_2 = parse("Samples/AG/little_random_graphs/rand-10-node-graph-1-ex-5.ag").unwrap();
+        assert_eq!(graph_2.get_topological_order().len(), 16);
     }
 
     #[test]
