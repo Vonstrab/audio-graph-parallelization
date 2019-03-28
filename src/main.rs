@@ -4,8 +4,7 @@ use agp_lib::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
-pub fn static_schedule_file(filepath:&str){
-
+pub fn static_schedule_file(filepath: &str) {
     println!("File : {:?}", filepath);
 
     println!("Parsing");
@@ -119,7 +118,6 @@ pub fn static_schedule_file(filepath:&str){
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
-
 }
 
 fn main() {

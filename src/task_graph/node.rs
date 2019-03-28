@@ -59,7 +59,7 @@ impl Node {
                 self.wcet
             }
             //NB CPFD is erratic if WCET is 0
-            //if will over-duplicate with no cost 
+            //if will over-duplicate with no cost
             Task::Audiograph { wcet, .. } => {
                 if wcet.is_some() {
                     self.wcet = wcet;
