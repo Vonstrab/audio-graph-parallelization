@@ -122,10 +122,7 @@ fn static_schedule_file(filepath: &std::path::PathBuf) {
 
 #[test]
 fn test_little_graphs() {
-    for (i, file) in std::fs::read_dir("Samples/AG/little_random_graphs")
-        .unwrap()
-        .enumerate()
-    {
+    for file in std::fs::read_dir("Samples/AG/little_random_graphs").unwrap() {
         let file = file.unwrap();
         let path = file.path();
         static_schedule_file(&path);
