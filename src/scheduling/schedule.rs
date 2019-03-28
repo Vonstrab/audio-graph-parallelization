@@ -169,7 +169,7 @@ mod schedule_test {
         assert_eq!(sche.get_completion_time(), 5.0);
 
         assert!(sche.get_time_slot(1).is_none());
-        assert!(sche.get_time_slot(5).unwrap() == TimeSlot::new(5, 1.0, 2.0));
-        assert!(sche.get_time_slot(7).unwrap() == TimeSlot::new(7, 4.0, 5.0));
+        assert!(sche.get_time_slot(5) == Some(TimeSlot::new(5, 1.0, 2.0)));
+        assert!(sche.get_time_slot(7) == Some(TimeSlot::new(7, 4.0, 5.0)));
     }
 }

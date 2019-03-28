@@ -150,7 +150,7 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, graph: &TaskGraph) -> usiz
         if out_node.is_none() {
             out_node = Some(*node);
         } else if (*b_level - ready_list[&out_node.unwrap()]).abs() < std::f64::EPSILON {
-            //Not stric comparaison, but within error margin
+            //Not strict comparison, but within error margin
             if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
                 out_node = Some(*node);
             }
