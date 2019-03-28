@@ -1,23 +1,19 @@
 extern crate agp_lib;
+extern crate proc_macro;
 
 use agp_lib::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
-fn static_schedule_file(filepath:&str){
-
+fn static_schedule_file(filepath: &std::path::PathBuf) {
     println!("File : {:?}", filepath);
 
     println!("Parsing");
 
-    let mut graph = parser::parse(&filepath).expect("Failed parsing the audio graph\n");
+    let mut graph =
+        parser::parse(&filepath.to_str().unwrap()).expect("Failed parsing the audio graph\n");
 
-    println!("\nCalcul of nodes number");
     println!("Number of nodes: {}", graph.get_topological_order().len());
-    if graph.get_topological_order().len() < 50 {
-        println!("\nOutpout the dot representation in tmp/graph.dot");
-        agp_lib::task_graph::graph::run_dot(&graph, "graph");
-    }
 
     println!("\nCalcul of ETF");
 
@@ -94,7 +90,10 @@ fn static_schedule_file(filepath:&str){
         cpfd_schedule_no_com.get_completion_time()
     );
     println!("cpfd no cost schedule: {}", cpfd_schedule_no_com);
-    println!("with : {} Processors", cpfd_schedule_no_com.processors.len());
+    println!(
+        "with : {} Processors",
+        cpfd_schedule_no_com.processors.len()
+    );
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
@@ -119,21 +118,16 @@ fn static_schedule_file(filepath:&str){
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
-
-    //not true for random-6-ex-20.ag
-    // assert!(etf_schedule.get_completion_time()<=hlfet_schedule.get_completion_time());
-    
-    //not true for random-16-ex-162.ag
-    // assert!(hlfet_schedule.get_completion_time()<=random_schedule.get_completion_time());
-    assert!(cpfd_schedule_no_com.get_completion_time()<=cpfd_schedule.get_completion_time());
-
 }
 
 #[test]
-fn test_little_graphs() -> std::io::Result<()>{
-    for file in std::fs::read_dir("Samples/AG/little_random_graphs")?{
-        let file = file?;
-        static_schedule_file(file.path().to_str().unwrap());
+fn test_little_graphs() {
+    for (i, file) in std::fs::read_dir("Samples/AG/little_random_graphs")
+        .unwrap()
+        .enumerate()
+    {
+        let file = file.unwrap();
+        let path = file.path();
+        static_schedule_file(&path);
     }
-    Ok(())
 }
