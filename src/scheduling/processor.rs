@@ -12,16 +12,16 @@ impl Processor {
         Processor::default()
     }
 
-    fn post_duplication_from(to: &Processor, from: &Processor) -> bool {
-        to.get_completion_time() == from.get_completion_time() && to.time_slots == from.time_slots
-    }
-
     //duplcate from a Processor
     pub fn duplication_from(&mut self, dup_proc: &Processor) {
         self.time_slots = dup_proc.time_slots.clone();
         self.completion_time = dup_proc.completion_time;
         //check post-condition
-        debug_assert!(Processor::post_duplication_from(self, dup_proc);"Processor::duplication_from : post-condition Error");
+        debug_assert!(
+            self.get_completion_time() == dup_proc.get_completion_time()
+                && self.time_slots == dup_proc.time_slots,
+            "Processor::duplication_from : post-condition Error"
+        );
         //check invariant
         debug_assert!(
             self.check_invariants(),
@@ -29,18 +29,10 @@ impl Processor {
         );
     }
 
-    fn pre_add_timeslot(start_time: f64, completion_time: f64) -> bool {
-        start_time >= 0.0 && completion_time >= 0.0
-    }
-
-    fn post_add_timeslot(&self, completion_time: f64) -> bool {
-        self.completion_time == completion_time
-    }
-
     pub fn add_timeslot(&mut self, node: usize, start_time: f64, completion_time: f64) -> bool {
         //check pre-condition
         debug_assert!(
-            Processor::pre_add_timeslot(start_time, completion_time),
+            start_time >= 0.0 && completion_time >= 0.0,
             "Processor::add_timeslot : pre-condition Error"
         );
 
@@ -52,7 +44,7 @@ impl Processor {
 
             //check post-condition
             debug_assert!(
-                self.post_add_timeslot(completion_time),
+                self.completion_time == completion_time,
                 "Processor::add_timeslot : post-condition Error"
             );
             //check invariant

@@ -11,16 +11,9 @@ pub struct TimeSlot {
 }
 
 impl TimeSlot {
-    fn pre_new(start: f64, completion: f64) -> bool {
-        start < completion
-    }
-
     pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
         //check pre-condition
-        debug_assert!(
-            TimeSlot::pre_new(start, completion),
-            "TimeSlot::new() : completions < start"
-        );
+        debug_assert!(start < completion, "TimeSlot::new() : completions < start");
 
         let ts = TimeSlot {
             start_time: start,
