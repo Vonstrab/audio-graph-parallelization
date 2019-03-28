@@ -211,6 +211,8 @@ pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         ready_list.remove(rand_indice);
     }
 
+    debug_assert!(graph.schedule_is_valid(&out_schedule));
+
     out_schedule
 }
 
@@ -275,6 +277,8 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         // Remove the node
         ready_list.remove(&first_node);
     }
+
+    debug_assert!(graph.schedule_is_valid(&out_schedule));
 
     out_schedule
 }
@@ -354,6 +358,8 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 
         ready_list.remove(node_index);
     }
+
+    debug_assert!(graph.schedule_is_valid(&out_schedule));
 
     out_schedule
 }
@@ -436,6 +442,8 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
             }
         }
     }
+
+    debug_assert!(graph.schedule_is_valid(&out_schedule));
 
     out_schedule
 }
