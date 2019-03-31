@@ -4,9 +4,11 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process::Command;
+use std::sync::{Arc, Mutex};
 
 use super::node::Node;
 use super::state::TaskState;
+use super::task::DspTask;
 use super::task::Task;
 
 #[derive(Debug)]
@@ -83,6 +85,10 @@ impl TaskGraph {
         }
     }
 
+    pub fn get_edges(&self) -> HashMap<(usize, usize), Option<f64>> {
+        self.edges.clone()
+    }
+
     pub fn get_topological_order(&self) -> Vec<usize> {
         let mut top_ord = self.get_rev_topological_order();
         top_ord.reverse();
@@ -116,8 +122,17 @@ impl TaskGraph {
         stack.push(node_index);
     }
 
+    // May be useless
     pub fn find_task(&self, _taks: &Task) -> Option<usize> {
         unimplemented!()
+    }
+
+    pub fn get_dsp(&self, node_index: usize) -> Arc<Mutex<Option<DspTask>>> {
+        if node_index < self.nodes.len() {
+            self.nodes[node_index].dsp_task.clone()
+        } else {
+            Arc::new(Mutex::new(None))
+        }
     }
 
     pub fn get_wcet(&mut self, node_index: usize) -> Option<f64> {
@@ -233,6 +248,12 @@ impl TaskGraph {
 
     pub fn add_task(&mut self, task: Task) -> usize {
         self.nodes.push(Node::new(task));
+
+        self.nodes.len() - 1
+    }
+
+    pub fn add_dsp(&mut self, dsp: DspTask) -> usize {
+        self.nodes.push(Node::with_dsp(dsp));
 
         self.nodes.len() - 1
     }
