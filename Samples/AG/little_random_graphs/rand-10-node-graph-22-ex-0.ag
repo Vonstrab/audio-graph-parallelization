@@ -1,0 +1,40 @@
+id-5 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-2 = {
+	in : 0,
+	out : 2,
+	kind : "source",};
+id-1 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-3 = {
+	in : 2,
+	out : 1,
+	kind : "mix",};
+id-6 = {
+	in : 2,
+	out : 0,
+	kind : "sink",};
+id-9 = {
+	in : 0,
+	out : 2,
+	kind : "source",};
+id-7 = {
+	in : 1,
+	out : 0,
+	kind : "sink",};
+id-4 = {
+	in : 1,
+	out : 2,
+	kind : "mix",};
+id-2.2 -> id-6.2;
+id-2.1 -> id-4.1;
+id-3.1 -> id-1.1;
+id-9.1 -> id-3.2;
+id-9.2 -> id-5.1;
+id-4.1 -> id-3.1;
+id-4.2 -> id-6.1;
+id-4.1 -> id-7.1;

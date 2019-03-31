@@ -10,6 +10,13 @@ path = "src/main.rs"
 [lib]
 name = "agp_lib"
 
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "benchmark"
+harness = false
+
 [dependencies]
 pest = "2.1.0"
 pest_derive = "2.1.0"

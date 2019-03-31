@@ -31,9 +31,3 @@ lint:rustfmt:
   # allow_failure: true
   script:
     - cargo fmt -- --check
-
-lint:clippy:
-  image: "guangie88/rustfmt-clippy"
-  allow_failure: true
-  script:
-    - cargo clippy -- -D warnings # Turn all warnings into errors
