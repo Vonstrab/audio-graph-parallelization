@@ -66,15 +66,8 @@ fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
 // Sets the status of all reachable nodes from the entry
 // to TaskState::WaintingDependancies
 fn set_status_waiting(graph: &mut TaskGraph) {
-    let mut todo_nodes = graph.get_entry_nodes();
-
-    while !todo_nodes.is_empty() {
-        let node = todo_nodes[0];
-        todo_nodes.remove(0);
+    for node in graph.get_topological_order() {
         graph.set_state(node, TaskState::WaitingDependencies);
-        for i in graph.get_successors(node).unwrap() {
-            todo_nodes.push(i);
-        }
     }
 }
 
@@ -96,28 +89,41 @@ fn optimal_proc(
     schedule: &Schedule,
 ) -> Processor {
     let mut duplicate_proc = Processor::new();
+
     duplicate_proc.duplication_from(control);
 
     let mut start_time =
         get_ready_time(candidate, graph, schedule).max(control.get_completion_time());
     let predecessors = graph.get_predecessors(candidate).unwrap_or_default();
 
-    if predecessors.is_empty() {
-        duplicate_proc.add_timeslot(
-            candidate,
-            start_time,
-            start_time + graph.get_wcet(candidate).unwrap(),
-        );
-    } else {
+    if !predecessors.is_empty() {
         if !duplicate_proc.contains_all_list_node(&predecessors) {
             start_time = (get_ready_time(candidate, graph, schedule) + communication_cost)
                 .max(control.get_completion_time());
 
+            let mut last_pred = None;
+            let mut last_pred_message = 0.0;
+
             for not_in_proc_pred in duplicate_proc.nodes_not_in_proc(&predecessors) {
+                let message_arrive = schedule
+                    .get_time_slot(not_in_proc_pred)
+                    .unwrap()
+                    .get_completion_time()
+                    + communication_cost;
+                if last_pred.is_none() {
+                    last_pred = Some(not_in_proc_pred);
+                    last_pred_message = message_arrive;
+                } else if last_pred_message < message_arrive {
+                    last_pred = Some(not_in_proc_pred);
+                    last_pred_message = message_arrive;
+                }
+            }
+            
+            if last_pred.is_some() {
                 duplicate_proc = optimal_proc(
                     graph,
                     &duplicate_proc,
-                    not_in_proc_pred,
+                    last_pred.unwrap(),
                     communication_cost,
                     schedule,
                 );
@@ -163,14 +169,18 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, graph: &TaskGraph) -> usiz
 }
 
 pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
+    println!("creation of the schedule");
     // Build the schedule
     let mut out_schedule = Schedule::new();
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
 
+    println!("reset the graph");
     // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
+
+    println!("get the readylist");
 
     // The readylist
     let mut ready_list = graph.get_entry_nodes();
@@ -377,6 +387,8 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
     // println!("CPN Dominant sequence {:?}", cpn_sequence);
     // println!("CPN Dominant sequence size {}", cpn_sequence.len());
 
+    let mut round = 0;
+
     for candidate in cpn_sequence {
         let pred = graph.get_predecessors(candidate).unwrap_or_default();
         //construction of the p_set
@@ -384,7 +396,10 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
 
         // println!("\nschedule {}", out_schedule);
 
-        // println!("\ncandidate {}", candidate);
+        println!("\ncandidate {}", candidate);
+        println!("round {}", round);
+        round += 1;
+
         // println!("\npred {:?}", pred);
         // println!("p_set {:?}", p_set);
 
@@ -427,7 +442,7 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
         }
 
         // println!("et {:?}", et);
-        // println!("proce {:?}", proce);
+        // println!("proc {}", best_proc);
 
         //if only the empty_proc
         if et.is_none() {
@@ -474,6 +489,7 @@ mod tests {
 
         let sche_hlfelt = hlfet(&mut g, 2);
         let sche_rand = random(&mut g, 2);
+        println!("schedule {}", sche_hlfelt);
         assert_eq!(sche_hlfelt.get_completion_time(), 5.0);
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
     }
@@ -499,6 +515,7 @@ mod tests {
 
         let sche_etf = etf(&mut g, 2);
         let sche_rand = random(&mut g, 2);
+        println!("schedule {}", sche_etf);
         assert_eq!(sche_etf.get_completion_time(), 5.0);
         assert!(sche_etf.get_completion_time() <= sche_rand.get_completion_time());
     }
@@ -523,6 +540,7 @@ mod tests {
         g.add_edge(1, 0);
 
         let sche_cpfd = cpfd(&mut g, 0.0);
+        println!("schedule {}", sche_cpfd);
         assert_eq!(sche_cpfd.get_completion_time(), 5.0);
     }
 
@@ -548,18 +566,32 @@ mod tests {
         let mut sche_etf = etf(&mut g, 2);
         let mut sche_hlfelt = hlfet(&mut g, 2);
         let mut sche_rand = random(&mut g, 2);
+        println!("schedule {}", sche_etf);
+        println!("schedule {}", sche_hlfelt);
+        println!("schedule {}", sche_rand);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 3);
         sche_hlfelt = hlfet(&mut g, 3);
         sche_rand = random(&mut g, 3);
+        println!("schedule {}", sche_etf);
+        println!("schedule {}", sche_hlfelt);
+        println!("schedule {}", sche_rand);
+
+        println!("schedule {}", sche_etf);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 4);
         sche_hlfelt = hlfet(&mut g, 4);
         sche_rand = random(&mut g, 4);
+        println!("schedule {}", sche_etf);
+        println!("schedule {}", sche_hlfelt);
+        println!("schedule {}", sche_rand);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
     }
