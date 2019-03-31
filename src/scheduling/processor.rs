@@ -16,16 +16,16 @@ impl Processor {
     pub fn duplication_from(&mut self, dup_proc: &Processor) {
         self.time_slots = dup_proc.time_slots.clone();
         self.completion_time = dup_proc.completion_time;
+        //check invariant
+        debug_assert!(
+            self.check_invariants(),
+            "Processor::duplication_from : Invariant Error"
+        );
         //check post-condition
         debug_assert!(
             self.get_completion_time() == dup_proc.get_completion_time()
                 && self.time_slots == dup_proc.time_slots,
             "Processor::duplication_from : post-condition Error"
-        );
-        //check invariant
-        debug_assert!(
-            self.check_invariants(),
-            "Processor::duplication_from : Invariant Error"
         );
     }
 
@@ -42,15 +42,16 @@ impl Processor {
                 .push(TimeSlot::new(node, start_time, completion_time));
             self.completion_time = completion_time;
 
-            //check post-condition
-            debug_assert!(
-                self.completion_time == completion_time,
-                "Processor::add_timeslot : post-condition Error"
-            );
             //check invariant
             debug_assert!(
                 self.check_invariants(),
                 "Processor::add_timeslot : Invariant Error"
+            );
+            
+            //check post-condition
+            debug_assert!(
+                self.completion_time == completion_time,
+                "Processor::add_timeslot : post-condition Error"
             );
             return true;
         }

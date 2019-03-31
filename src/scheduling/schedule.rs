@@ -112,7 +112,7 @@ impl Schedule {
     }
 
     //return the set of processors that allocate the predecesssors
-    pub fn get_p_set(&mut self, predecesssors: &Vec<usize>) -> Vec<usize> {
+    pub fn get_p_set(&self, predecesssors: &Vec<usize>) -> Vec<usize> {
         let mut p_set = Vec::new();
         for (proc_index, processor) in self.processors.iter().enumerate() {
             if processor.contains_list_node(&predecesssors) {
