@@ -15,22 +15,38 @@ pub struct TaskGraph {
     edges: HashMap<(usize, usize), Option<f64>>,
     entry_nodes: Vec<usize>,
     exit_nodes: Vec<usize>,
+    adj_list: Vec<(Vec<usize>, Vec<usize>)>,
 }
 
 impl TaskGraph {
     pub fn new(nodes_count: usize, edges_count: usize) -> TaskGraph {
+        let mut adj_list = Vec::with_capacity(nodes_count);
+
+        for _ in 0..nodes_count {
+            adj_list.push((Vec::new(), Vec::new()));
+        }
+
         TaskGraph {
             nodes: Vec::with_capacity(nodes_count),
             edges: HashMap::with_capacity(edges_count),
             entry_nodes: Vec::new(),
             exit_nodes: Vec::new(),
+            adj_list,
         }
+    }
+
+    pub fn get_nb_node(&self) -> usize {
+        self.adj_list.len()
+    }
+
+    pub fn get_nb_edge(&self) -> usize {
+        self.edges.len()
     }
 
     pub fn get_entry_nodes(&mut self) -> Vec<usize> {
         if self.entry_nodes.is_empty() {
             for i in 0..self.nodes.len() {
-                if self.nodes[i].predecessors.is_empty() {
+                if self.get_predecessors(i).unwrap().is_empty() {
                     self.entry_nodes.push(i);
                 }
             }
@@ -42,7 +58,7 @@ impl TaskGraph {
     pub fn get_exit_nodes(&mut self) -> Vec<usize> {
         if self.exit_nodes.is_empty() {
             for i in 0..self.nodes.len() {
-                if self.nodes[i].successors.is_empty() {
+                if self.get_successors(i).unwrap().is_empty() {
                     self.exit_nodes.push(i);
                 }
             }
@@ -53,7 +69,7 @@ impl TaskGraph {
 
     pub fn get_predecessors(&self, node_index: usize) -> Option<Vec<usize>> {
         if node_index < self.nodes.len() {
-            Some(self.nodes[node_index].predecessors.clone())
+            Some(self.adj_list[node_index].1.clone())
         } else {
             None
         }
@@ -61,7 +77,7 @@ impl TaskGraph {
 
     pub fn get_successors(&self, node_index: usize) -> Option<Vec<usize>> {
         if node_index < self.nodes.len() {
-            Some(self.nodes[node_index].successors.clone())
+            Some(self.adj_list[node_index].0.clone())
         } else {
             None
         }
@@ -223,10 +239,12 @@ impl TaskGraph {
 
     pub fn add_edge(&mut self, src_node_index: usize, dest_node_index: usize) -> bool {
         if src_node_index < self.nodes.len() && dest_node_index < self.nodes.len() {
-            self.nodes[src_node_index].successors.push(dest_node_index);
-            self.nodes[dest_node_index]
-                .predecessors
-                .push(src_node_index);
+            self.adj_list[src_node_index].0.push(dest_node_index);
+            self.adj_list[dest_node_index].1.push(src_node_index);
+
+            // self.nodes[dest_node_index]
+            //     .predecessors
+            //     .push(src_node_index);
 
             self.edges.insert((src_node_index, dest_node_index), None);
 
@@ -262,23 +280,26 @@ impl TaskGraph {
     }
 
     //validate the postcondition of the static schedules
-    pub fn schedule_is_valid(&self, schedule: &crate::scheduling::schedule::Schedule) -> bool {
+    pub fn schedule_is_valid(&mut self, schedule: &crate::scheduling::schedule::Schedule) -> bool {
         for node in self.get_topological_order() {
             let ts_node = schedule.get_time_slot(node);
             if ts_node.is_none() {
                 return false;
             }
 
+            let st = ts_node.unwrap().get_start_time();
+            let et = ts_node.unwrap().get_completion_time();
+            let time = et - st;
+            let wcet = self.get_wcet(node).unwrap();
+
+            if (time - wcet) >= 0.00004 {
+                println!("wcet : {} ts time {}", wcet, time);
+                return false;
+            }
+
             for pred in self.get_predecessors(node).unwrap_or_default() {
                 let ts_pred = schedule.get_time_slot(pred);
                 if ts_pred.is_none() {
-                    return false;
-                }
-            }
-
-            for succ in self.get_successors(node).unwrap_or_default() {
-                let ts_succ = schedule.get_time_slot(succ);
-                if ts_succ.is_none() {
                     return false;
                 }
             }

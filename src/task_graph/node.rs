@@ -10,8 +10,6 @@ pub struct Node {
     pub task: Task,
     pub wcet: Option<f64>, // Worst case execution time
     pub state: TaskState,
-    pub predecessors: Vec<usize>,
-    pub successors: Vec<usize>,
 }
 
 impl Node {
@@ -20,8 +18,6 @@ impl Node {
             task,
             wcet: None,
             state: TaskState::WaitingDependencies,
-            predecessors: Vec::new(),
-            successors: Vec::new(),
         }
     }
 
@@ -88,8 +84,8 @@ mod node_test {
         let node = Node::new(Task::Constant(5.0));
         assert_eq!(node.task, Task::Constant(5.0));
         assert_eq!(node.wcet, None);
-        assert_eq!(node.predecessors.len(), 0);
-        assert_eq!(node.successors.len(), 0);
+        // assert_eq!(node.predecessors.len(), 0);
+        // assert_eq!(node.successors.len(), 0);
         assert_eq!(node.state, TaskState::WaitingDependencies);
     }
 
