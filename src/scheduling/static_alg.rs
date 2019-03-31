@@ -118,7 +118,7 @@ fn optimal_proc(
                     last_pred_message = message_arrive;
                 }
             }
-            
+
             if last_pred.is_some() {
                 duplicate_proc = optimal_proc(
                     graph,
@@ -387,18 +387,12 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
     // println!("CPN Dominant sequence {:?}", cpn_sequence);
     // println!("CPN Dominant sequence size {}", cpn_sequence.len());
 
-    let mut round = 0;
-
     for candidate in cpn_sequence {
         let pred = graph.get_predecessors(candidate).unwrap_or_default();
         //construction of the p_set
         let p_set = out_schedule.get_p_set(&pred);
 
         // println!("\nschedule {}", out_schedule);
-
-        println!("\ncandidate {}", candidate);
-        println!("round {}", round);
-        round += 1;
 
         // println!("\npred {:?}", pred);
         // println!("p_set {:?}", p_set);

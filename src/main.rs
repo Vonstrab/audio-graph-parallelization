@@ -17,33 +17,18 @@ pub fn static_schedule_file(filepath: &str) {
         println!("\nOutpout the dot representation in tmp/graph.dot");
         agp_lib::task_graph::graph::run_dot(&graph, "graph");
     }
+    let mut nb_procs = 9;
+    println!("\nWith {} processors:", nb_procs);
 
     println!("\nCalcul of ETF");
 
-    let mut nb_procs = 1;
-    println!("Round {}", nb_procs);
-    let mut etf_schedule = etf(&mut graph, nb_procs);
-    let mut cond = true;
     let mut dur = std::time::SystemTime::now();;
+    let etf_schedule = etf(&mut graph, nb_procs);
 
-    while cond {
-        nb_procs += 1;
-        println!("Round {}", nb_procs);
-        let new_etf = etf(&mut graph, nb_procs);
-        dur = std::time::SystemTime::now();
-        if new_etf.get_completion_time() >= etf_schedule.get_completion_time() {
-            cond = false;
-        } else {
-            etf_schedule = new_etf;
-        }
-    }
-
-    println!("\nWith {} processors:", nb_procs);
     println!(
         "EFT schedule time : {} s",
         etf_schedule.get_completion_time()
     );
-    println!("EFT schedule : {}", etf_schedule);
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
@@ -58,7 +43,6 @@ pub fn static_schedule_file(filepath: &str) {
         "Random schedule time: {} s",
         random_schedule.get_completion_time()
     );
-    println!("Random schedule : {} s", random_schedule);
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
@@ -75,7 +59,6 @@ pub fn static_schedule_file(filepath: &str) {
         hlfet_schedule.get_completion_time()
     );
 
-    println!("hlfet schedule : {} ", hlfet_schedule);
     println!(
         "in :{}s {} ms",
         dur.elapsed().unwrap().as_secs(),
@@ -92,7 +75,6 @@ pub fn static_schedule_file(filepath: &str) {
         "cpfd no cost time: {} s",
         cpfd_schedule.get_completion_time()
     );
-    println!("cpfd no cost schedule: {}", cpfd_schedule);
     println!("with : {} Processors", cpfd_schedule.processors.len());
     println!(
         "in :{}s {} ms",
@@ -106,7 +88,6 @@ pub fn static_schedule_file(filepath: &str) {
 
     let cpfd_schedule = cpfd(&mut graph, 1.0);
 
-    println!("cpfd schedule : {} ", cpfd_schedule);
     println!(
         "cpfd schedule time : {} s",
         cpfd_schedule.get_completion_time()

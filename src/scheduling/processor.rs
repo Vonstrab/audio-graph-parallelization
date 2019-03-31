@@ -47,7 +47,7 @@ impl Processor {
                 self.check_invariants(),
                 "Processor::add_timeslot : Invariant Error"
             );
-            
+
             //check post-condition
             debug_assert!(
                 self.completion_time == completion_time,
