@@ -17,7 +17,7 @@ pub fn static_schedule_file(filepath: &str) {
         println!("\nOutpout the dot representation in tmp/graph.dot");
         agp_lib::task_graph::graph::run_dot(&graph, "graph");
     }
-    let mut nb_procs = 9;
+    let nb_procs = 9;
     println!("\nWith {} processors:", nb_procs);
 
     println!("\nCalcul of ETF");

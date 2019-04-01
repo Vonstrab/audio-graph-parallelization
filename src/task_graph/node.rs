@@ -1,6 +1,9 @@
 extern crate rand;
 
+use std::sync::{Arc, Mutex};
+
 use super::state::TaskState;
+use super::task::DspTask;
 use super::task::Task;
 
 use self::rand::Rng;
@@ -8,6 +11,7 @@ use self::rand::Rng;
 #[derive(Debug)]
 pub struct Node {
     pub task: Task,
+    pub dsp_task: Arc<Mutex<Option<DspTask>>>,
     pub wcet: Option<f64>, // Worst case execution time
     pub state: TaskState,
 }
@@ -16,6 +20,16 @@ impl Node {
     pub fn new(task: Task) -> Node {
         Node {
             task,
+            dsp_task: Arc::new(Mutex::new(None)),
+            wcet: None,
+            state: TaskState::WaitingDependencies,
+        }
+    }
+
+    pub fn with_dsp(dsp: DspTask) -> Node {
+        Node {
+            task: Task::Constant(0.0),
+            dsp_task: Arc::new(Mutex::new(Some(dsp))),
             wcet: None,
             state: TaskState::WaitingDependencies,
         }
