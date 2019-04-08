@@ -1,10 +1,13 @@
 extern crate rand;
 
+use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use super::state::TaskState;
 use super::task::DspTask;
 use super::task::Task;
+use crate::dsp::{DspEdge, DspNode};
 
 use self::rand::Rng;
 
@@ -35,11 +38,59 @@ impl Node {
         }
     }
 
+    pub fn estimate_wcet(&mut self) {
+        if self.wcet.is_some() {
+            return;
+        }
+        let mut max_duration = None;
+        let mut timer = Instant::now();
+        let mut dsp = self.dsp_task.lock().unwrap().take();
+        if dsp.is_some() {
+            let unw_dsp = dsp.unwrap().dsp;
+            for _ in 0..50 {
+                match unw_dsp {
+                    DspNode::Oscillator(mut Oscillator) => {
+                        Oscillator.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                    }
+                    DspNode::Modulator(mut Modulator) => {
+                        Modulator.process(
+                            Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                            Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                        );
+                    }
+                    DspNode::InputsOutputsAdaptor(mut InputsOutputsAdaptor) => {
+                        InputsOutputsAdaptor.process(
+                            vec![
+                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                            ],
+                            vec![Arc::new(RwLock::new(DspEdge::new(32, 2)))],
+                        );
+                    }
+                    DspNode::Sink(mut Sink) => {
+                        let mut vec = vec![0.0];
+                        let mut buffer= vec.as_mut_slice();
+                        Sink.set_buffer(buffer.as_mut_ptr(), 60);
+                        Sink.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                    }
+                }
+                let cur_dur = timer.elapsed();
+                if max_duration.is_none() {
+                    max_duration = Some(cur_dur);
+                } else if cur_dur.subsec_micros() > max_duration.unwrap().subsec_micros() {
+                    max_duration = Some(cur_dur);
+                }
+            }
+            println!("time in {} micros ", max_duration.unwrap().subsec_micros());
+        }
+        self.wcet = Some(max_duration.unwrap().subsec_micros() as f64 / 1000000.0);
+    }
+
     pub fn get_wcet(&mut self) -> Option<f64> {
+        self.estimate_wcet();
         if self.wcet.is_some() {
             return self.wcet;
         }
-
         match self.task {
             Task::Constant(x) => {
                 if x < 0.0 {
