@@ -1,6 +1,6 @@
 extern crate agp_lib;
 
-use agp_lib::parser;
+use agp_lib::parser::audiograph::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
@@ -9,7 +9,7 @@ pub fn static_schedule_file(filepath: &str) {
 
     println!("Parsing");
 
-    let mut graph = parser::parse(&filepath).expect("Failed parsing the audio graph\n");
+    let mut graph = parser::actual_parse(&filepath).expect("Failed parsing the audio graph\n");
 
     println!("\nCalcul of nodes number");
     println!("Number of nodes: {}", graph.get_topological_order().len());

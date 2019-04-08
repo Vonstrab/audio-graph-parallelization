@@ -69,7 +69,7 @@ impl Node {
                     }
                     DspNode::Sink(mut Sink) => {
                         let mut vec = vec![0.0];
-                        let mut buffer= vec.as_mut_slice();
+                        let mut buffer = vec.as_mut_slice();
                         Sink.set_buffer(buffer.as_mut_ptr(), 60);
                         Sink.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
                     }
