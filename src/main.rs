@@ -4,19 +4,34 @@ use agp_lib::parser::audiograph::parser;
 
 use agp_lib::scheduling::static_alg::*;
 
-pub fn static_schedule_file(filepath: &str) {
-    println!("File : {:?}", filepath);
+use agp_lib::mesure::Mesure;
 
-    println!("Parsing");
+pub fn static_schedule_file(filepath: &str, sx: std::sync::mpsc::Sender<(String, String)>) {
+    sx.send(("stdout".to_string(), format!("File : {:?}", filepath)))
+        .unwrap();
+
+    sx.send(("stdout".to_string(), format!("Parsing"))).unwrap();
 
     let mut graph = parser::actual_parse(&filepath).expect("Failed parsing the audio graph\n");
 
-    println!("\nCalcul of nodes number");
-    println!("Number of nodes: {}", graph.get_topological_order().len());
+    sx.send(("stdout".to_string(), format!("\nCalcul of nodes number")))
+        .unwrap();
+
+    sx.send((
+        "stdout".to_string(),
+        format!("Number of nodes: {}", graph.get_topological_order().len()),
+    ))
+    .unwrap();
+
     if graph.get_topological_order().len() < 50 {
-        println!("\nOutpout the dot representation in tmp/graph.dot");
+        sx.send((
+            "stdout".to_string(),
+            format!("\nOutpout the dot representation in tmp/graph.dot"),
+        ))
+        .unwrap();
         agp_lib::task_graph::graph::run_dot(&graph, "graph");
     }
+
     let nb_procs = 9;
     println!("\nWith {} processors:", nb_procs);
 
@@ -106,5 +121,13 @@ fn main() {
     if args.len() == 1 {
         panic!("Need a file");
     }
-    static_schedule_file(&args[1]);
+
+    let (sx, rx) = std::sync::mpsc::channel();
+
+    let mut out_thread = Mesure::new(rx);
+    std::thread::spawn(move || {
+        out_thread.receive();
+    });
+
+    static_schedule_file(&args[1], sx);
 }

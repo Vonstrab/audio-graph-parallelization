@@ -42,9 +42,9 @@ impl Node {
         if self.wcet.is_some() {
             return;
         }
-        let mut max_duration = None;
-        let mut timer = Instant::now();
-        let mut dsp = self.dsp_task.lock().unwrap().take();
+        let mut max_duration: Option<Duration> = None;
+        let timer = Instant::now();
+        let dsp = self.dsp_task.lock().unwrap().take();
         if dsp.is_some() {
             let unw_dsp = dsp.unwrap().dsp;
             for _ in 0..50 {
@@ -75,13 +75,13 @@ impl Node {
                     }
                 }
                 let cur_dur = timer.elapsed();
-                if max_duration.is_none() {
-                    max_duration = Some(cur_dur);
-                } else if cur_dur.subsec_micros() > max_duration.unwrap().subsec_micros() {
+                if max_duration.is_none()
+                    || cur_dur.subsec_micros() > max_duration.unwrap().subsec_micros()
+                {
                     max_duration = Some(cur_dur);
                 }
             }
-            println!("time in {} micros ", max_duration.unwrap().subsec_micros());
+            // println!("time in {} micros ", max_duration.unwrap().subsec_micros());
         }
         self.wcet = Some(max_duration.unwrap().subsec_micros() as f64 / 1000000.0);
     }
@@ -149,8 +149,6 @@ mod node_test {
         let node = Node::new(Task::Constant(5.0));
         assert_eq!(node.task, Task::Constant(5.0));
         assert_eq!(node.wcet, None);
-        // assert_eq!(node.predecessors.len(), 0);
-        // assert_eq!(node.successors.len(), 0);
         assert_eq!(node.state, TaskState::WaitingDependencies(0));
     }
 
