@@ -32,3 +32,4 @@ jack = { git = "https://github.com/RustAudio/rust-jack.git" }
 pest = "2.1.0"
 pest_derive = "2.1.0"
 rand = "*"
+crossbeam = "*"

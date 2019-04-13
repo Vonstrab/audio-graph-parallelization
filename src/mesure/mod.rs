@@ -1,16 +1,17 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::sync::mpsc;
 
-use std::collections::HashMap;
+extern crate crossbeam;
+use self::crossbeam::crossbeam_channel;
 
 pub struct Mesure {
-    pub rx: mpsc::Receiver<(String, String)>,
+    pub rx: crossbeam::Receiver<(String, String)>,
     pub files: HashMap<String, File>,
 }
 
 impl Mesure {
-    pub fn new(rx: mpsc::Receiver<(String, String)>) -> Mesure {
+    pub fn new(rx: crossbeam_channel::Receiver<(String, String)>) -> Mesure {
         Mesure {
             rx,
             files: HashMap::new(),

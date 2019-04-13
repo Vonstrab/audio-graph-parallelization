@@ -1,3 +1,6 @@
+extern crate crossbeam;
+use self::crossbeam::crossbeam_channel;
+
 extern crate agp_lib;
 
 use agp_lib::parser::audiograph::parser;
@@ -6,7 +9,7 @@ use agp_lib::scheduling::static_alg::*;
 
 use agp_lib::mesure::Mesure;
 
-pub fn static_schedule_file(filepath: &str, sx: std::sync::mpsc::Sender<(String, String)>) {
+pub fn static_schedule_file(filepath: &str, sx: crossbeam_channel::Sender<(String, String)>) {
     sx.send(("stdout".to_string(), format!("File : {:?}", filepath)))
         .unwrap();
 
@@ -122,7 +125,7 @@ fn main() {
         panic!("Need a file");
     }
 
-    let (sx, rx) = std::sync::mpsc::channel();
+    let (sx, rx) = crossbeam_channel::unbounded();
 
     let mut out_thread = Mesure::new(rx);
     std::thread::spawn(move || {
