@@ -67,7 +67,7 @@ fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
 // to TaskState::WaintingDependancies
 fn set_status_waiting(graph: &mut TaskGraph) {
     for node in graph.get_topological_order() {
-        graph.set_state(node, TaskState::WaitingDependencies);
+        graph.set_state(node, TaskState::WaitingDependencies(0));
     }
 }
 
