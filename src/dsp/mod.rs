@@ -23,6 +23,7 @@ impl DspEdge {
     }
 }
 
+#[derive(Clone)]
 pub enum DspNode {
     Oscillator(Oscillator),
     Modulator(Modulator),
