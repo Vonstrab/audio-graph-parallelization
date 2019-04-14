@@ -113,9 +113,14 @@ fn mixer(output_buff: &mut [f32], input_buff: &[f32]) {
 
 impl InputsOutputsAdaptor {
     pub fn new(nb_inputs: usize, nb_outputs: usize) -> InputsOutputsAdaptor {
-        assert!(nb_inputs % nb_outputs == 0 || nb_outputs % nb_inputs == 0 , "graph not dsp compatible");
-        assert!(nb_outputs != 0 && nb_inputs != 0 , "graph not dsp compatible");
-
+        assert!(
+            nb_inputs % nb_outputs == 0 || nb_outputs % nb_inputs == 0,
+            "graph not dsp compatible"
+        );
+        assert!(
+            nb_outputs != 0 && nb_inputs != 0,
+            "graph not dsp compatible"
+        );
 
         let stride = if nb_outputs > nb_inputs {
             nb_outputs / nb_inputs
