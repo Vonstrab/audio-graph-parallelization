@@ -11,6 +11,10 @@ path = "src/main.rs"
 name = "seq_test"
 path = "src/seq_test.rs"
 
+[[bin]]
+name = "work_stealing_test"
+path = "src/work_stealing_test.rs"
+
 [lib]
 name = "agp_lib"
 
