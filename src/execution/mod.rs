@@ -98,7 +98,7 @@ pub fn run_seq(graph: Arc<Mutex<TaskGraph>>) -> Result<(), jack::Error> {
     Ok(())
 }
 
-fn build_dsp_edges(
+pub fn build_dsp_edges(
     graph: &TaskGraph,
     client: &jack::Client,
 ) -> HashMap<(usize, usize), Arc<RwLock<DspEdge>>> {
