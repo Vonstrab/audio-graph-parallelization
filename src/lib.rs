@@ -1,5 +1,7 @@
 #![crate_type = "lib"]
 
+extern crate core_affinity;
+extern crate crossbeam;
 extern crate jack;
 extern crate pest;
 #[macro_use]

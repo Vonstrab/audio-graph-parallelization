@@ -22,6 +22,8 @@ name = "benchmark"
 harness = false
 
 [dependencies]
+core_affinity = "0.5"
+crossbeam = "0.7"
 jack = { git = "https://github.com/RustAudio/rust-jack.git" }
 pest = "2.1.0"
 pest_derive = "2.1.0"
