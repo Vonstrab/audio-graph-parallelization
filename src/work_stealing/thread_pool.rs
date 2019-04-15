@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Condvar, Mutex, RwLock};
 use std::thread;
 use std::thread::JoinHandle;
 
@@ -42,6 +42,7 @@ pub struct ThreadPool {
 
     ctrl_chans: Vec<Sender<CtrlMsg>>,
     main_queue: Arc<Injector<usize>>,
+    wait_cycle: Arc<Condvar>,
 }
 
 impl ThreadPool {
@@ -54,6 +55,7 @@ impl ThreadPool {
         let mut join_handles = Vec::with_capacity(threads_count);
         let main_queue = Arc::new(Injector::new());
         let stealers = Arc::new(ShardedLock::new(Vec::with_capacity(threads_count)));
+        let wait_cycle = Arc::new(Condvar::new());
         let mut ctrl_chans = Vec::with_capacity(threads_count);
 
         for i in 0..threads_count {
@@ -66,7 +68,7 @@ impl ThreadPool {
             ctrl_chans.push(tx);
 
             join_handles.push(thread::spawn(
-                clone!(main_queue, stealers, task_graph, dsp_edges => move || {
+                clone!(main_queue, stealers, wait_cycle, task_graph, dsp_edges => move || {
                     core_affinity::set_for_current(current_id);
 
                     loop {
@@ -75,6 +77,8 @@ impl ThreadPool {
                                 match main_queue.steal() {
                                     Steal::Empty | Steal::Retry => {
                                         if stealers.read().unwrap().iter().all(|stealer| stealer.is_empty()) {
+                                            wait_cycle.notify_all();
+
                                             match rx.recv() {
                                                 Err(_) => {
                                                     println!("Failed to get more control messages");
@@ -134,10 +138,13 @@ impl ThreadPool {
 
             ctrl_chans,
             main_queue,
+            wait_cycle,
         }
     }
 
     pub fn start(&mut self) {
+        self.wait_cycle_end();
+
         let entry_nodes = self.task_graph.write().unwrap().get_entry_nodes();
 
         for node_index in entry_nodes {
@@ -150,11 +157,22 @@ impl ThreadPool {
     }
 
     pub fn stop(&self) {
+        self.wait_cycle_end(); // FIXME: Causes a panic
+
         for chan in self.ctrl_chans.iter() {
             chan.send(CtrlMsg::Stop).unwrap();
         }
+    }
 
-        // FIXME: we should also join the threads
+    fn wait_cycle_end(&self) {
+        if !self.main_queue.is_empty() {
+            let m = Mutex::new(());
+            let mut guard = m.lock().unwrap();
+
+            while !self.main_queue.is_empty() {
+                guard = self.wait_cycle.wait(guard).unwrap();
+            }
+        }
     }
 }
 
