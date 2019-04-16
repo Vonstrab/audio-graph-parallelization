@@ -11,6 +11,10 @@ path = "src/main.rs"
 name = "seq_test"
 path = "src/seq_test.rs"
 
+[[bin]]
+name = "work_stealing_test"
+path = "src/work_stealing_test.rs"
+
 [lib]
 name = "agp_lib"
 
@@ -22,6 +26,8 @@ name = "benchmark"
 harness = false
 
 [dependencies]
+core_affinity = "0.5"
+crossbeam = "0.7"
 jack = { git = "https://github.com/RustAudio/rust-jack.git" }
 pest = "2.1.0"
 pest_derive = "2.1.0"

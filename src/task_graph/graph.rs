@@ -160,6 +160,25 @@ impl TaskGraph {
         }
     }
 
+    pub fn dec_activation_count(&mut self, node_index: usize) -> bool {
+        if node_index < self.nodes.len() {
+            match self.nodes[node_index].state {
+                TaskState::WaitingDependencies(count) => {
+                    self.nodes[node_index].state = if count == 1 {
+                        TaskState::Ready
+                    } else {
+                        TaskState::WaitingDependencies(count - 1)
+                    };
+                }
+                _ => {}
+            }
+
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn get_communication_cost(
         &self,
         src_node_index: usize,

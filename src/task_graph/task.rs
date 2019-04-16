@@ -45,6 +45,7 @@ impl Task {
     }
 }
 
+#[derive(Clone)]
 pub struct DspTask {
     pub id: String,
     pub dsp: DspNode,
@@ -85,6 +86,6 @@ impl DspTask {
 
 impl fmt::Debug for DspTask {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Dsp task!")
+        write!(f, "Dsp: {}", self.id)
     }
 }

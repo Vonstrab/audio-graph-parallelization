@@ -22,7 +22,7 @@ impl Node {
             task,
             dsp_task: Arc::new(Mutex::new(None)),
             wcet: None,
-            state: TaskState::WaitingDependencies,
+            state: TaskState::WaitingDependencies(0),
         }
     }
 
@@ -31,7 +31,7 @@ impl Node {
             task: Task::Constant(0.0),
             dsp_task: Arc::new(Mutex::new(Some(dsp))),
             wcet: None,
-            state: TaskState::WaitingDependencies,
+            state: TaskState::WaitingDependencies(0),
         }
     }
 
@@ -100,7 +100,7 @@ mod node_test {
         assert_eq!(node.wcet, None);
         // assert_eq!(node.predecessors.len(), 0);
         // assert_eq!(node.successors.len(), 0);
-        assert_eq!(node.state, TaskState::WaitingDependencies);
+        assert_eq!(node.state, TaskState::WaitingDependencies(0));
     }
 
     #[test]
