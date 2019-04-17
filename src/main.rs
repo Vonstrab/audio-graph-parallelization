@@ -39,7 +39,7 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
     let nb_procs = 9;
     println!("\nWith {} processors:", nb_procs);
 
-    println!("\nCalcul of ETF");
+    println!("\nComputation of ETF");
 
     let mut dur = std::time::SystemTime::now();;
     let etf_schedule = etf(&mut graph, nb_procs);
@@ -49,12 +49,12 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
         etf_schedule.get_completion_time()
     );
     println!(
-        "in :{}s {} ms",
+        "in: {}s {} ms",
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
 
-    println!("\nCalcul of RANDOM");
+    println!("\nComputation of RANDOM");
 
     dur = std::time::SystemTime::now();
     let random_schedule = random(&mut graph, nb_procs);
@@ -63,7 +63,7 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
         random_schedule.get_completion_time()
     );
     println!(
-        "in :{}s {} ms",
+        "in: {}s {} ms",
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
@@ -74,47 +74,47 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
     let hlfet_schedule = hlfet(&mut graph, nb_procs);
 
     println!(
-        "hlfet schedule time : {} s",
+        "HLFET schedule time: {} s",
         hlfet_schedule.get_completion_time()
     );
 
     println!(
-        "in :{}s {} ms",
+        "in: {}s {} ms",
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
 
-    println!("\nCalcul of CPFD no communication cost");
+    println!("\nComputation of CPFD wihout communication costs");
 
     dur = std::time::SystemTime::now();
 
     let cpfd_schedule = cpfd(&mut graph, 0.0);
 
     println!(
-        "cpfd no cost time: {} s",
+        "CPFD without communication costs schedule time: {} s",
         cpfd_schedule.get_completion_time()
     );
-    println!("with : {} Processors", cpfd_schedule.processors.len());
+    println!("with: {} processors", cpfd_schedule.processors.len());
     println!(
-        "in :{}s {} ms",
+        "in: {}s {} ms",
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
 
-    println!("\nCalcul of CPFD cost  = 1.0");
+    println!("\nComputation of CPFD cost = 1.0");
 
     dur = std::time::SystemTime::now();
 
     let cpfd_schedule = cpfd(&mut graph, 1.0);
 
     println!(
-        "cpfd schedule time : {} s",
+        "CPFD schedule time: {} s",
         cpfd_schedule.get_completion_time()
     );
 
-    println!("with : {} Processors", cpfd_schedule.processors.len());
+    println!("with: {} processors", cpfd_schedule.processors.len());
     println!(
-        "in :{}s {} ms",
+        "in: {}s {} ms",
         dur.elapsed().unwrap().as_secs(),
         dur.elapsed().unwrap().subsec_millis()
     );
