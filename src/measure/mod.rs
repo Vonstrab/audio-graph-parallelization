@@ -10,14 +10,14 @@ pub enum MeasureDestination {
     File(String, String), // Filename and content
 }
 
-pub struct Mesure {
+pub struct Measure {
     pub rx: Receiver<MeasureDestination>,
     pub files: HashMap<String, File>,
 }
 
-impl Mesure {
-    pub fn new(rx: Receiver<MeasureDestination>) -> Mesure {
-        Mesure {
+impl Measure {
+    pub fn new(rx: Receiver<MeasureDestination>) -> Measure {
+        Measure {
             rx,
             files: HashMap::new(),
         }
@@ -27,7 +27,7 @@ impl Mesure {
         loop {
             match self.rx.recv() {
                 Ok(dest) => {
-                    // println!("Mesure , channel : {} , msg : {}", channel, message);
+                    // println!("Measure, channel: {}, msg: {}", channel, message);
                     self.write(dest).unwrap();
                 }
                 Err(_) => {

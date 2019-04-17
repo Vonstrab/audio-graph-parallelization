@@ -9,7 +9,7 @@ extern crate pest_derive;
 
 pub mod dsp;
 pub mod execution;
-pub mod mesure;
+pub mod measure;
 pub mod parser;
 pub mod scheduling;
 pub mod task_graph;

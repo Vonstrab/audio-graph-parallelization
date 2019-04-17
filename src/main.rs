@@ -4,7 +4,7 @@ extern crate agp_lib;
 
 use crossbeam::channel::{unbounded, Sender};
 
-use agp_lib::mesure::{MeasureDestination, Mesure};
+use agp_lib::measure::{Measure, MeasureDestination};
 use agp_lib::parser::audiograph::parser;
 use agp_lib::scheduling::static_alg::*;
 
@@ -128,7 +128,7 @@ fn main() {
 
     let (tx, rx) = unbounded();
 
-    let mut out_thread = Mesure::new(rx);
+    let mut out_thread = Measure::new(rx);
     std::thread::spawn(move || {
         out_thread.receive();
     });
