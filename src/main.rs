@@ -8,29 +8,30 @@ use agp_lib::mesure::{MeasureDestination, Mesure};
 use agp_lib::parser::audiograph::parser;
 use agp_lib::scheduling::static_alg::*;
 
-
-pub fn static_schedule_file(filepath: &str, sx: crossbeam_channel::Sender<(String, String)>) {
-    sx.send(("stdout".to_string(), format!("File : {:?}", filepath)))
+fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
+    tx.send(MeasureDestination::Stdout(format!("File: {:?}", filepath)))
         .unwrap();
 
-    sx.send(("stdout".to_string(), format!("Parsing"))).unwrap();
+    tx.send(MeasureDestination::Stdout(String::from("Parsing")))
+        .unwrap();
 
     let mut graph = parser::actual_parse(&filepath).expect("Failed parsing the audio graph\n");
 
-    sx.send(("stdout".to_string(), format!("\nCalcul of nodes number")))
-        .unwrap();
+    tx.send(MeasureDestination::Stdout(String::from(
+        "\nComputing number of nodes",
+    )))
+    .unwrap();
 
-    sx.send((
-        "stdout".to_string(),
-        format!("Number of nodes: {}", graph.get_topological_order().len()),
-    ))
+    tx.send(MeasureDestination::Stdout(format!(
+        "Number of nodes: {}",
+        graph.get_topological_order().len()
+    )))
     .unwrap();
 
     if graph.get_topological_order().len() < 50 {
-        sx.send((
-            "stdout".to_string(),
-            format!("\nOutpout the dot representation in tmp/graph.dot"),
-        ))
+        tx.send(MeasureDestination::Stdout(String::from(
+            "\nOutput of the DOT representation in tmp/graph.got",
+        )))
         .unwrap();
         agp_lib::task_graph::graph::run_dot(&graph, "graph");
     }
@@ -125,7 +126,7 @@ fn main() {
         panic!("Need a file");
     }
 
-    let (sx, rx) = crossbeam_channel::unbounded();
+    let (tx, rx) = unbounded();
 
     let mut out_thread = Mesure::new(rx);
     std::thread::spawn(move || {

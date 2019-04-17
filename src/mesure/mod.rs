@@ -2,16 +2,21 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 
-extern crate crossbeam;
-use self::crossbeam::crossbeam_channel;
+use crossbeam::channel::Receiver;
+
+pub enum MeasureDestination {
+    Stdout(String),       // Content
+    Stderr(String),       // Content
+    File(String, String), // Filename and content
+}
 
 pub struct Mesure {
-    pub rx: crossbeam::Receiver<(String, String)>,
+    pub rx: Receiver<MeasureDestination>,
     pub files: HashMap<String, File>,
 }
 
 impl Mesure {
-    pub fn new(rx: crossbeam_channel::Receiver<(String, String)>) -> Mesure {
+    pub fn new(rx: Receiver<MeasureDestination>) -> Mesure {
         Mesure {
             rx,
             files: HashMap::new(),
@@ -21,11 +26,9 @@ impl Mesure {
     pub fn receive(&mut self) {
         loop {
             match self.rx.recv() {
-                Ok((chan, msg)) => {
-                    let channel = chan;
-                    let message = msg;
+                Ok(dest) => {
                     // println!("Mesure , channel : {} , msg : {}", channel, message);
-                    self.write(&channel, &message).unwrap();
+                    self.write(dest).unwrap();
                 }
                 Err(_) => {
                     break;
@@ -34,28 +37,28 @@ impl Mesure {
         }
     }
 
-    pub fn write(&mut self, channel: &String, msg: &String) -> std::io::Result<()> {
-        if channel == "stdout" {
-            println!("{}", msg);
-        } else if channel == "stderr" {
-            eprintln!("{}", msg);
-        } else {
-            if self.files.contains_key(channel) {
-                let file = self.files.get_mut(channel).unwrap();
-                write!(file, "{}", msg)?;
-            } else {
-                let path = std::path::Path::new(channel);
-                let mut file = std::fs::OpenOptions::new()
-                    .write(true)
-                    .create_new(true)
-                    .open(path)?;
+    pub fn write(&mut self, dest: MeasureDestination) -> std::io::Result<()> {
+        match dest {
+            MeasureDestination::Stdout(msg) => println!("{}", msg),
+            MeasureDestination::Stderr(msg) => eprintln!("{}", msg),
+            MeasureDestination::File(path, msg) => {
+                if self.files.contains_key(&path) {
+                    let file = self.files.get_mut(&path).unwrap();
 
-                self.files
-                    .insert(channel.to_string(), file.try_clone().unwrap());
+                    write!(file, "{}", msg)?;
+                } else {
+                    let mut file = std::fs::OpenOptions::new()
+                        .write(true)
+                        .create_new(true)
+                        .open(&path)?;
 
-                write!(file, "{}", msg)?;
+                    self.files.insert(path, file.try_clone().unwrap());
+
+                    write!(file, "{}", msg)?;
+                }
             }
         }
+
         Ok(())
     }
 }
