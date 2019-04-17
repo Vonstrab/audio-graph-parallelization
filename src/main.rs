@@ -1,13 +1,13 @@
 extern crate crossbeam;
-use self::crossbeam::crossbeam_channel;
 
 extern crate agp_lib;
 
-use agp_lib::parser::audiograph::parser;
+use crossbeam::channel::{unbounded, Sender};
 
+use agp_lib::mesure::{MeasureDestination, Mesure};
+use agp_lib::parser::audiograph::parser;
 use agp_lib::scheduling::static_alg::*;
 
-use agp_lib::mesure::Mesure;
 
 pub fn static_schedule_file(filepath: &str, sx: crossbeam_channel::Sender<(String, String)>) {
     sx.send(("stdout".to_string(), format!("File : {:?}", filepath)))
