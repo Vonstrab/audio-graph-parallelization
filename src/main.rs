@@ -133,5 +133,5 @@ fn main() {
         out_thread.receive();
     });
 
-    static_schedule_file(&args[1], sx);
+    static_schedule_file(&args[1], tx);
 }
