@@ -1,13 +1,12 @@
-use std::sync::RwLock;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant};
 
-use super::state::TaskState;
-use super::task::DspTask;
-use super::task::Task;
+use rand::Rng;
+
 use crate::dsp::{DspEdge, DspNode};
 
-use rand::Rng;
+use super::state::TaskState;
+use super::task::{DspTask, Task};
 
 #[derive(Debug)]
 pub struct Node {
@@ -36,103 +35,83 @@ impl Node {
         }
     }
 
-    pub fn estimate_wcet(&mut self) {
-        if self.wcet.is_some() {
-            return;
+    pub fn get_wcet(&mut self) -> Option<f64> {
+        if self.wcet.is_none() {
+            self.estimate_wcet();
         }
-        let mut max_duration: Option<Duration> = None;
-        let timer = Instant::now();
-        let dsp = self.dsp_task.lock().unwrap().take();
-        if dsp.is_some() {
-            let unw_dsp = dsp.unwrap().dsp;
-            for _ in 0..50 {
-                match unw_dsp {
-                    DspNode::Oscillator(mut o) => {
-                        o.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
-                    }
-                    DspNode::Modulator(mut m) => {
-                        m.process(
-                            Arc::new(RwLock::new(DspEdge::new(32, 2))),
-                            Arc::new(RwLock::new(DspEdge::new(32, 2))),
-                        );
-                    }
-                    DspNode::InputsOutputsAdaptor(mut ioa) => {
-                        ioa.process(
-                            vec![
-                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
-                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
-                            ],
-                            vec![Arc::new(RwLock::new(DspEdge::new(32, 2)))],
-                        );
-                    }
-                    DspNode::Sink(mut s) => {
-                        let mut vec = vec![0.0];
-                        let mut buffer = vec.as_mut_slice();
-                        s.set_buffer(buffer.as_mut_ptr(), 60);
-                        s.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
-                    }
-                }
-                let cur_dur = timer.elapsed();
-                if max_duration.is_none()
-                    || cur_dur.subsec_micros() > max_duration.unwrap().subsec_micros()
-                {
-                    max_duration = Some(cur_dur);
-                }
-            }
-            // println!("time in {} micros ", max_duration.unwrap().subsec_micros());
-        }
-        self.wcet = Some(max_duration.unwrap().subsec_micros() as f64 / 1000000.0);
+
+        self.wcet
     }
 
-    pub fn get_wcet(&mut self) -> Option<f64> {
-        self.estimate_wcet();
-        if self.wcet.is_some() {
-            return self.wcet;
-        }
-        match self.task {
-            Task::Constant(x) => {
-                if x < 0.0 {
-                    panic!("Node::get_wcet: negative constant WCET\n");
-                }
+    fn estimate_wcet(&mut self) {
+        let dsp = self.dsp_task.lock().unwrap();
 
-                self.wcet = Some(x);
-                self.wcet
+        match dsp.as_ref() {
+            None => {
+                self.wcet = match self.task {
+                    Task::Constant(x) => {
+                        if x < 0.0 {
+                            None
+                        } else {
+                            Some(x)
+                        }
+                    }
+                    Task::Random(start, end) => {
+                        if start < 0.0 || end < 0.0 || end < start {
+                            None
+                        } else {
+                            Some(rand::thread_rng().gen_range(start, end))
+                        }
+                    }
+                    // CPFD is erratic when the WCET is 0,
+                    // it will over-duplicate with no cost
+                    Task::Audiograph { wcet, .. } => wcet.or(Some(0.1)),
+                    _ => Some(1.0),
+                };
             }
-            Task::Random(start, end) => {
-                if end < start {
-                    panic!("Node::get_wcet: bad interval for random WCET\n");
+            Some(dsp) => {
+                let dsp = &dsp.dsp;
+
+                let mut max_duration = Duration::new(0, 0);
+
+                for _ in 0..50 {
+                    let timer = Instant::now();
+
+                    match dsp {
+                        DspNode::Oscillator(mut o) => {
+                            o.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                        }
+                        DspNode::Modulator(mut m) => {
+                            m.process(
+                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                            );
+                        }
+                        DspNode::InputsOutputsAdaptor(mut ioa) => {
+                            ioa.process(
+                                vec![
+                                    Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                                    Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                                ],
+                                vec![Arc::new(RwLock::new(DspEdge::new(32, 2)))],
+                            );
+                        }
+                        DspNode::Sink(mut s) => {
+                            let mut vec = vec![0.0];
+                            let mut buffer = vec.as_mut_slice();
+                            s.set_buffer(buffer.as_mut_ptr(), 60);
+                            s.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                        }
+                    }
+
+                    let duration = timer.elapsed();
+
+                    if max_duration < duration {
+                        max_duration = duration;
+                    }
                 }
 
-                if start < 0.0 {
-                    panic!("Node::get_wcet: negative start for random WCET\n");
-                }
-
-                if end < 0.0 {
-                    panic!("Node::get_wcet: negative end for random WCET\n");
-                }
-
-                let mut rng = rand::thread_rng();
-                let x: f64 = rng.gen_range(start, end);
-
-                self.wcet = Some(x);
-                self.wcet
-            }
-            // NB CPFD is erratic if WCET is 0
-            // it will over-duplicate with no cost
-            Task::Audiograph { wcet, .. } => {
-                if wcet.is_some() {
-                    self.wcet = wcet;
-                    self.wcet
-                } else {
-                    self.wcet = Some(0.1);
-                    self.wcet
-                }
-            }
-
-            _ => {
-                // TODO: Estimations for Puredata and Audiograph
-                self.wcet = Some(1.0);
-                self.wcet
+                self.wcet = Some(max_duration.subsec_micros() as f64 / 1_000_000.0);
             }
         }
     }
