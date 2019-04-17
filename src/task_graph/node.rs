@@ -94,7 +94,7 @@ impl Node {
         match self.task {
             Task::Constant(x) => {
                 if x < 0.0 {
-                    panic!("Node::get_wcet : negative constant WCET\n");
+                    panic!("Node::get_wcet: negative constant WCET\n");
                 }
 
                 self.wcet = Some(x);
@@ -102,15 +102,15 @@ impl Node {
             }
             Task::Random(start, end) => {
                 if end < start {
-                    panic!("Node::get_wcet : bad interval for random WCET\n");
+                    panic!("Node::get_wcet: bad interval for random WCET\n");
                 }
 
                 if start < 0.0 {
-                    panic!("Node::get_wcet : negative start for random WCET\n");
+                    panic!("Node::get_wcet: negative start for random WCET\n");
                 }
 
                 if end < 0.0 {
-                    panic!("Node::get_wcet : negative end for random WCET\n");
+                    panic!("Node::get_wcet: negative end for random WCET\n");
                 }
 
                 let mut rng = rand::thread_rng();
