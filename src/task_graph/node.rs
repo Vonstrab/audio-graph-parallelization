@@ -119,8 +119,8 @@ impl Node {
                 self.wcet = Some(x);
                 self.wcet
             }
-            //NB CPFD is erratic if WCET is 0
-            //if will over-duplicate with no cost
+            // NB CPFD is erratic if WCET is 0
+            // it will over-duplicate with no cost
             Task::Audiograph { wcet, .. } => {
                 if wcet.is_some() {
                     self.wcet = wcet;
@@ -166,5 +166,5 @@ mod node_test {
         assert!(wcet >= 1.0);
     }
 
-    //TODo test for the wcet
+    // TODO: Tests for the WCET
 }
