@@ -8,6 +8,9 @@ use crate::dsp::{DspEdge, DspNode};
 use super::state::TaskState;
 use super::task::{DspTask, Task};
 
+const BUFFER_SIZE: usize = 512;
+const SAMPLE_RATE: usize = 44_100;
+
 #[derive(Debug)]
 pub struct Node {
     pub task: Task,
@@ -79,28 +82,38 @@ impl Node {
 
                     match dsp {
                         DspNode::Oscillator(mut o) => {
-                            o.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                            o.process(Arc::new(RwLock::new(DspEdge::new(
+                                BUFFER_SIZE,
+                                SAMPLE_RATE,
+                            ))));
                         }
                         DspNode::Modulator(mut m) => {
                             m.process(
-                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
-                                Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                                Arc::new(RwLock::new(DspEdge::new(BUFFER_SIZE, SAMPLE_RATE))),
+                                Arc::new(RwLock::new(DspEdge::new(BUFFER_SIZE, SAMPLE_RATE))),
                             );
                         }
                         DspNode::InputsOutputsAdaptor(mut ioa) => {
                             ioa.process(
                                 vec![
-                                    Arc::new(RwLock::new(DspEdge::new(32, 2))),
-                                    Arc::new(RwLock::new(DspEdge::new(32, 2))),
+                                    Arc::new(RwLock::new(DspEdge::new(BUFFER_SIZE, SAMPLE_RATE))),
+                                    Arc::new(RwLock::new(DspEdge::new(BUFFER_SIZE, SAMPLE_RATE))),
                                 ],
-                                vec![Arc::new(RwLock::new(DspEdge::new(32, 2)))],
+                                vec![Arc::new(RwLock::new(DspEdge::new(
+                                    BUFFER_SIZE,
+                                    SAMPLE_RATE,
+                                )))],
                             );
                         }
                         DspNode::Sink(mut s) => {
-                            let mut vec = vec![0.0];
+                            let mut vec = vec![0.0; BUFFER_SIZE];
                             let mut buffer = vec.as_mut_slice();
+
                             s.set_buffer(buffer.as_mut_ptr(), 60);
-                            s.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                            s.process(Arc::new(RwLock::new(DspEdge::new(
+                                BUFFER_SIZE,
+                                SAMPLE_RATE,
+                            ))));
                         }
                     }
 
