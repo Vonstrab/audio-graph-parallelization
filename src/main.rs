@@ -123,7 +123,7 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() == 1 {
-        panic!("Need a file");
+        panic!("No files supplied");
     }
 
     let (tx, rx) = unbounded();
