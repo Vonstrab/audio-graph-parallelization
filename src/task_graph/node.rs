@@ -1,5 +1,3 @@
-extern crate rand;
-
 use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -9,7 +7,7 @@ use super::task::DspTask;
 use super::task::Task;
 use crate::dsp::{DspEdge, DspNode};
 
-use self::rand::Rng;
+use rand::Rng;
 
 #[derive(Debug)]
 pub struct Node {
