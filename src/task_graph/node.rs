@@ -49,17 +49,17 @@ impl Node {
             let unw_dsp = dsp.unwrap().dsp;
             for _ in 0..50 {
                 match unw_dsp {
-                    DspNode::Oscillator(mut Oscillator) => {
-                        Oscillator.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                    DspNode::Oscillator(mut o) => {
+                        o.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
                     }
-                    DspNode::Modulator(mut Modulator) => {
-                        Modulator.process(
+                    DspNode::Modulator(mut m) => {
+                        m.process(
                             Arc::new(RwLock::new(DspEdge::new(32, 2))),
                             Arc::new(RwLock::new(DspEdge::new(32, 2))),
                         );
                     }
-                    DspNode::InputsOutputsAdaptor(mut InputsOutputsAdaptor) => {
-                        InputsOutputsAdaptor.process(
+                    DspNode::InputsOutputsAdaptor(mut ioa) => {
+                        ioa.process(
                             vec![
                                 Arc::new(RwLock::new(DspEdge::new(32, 2))),
                                 Arc::new(RwLock::new(DspEdge::new(32, 2))),
@@ -67,11 +67,11 @@ impl Node {
                             vec![Arc::new(RwLock::new(DspEdge::new(32, 2)))],
                         );
                     }
-                    DspNode::Sink(mut Sink) => {
+                    DspNode::Sink(mut s) => {
                         let mut vec = vec![0.0];
                         let mut buffer = vec.as_mut_slice();
-                        Sink.set_buffer(buffer.as_mut_ptr(), 60);
-                        Sink.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
+                        s.set_buffer(buffer.as_mut_ptr(), 60);
+                        s.process(Arc::new(RwLock::new(DspEdge::new(32, 2))));
                     }
                 }
                 let cur_dur = timer.elapsed();
