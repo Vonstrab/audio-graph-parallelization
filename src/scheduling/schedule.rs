@@ -9,7 +9,7 @@ use scheduling::timeslot::TimeSlot;
 
 use std::fmt::{Display, Error, Formatter};
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Schedule {
     pub processors: Vec<Processor>,
 }
