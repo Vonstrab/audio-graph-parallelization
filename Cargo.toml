@@ -12,6 +12,10 @@ name = "seq_test"
 path = "src/seq_test.rs"
 
 [[bin]]
+name = "static_sched_test"
+path = "src/static_sched_test.rs"
+
+[[bin]]
 name = "work_stealing_test"
 path = "src/work_stealing_test.rs"
 
