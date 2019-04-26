@@ -49,7 +49,8 @@ impl Measure {
                 } else {
                     let mut file = std::fs::OpenOptions::new()
                         .write(true)
-                        .create_new(true)
+                        .truncate(true)
+                        .create(true)
                         .open(&path)?;
 
                     self.files.insert(path, file.try_clone().unwrap());
