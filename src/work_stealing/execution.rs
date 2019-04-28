@@ -67,58 +67,58 @@ pub fn run_work_stealing(
     )));
 
     let callback = jack::ClosureProcessHandler::new(clone!(thread_pool => move |_, ps| {
-            let dur = std::time::SystemTime::now();;
-            tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
-                "\nDebut d'un cycle a: {:#?}",
-                dur
-            )))
-            .expect("log error");
-            // We must give new buffers for the sinks to write into, every time this callback
-            // function is called by jack
-            let exit_nodes = graph.write().unwrap().get_exit_nodes();
-            for (i, &node_index) in exit_nodes.iter().enumerate() {
-                let buffer = out_ports[i].as_mut_slice(ps);
-                let frames = ps.n_frames();
+        let dur = std::time::SystemTime::now();;
+        tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
+        "\nDebut d'un cycle a: {:#?}",dur)))
+        .expect("log error");
 
-                let sink = graph.read().unwrap().get_dsp(node_index);
-                let sink = &mut *sink.lock().unwrap();
+        // We must give new buffers for the sinks to write into, every time this callback
+        // function is called by jack
+        let exit_nodes = graph.write().unwrap().get_exit_nodes();
+        for (i, &node_index) in exit_nodes.iter().enumerate() {
+            let buffer = out_ports[i].as_mut_slice(ps);
+            let frames = ps.n_frames();
 
-                if let Some(sink) = sink {
-                    if let DspNode::Sink(ref mut s) = sink.dsp {
-                        s.set_buffer(buffer.as_mut_ptr(), frames);
-                    }
+            let sink = graph.read().unwrap().get_dsp(node_index);
+            let sink = &mut *sink.lock().unwrap();
+
+            if let Some(sink) = sink {
+                if let DspNode::Sink(ref mut s) = sink.dsp {
+                    s.set_buffer(buffer.as_mut_ptr(), frames);
                 }
             }
+        }
 
-            // We must set the activation counters of each node
-            let nb_nodes = graph.read().unwrap().get_nb_node();
-            for node_index in 0..nb_nodes {
-                let predecessors = graph.read().unwrap().get_predecessors(node_index);
-                if let Some(predecessors) = predecessors {
-                    let activation_count = predecessors.len();
+        // We must set the activation counters of each node
+        let nb_nodes = graph.read().unwrap().get_nb_node();
+        for node_index in 0..nb_nodes {
+            let predecessors = graph.read().unwrap().get_predecessors(node_index);
+            if let Some(predecessors) = predecessors {
+                let activation_count = predecessors.len();
 
-                    graph.write().unwrap().set_state(node_index, if activation_count == 0 {
-                        TaskState::Ready
-                    } else {
-                        TaskState::WaitingDependencies(activation_count)
-                    });
-                }
+                graph.write().unwrap().set_state(node_index, if activation_count == 0 {
+                TaskState::Ready
+                } else {
+                    TaskState::WaitingDependencies(activation_count)
+                });
             }
+        }
 
-            thread_pool.write().unwrap().start();
+        thread_pool.write().unwrap().start();
 
-    tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
+        tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
                 "\nFin du cycle  a: {:#?} \nEn : {} ms \n{} µs",
                 dur,dur.elapsed().unwrap().subsec_millis(),dur.elapsed().unwrap().subsec_nanos()
-            ))).expect("log error");
+        ))).expect("log error");
 
         let time_rest = ps.cycle_times().unwrap().next_usecs -jack::get_time();
             tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
                 "\nTemps restant avant le prochain cycle {} µs ",
             time_rest
             ))).expect("log error");
-            jack::Control::Continue
-        }));
+
+        jack::Control::Continue
+    }));
 
     let _active_client = client.activate_async((), callback)?;
 
