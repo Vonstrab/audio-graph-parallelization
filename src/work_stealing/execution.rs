@@ -1,7 +1,5 @@
 use std::sync::{Arc, RwLock};
 
-extern crate crossbeam;
-
 use crossbeam::channel::Sender;
 
 use crate::dsp::DspNode;
@@ -35,10 +33,10 @@ pub fn run_work_stealing(
     tx: Sender<MeasureDestination>,
 ) -> Result<(), jack::Error> {
     tx.send(MeasureDestination::File(
-        "tmp/work_steal_log.txt".to_string(),
-        format!("Debut de l'execution"),
+        "tmp/work_stealing_log.txt".to_string(),
+        format!("Beginning of the execution"),
     ))
-    .expect("log error");
+    .expect("logging error");
 
     let (client, _) = jack::Client::new(
         "audio_graph_sequential",
@@ -46,6 +44,13 @@ pub fn run_work_stealing(
     )?;
 
     let nb_exit_nodes = graph.write().unwrap().get_exit_nodes().len();
+
+    tx.send(MeasureDestination::File(
+        "tmp/work_stealing_log.txt".to_string(),
+        format!("Number of exit nodes: {}", nb_exit_nodes),
+    ))
+    .expect("logging error");
+
     let mut out_ports = Vec::with_capacity(nb_exit_nodes);
 
     for i in 0..nb_exit_nodes {
@@ -67,10 +72,12 @@ pub fn run_work_stealing(
     )));
 
     let callback = jack::ClosureProcessHandler::new(clone!(thread_pool => move |_, ps| {
-        let dur = std::time::SystemTime::now();;
-        tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
-        "\nDebut d'un cycle a: {:#?}",dur)))
-        .expect("log error");
+        let start_time = std::time::SystemTime::now();;
+        tx.send(MeasureDestination::File(
+            "tmp/work_stealing_log.txt".to_string(),
+            format!("\nBeginning of a cycle at: {:#?}", start_time),
+        ))
+        .expect("logging error");
 
         // We must give new buffers for the sinks to write into, every time this callback
         // function is called by jack
@@ -97,7 +104,7 @@ pub fn run_work_stealing(
                 let activation_count = predecessors.len();
 
                 graph.write().unwrap().set_state(node_index, if activation_count == 0 {
-                TaskState::Ready
+                    TaskState::Ready
                 } else {
                     TaskState::WaitingDependencies(activation_count)
                 });
@@ -106,16 +113,24 @@ pub fn run_work_stealing(
 
         thread_pool.write().unwrap().start();
 
-        tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
-                "\nFin du cycle  a: {:#?} \nEn : {} ms \n{} µs",
-                dur,dur.elapsed().unwrap().subsec_millis(),dur.elapsed().unwrap().subsec_nanos()
-        ))).expect("log error");
+        tx.send(MeasureDestination::File(
+            "tmp/work_stealing_log.txt".to_string(),
+            format!(
+                "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs",
+                start_time,
+                start_time.elapsed().unwrap().subsec_millis(),
+                start_time.elapsed().unwrap().subsec_nanos(),
+            ),
+        ))
+        .expect("logging error");
 
-        let time_rest = ps.cycle_times().unwrap().next_usecs -jack::get_time();
-            tx.send(MeasureDestination::File("tmp/work_steal_log.txt".to_string(),format!(
-                "\nTemps restant avant le prochain cycle {} µs ",
-            time_rest
-            ))).expect("log error");
+        let time_left = ps.cycle_times().unwrap().next_usecs -jack::get_time();
+
+        tx.send(MeasureDestination::File(
+            "tmp/work_stealing_log.txt".to_string(),
+            format!("\nTime left before the deadline: {}µs ", time_left)
+        ))
+        .expect("logging error");
 
         jack::Control::Continue
     }));
