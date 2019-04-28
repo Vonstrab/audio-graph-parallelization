@@ -1,64 +1,50 @@
-import time
-import os
 import subprocess
 import sys
 
-#we run the audio for 60 s using the TimeOutExpired excepction
+# We run the audio for 60s using the TimeOutExpired exception
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
                     sys.argv[1]], timeout=60.0)
 except subprocess.TimeoutExpired:
     pass
 
-#we run the audio for 60 s using the TimeOutExpired excepction
+# We run the audio for 60s using the TimeOutExpired exception
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_test",
                     sys.argv[1]], timeout=60.0)
 except subprocess.TimeoutExpired:
     pass
 
-#then we parse the seq log
-fichier = open("tmp/seq_log.txt", "r")
 
-temps = 0
-next = 0
-numero = 0
+def parse_file(path):
+    """
+    Function for parsing a file containing measurements
+    """
+    with open(path, "r") as file:
+        time = 0
+        next = 0
+        number = 0
 
-for line in fichier:
-    tab = line.split(" ")
-    if len(tab) > 1 and tab[1] == "µs\n":
-        temps += int(tab[0])
-    if tab[0] == "Temps":
-        next += int(tab[6])
-    numero += 1
+        for line in file:
+            words = line.strip().split(" ")
+            if len(words) == 1 and words[0].endswith("µs"):
+                time += int(words[0].rstrip("µs"))
+            if words[0] == "Time":
+                next += int(words[5].rstrip("µs"))
+            number += 1
 
-temps_moy = temps / numero
-next_moy = next / numero
+        average_time = time / number
+        average_next = next / number
 
-print("execution seq")
-print("nobre de cycles "+str(numero))
-print("temps moyen "+str(temps_moy)+" µs")
-print("temps moyen avant prochain cycle "+str(next_moy)+" µs")
+        print("Results for " + path + ":")
+        print("Cycles count: " + str(number))
+        print("Average time: " + str(average_time) + "µs")
+        print("Average time left before the deadline: "
+              + str(average_next) + "µs")
 
-#then we parse the work steal log
-fichier = open("tmp/work_steal_log.txt", "r")
 
-temps = 0
-next = 0
-numero = 0
+# Parse the log for sequential execution
+parse_file("tmp/seq_log.txt")
 
-for line in fichier:
-    tab = line.split(" ")
-    if len(tab) > 1 and tab[1] == "µs\n":
-        temps += int(tab[0])
-    if tab[0] == "Temps":
-        next += int(tab[6])
-    numero += 1
-
-temps_moy = temps / numero
-next_moy = next / numero
-
-print("\nWork stealing")
-print("nobre de cycles "+str(numero))
-print("temps moyen "+str(temps_moy)+" µs")
-print("temps moyen avant prochain cycle "+str(next_moy)+" µs")
+# Parse the log for work stealing execution
+parse_file("tmp/work_stealing_log.txt")
