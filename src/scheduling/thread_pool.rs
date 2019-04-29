@@ -67,16 +67,9 @@ impl ThreadPool {
             fb_chans.push(f_rx);
 
             thread::spawn(clone!(task_graph, dsp_edges => move || {
-                let mut init = true;
                 core_affinity::set_for_current(current_id);
 
                 loop {
-                    if !init {
-                        f_tx.send(FeedbackMsg::Done).unwrap();
-                    } else {
-                        init = false;
-                    }
-
                     match rx.recv() {
                         Err(_) => {
                             println!("Failed to get more control messages");
@@ -102,6 +95,8 @@ impl ThreadPool {
 
                         exec_task(node_index, task_graph.clone(), dsp_edges.clone());
                     }
+
+                    f_tx.send(FeedbackMsg::Done).unwrap();
                 }
             }));
         }
