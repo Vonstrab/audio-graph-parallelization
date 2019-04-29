@@ -78,21 +78,21 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
-                        file], timeout=5.0)
+                        file], timeout=10.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_test",
-                        file], timeout=5.0)
+                        file], timeout=10.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
-                        file], timeout=5.0)
+                        file], timeout=10.0)
     except subprocess.TimeoutExpired:
         pass
 
@@ -111,10 +111,10 @@ for dag in dags:
     static.append(atime)
     static_wtime.append(wtime)
 
-print(x)
-print(seq)
-print(static)
-print(dynamic)
+# print(x)
+# print(seq)
+# print(static)
+# print(dynamic)
 
 plt.plot(x, seq, label='Sequenciel Temps Moyen')
 plt.plot(x, dynamic, label='Work Stealing')
