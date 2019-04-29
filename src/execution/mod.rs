@@ -132,22 +132,18 @@ pub fn run_seq(
             }
         }
 
-        tx.send(MeasureDestination::File(
-            "tmp/seq_log.txt".to_string(),
-            format!(
-                "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs",
-                start_time,
-                start_time.elapsed().unwrap().subsec_millis(),
-                start_time.elapsed().unwrap().subsec_nanos(),
-            ),
-        ))
-        .expect("logging error");
-
+        let elapsed_time = start_time.elapsed().unwrap();
         let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
         tx.send(MeasureDestination::File(
             "tmp/seq_log.txt".to_string(),
-            format!("\nTime left before the deadline: {}µs ", time_left)
+            format!(
+                "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs\nTime left before the deadline: {}µs",
+                start_time,
+                elapsed_time.subsec_millis(),
+                elapsed_time.subsec_nanos(),
+                time_left,
+            ),
         ))
         .expect("logging error");
 
