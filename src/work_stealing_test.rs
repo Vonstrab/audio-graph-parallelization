@@ -1,8 +1,7 @@
 extern crate agp_lib;
+extern crate crossbeam;
 
 use std::sync::{Arc, RwLock};
-
-extern crate crossbeam;
 
 use crossbeam::channel::unbounded;
 

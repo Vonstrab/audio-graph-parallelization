@@ -3,7 +3,7 @@ use std::sync::{Arc, Condvar, Mutex, RwLock};
 use std::thread;
 use std::thread::JoinHandle;
 
-use crossbeam::channel::{unbounded, Sender};
+use crossbeam::channel::{unbounded, Receiver, Sender};
 use crossbeam::deque::{Injector, Steal, Stealer, Worker};
 use crossbeam::sync::ShardedLock;
 
@@ -35,6 +35,11 @@ enum CtrlMsg {
     Stop,
 }
 
+#[derive(Clone, Copy)]
+enum FeedbackMsg {
+    Done,
+}
+
 pub struct ThreadPool {
     join_handles: Vec<JoinHandle<()>>,
 
@@ -42,7 +47,7 @@ pub struct ThreadPool {
 
     ctrl_chans: Vec<Sender<CtrlMsg>>,
     main_queue: Arc<Injector<usize>>,
-    wait_cycle: Arc<Condvar>,
+    fb_chans: Vec<Receiver<FeedbackMsg>>,
 }
 
 impl ThreadPool {
@@ -55,8 +60,8 @@ impl ThreadPool {
         let mut join_handles = Vec::with_capacity(threads_count);
         let main_queue = Arc::new(Injector::new());
         let stealers = Arc::new(ShardedLock::new(Vec::with_capacity(threads_count)));
-        let wait_cycle = Arc::new(Condvar::new());
         let mut ctrl_chans = Vec::with_capacity(threads_count);
+        let mut fb_chans = Vec::with_capacity(threads_count);
 
         for i in 0..threads_count {
             let current_id = core_ids[i];
@@ -67,8 +72,12 @@ impl ThreadPool {
             let (tx, rx) = unbounded();
             ctrl_chans.push(tx);
 
+            let (f_tx, f_rx) = unbounded();
+            fb_chans.push(f_rx);
+
             join_handles.push(thread::spawn(
-                clone!(main_queue, stealers, wait_cycle, task_graph, dsp_edges => move || {
+                clone!(main_queue, stealers, task_graph, dsp_edges => move || {
+                    let mut init = true;
                     core_affinity::set_for_current(current_id);
 
                     loop {
@@ -77,7 +86,11 @@ impl ThreadPool {
                                 match main_queue.steal() {
                                     Steal::Empty | Steal::Retry => {
                                         if stealers.read().unwrap().iter().all(|stealer| stealer.is_empty()) {
-                                            wait_cycle.notify_all();
+                                            if !init {
+                                                f_tx.send(FeedbackMsg::Done).unwrap();
+                                            } else {
+                                                init = false;
+                                            }
 
                                             match rx.recv() {
                                                 Err(_) => {
@@ -138,13 +151,11 @@ impl ThreadPool {
 
             ctrl_chans,
             main_queue,
-            wait_cycle,
+            fb_chans,
         }
     }
 
     pub fn start(&mut self) {
-        self.wait_cycle_end();
-
         let entry_nodes = self.task_graph.write().unwrap().get_entry_nodes();
 
         for node_index in entry_nodes {
@@ -154,24 +165,15 @@ impl ThreadPool {
         for chan in self.ctrl_chans.iter() {
             chan.send(CtrlMsg::Start).unwrap();
         }
-    }
 
-    pub fn stop(&self) {
-        self.wait_cycle_end(); // FIXME: Causes a panic
-
-        for chan in self.ctrl_chans.iter() {
-            chan.send(CtrlMsg::Stop).unwrap();
+        for chan in self.fb_chans.iter() {
+            chan.recv().expect("Could not get feedback messages");
         }
     }
 
-    fn wait_cycle_end(&self) {
-        if !self.main_queue.is_empty() {
-            let m = Mutex::new(());
-            let mut guard = m.lock().unwrap();
-
-            while !self.main_queue.is_empty() {
-                guard = self.wait_cycle.wait(guard).unwrap();
-            }
+    pub fn stop(&self) {
+        for chan in self.ctrl_chans.iter() {
+            chan.send(CtrlMsg::Stop).unwrap();
         }
     }
 }

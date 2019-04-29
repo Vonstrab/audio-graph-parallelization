@@ -1,7 +1,10 @@
 use std::sync::{Arc, RwLock};
 
+use crossbeam::channel::Sender;
+
 use crate::dsp::DspNode;
 use crate::execution::build_dsp_edges;
+use crate::measure::MeasureDestination;
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
 
@@ -26,13 +29,29 @@ macro_rules! clone {
     );
 }
 
-pub fn run_static_sched(graph: Arc<RwLock<TaskGraph>>) -> Result<(), jack::Error> {
+pub fn run_static_sched(
+    graph: Arc<RwLock<TaskGraph>>,
+    tx: Sender<MeasureDestination>,
+) -> Result<(), jack::Error> {
+    tx.send(MeasureDestination::File(
+        "tmp/static_sched_log.txt".to_string(),
+        format!("Beginning of the execution"),
+    ))
+    .expect("logging error");
+
     let (client, _) = jack::Client::new(
         "audio_graph_static_sched",
         jack::ClientOptions::NO_START_SERVER,
     )?;
 
     let nb_exit_nodes = graph.write().unwrap().get_exit_nodes().len();
+
+    tx.send(MeasureDestination::File(
+        "tmp/static_sched_log.txt".to_string(),
+        format!("Number of exit nodes: {}", nb_exit_nodes),
+    ))
+    .expect("logging error");
+
     let mut out_ports = Vec::with_capacity(nb_exit_nodes);
 
     for i in 0..nb_exit_nodes {
@@ -57,6 +76,13 @@ pub fn run_static_sched(graph: Arc<RwLock<TaskGraph>>) -> Result<(), jack::Error
     )));
 
     let callback = jack::ClosureProcessHandler::new(clone!(thread_pool => move |_, ps| {
+        let start_time = std::time::SystemTime::now();;
+        tx.send(MeasureDestination::File(
+            "tmp/static_sched_log.txt".to_string(),
+            format!("\nBeginning of a cycle at: {:#?}", start_time),
+        ))
+        .expect("logging error");
+
         // We must give new buffers for the sinks to write into, every time this callback
         // function is called by jack
         let exit_nodes = graph.write().unwrap().get_exit_nodes();
@@ -90,6 +116,25 @@ pub fn run_static_sched(graph: Arc<RwLock<TaskGraph>>) -> Result<(), jack::Error
         }
 
         thread_pool.write().unwrap().start();
+
+        tx.send(MeasureDestination::File(
+            "tmp/static_sched_log.txt".to_string(),
+            format!(
+                "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs",
+                start_time,
+                start_time.elapsed().unwrap().subsec_millis(),
+                start_time.elapsed().unwrap().subsec_nanos(),
+            ),
+        ))
+        .expect("logging error");
+
+        let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
+
+        tx.send(MeasureDestination::File(
+            "tmp/static_sched_log.txt".to_string(),
+            format!("\nTime left before the deadline: {}µs ", time_left)
+        ))
+        .expect("logging error");
 
         jack::Control::Continue
     }));

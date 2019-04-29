@@ -39,7 +39,7 @@ pub fn run_work_stealing(
     .expect("logging error");
 
     let (client, _) = jack::Client::new(
-        "audio_graph_sequential",
+        "audio_graph_work_stealing",
         jack::ClientOptions::NO_START_SERVER,
     )?;
 
@@ -111,7 +111,7 @@ pub fn run_work_stealing(
             }
         }
 
-        thread_pool.write().unwrap().start();
+        thread_pool.write().unwrap().start(); // TODO: make this blocking
 
         tx.send(MeasureDestination::File(
             "tmp/work_stealing_log.txt".to_string(),
@@ -124,7 +124,7 @@ pub fn run_work_stealing(
         ))
         .expect("logging error");
 
-        let time_left = ps.cycle_times().unwrap().next_usecs -jack::get_time();
+        let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
         tx.send(MeasureDestination::File(
             "tmp/work_stealing_log.txt".to_string(),

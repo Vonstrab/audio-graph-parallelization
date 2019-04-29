@@ -143,7 +143,7 @@ pub fn run_seq(
         ))
         .expect("logging error");
 
-        let time_left = ps.cycle_times().unwrap().next_usecs -jack::get_time();
+        let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
         tx.send(MeasureDestination::File(
             "tmp/seq_log.txt".to_string(),
