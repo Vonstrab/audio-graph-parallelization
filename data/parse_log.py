@@ -15,6 +15,13 @@ try:
 except subprocess.TimeoutExpired:
     pass
 
+# We run the audio for 60s using the TimeOutExpired exception
+try:
+    subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
+                    sys.argv[1]], timeout=60.0)
+except subprocess.TimeoutExpired:
+    pass
+
 
 def parse_file(path):
     """
@@ -48,3 +55,6 @@ parse_file("tmp/seq_log.txt")
 
 # Parse the log for work stealing execution
 parse_file("tmp/work_stealing_log.txt")
+
+# Parse the log for static scheduling execution
+parse_file("tmp/static_sched_log.txt")
