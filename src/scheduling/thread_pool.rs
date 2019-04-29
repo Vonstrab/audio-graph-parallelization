@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::thread;
 
-use crossbeam::channel::{unbounded, Sender};
+use crossbeam::channel::{unbounded, Receiver, Sender};
 use crossbeam::utils::Backoff;
 
 use crate::dsp::{DspEdge, DspNode};
@@ -35,8 +35,14 @@ enum CtrlMsg {
     Reset, // Used for preventing deadlocks when a new cycle starts while some threads are not finished
 }
 
+#[derive(Clone, Copy)]
+enum FeedbackMsg {
+    Done,
+}
+
 pub struct ThreadPool {
     ctrl_chans: Vec<Sender<CtrlMsg>>,
+    fb_chans: Vec<Receiver<FeedbackMsg>>,
 }
 
 impl ThreadPool {
@@ -48,6 +54,7 @@ impl ThreadPool {
     ) -> ThreadPool {
         let core_ids = core_affinity::get_core_ids().expect("Failed to get core IDs.");
         let mut ctrl_chans = Vec::with_capacity(threads_count);
+        let mut fb_chans = Vec::with_capacity(threads_count);
 
         for i in 0..threads_count {
             let current_id = core_ids[i];
@@ -56,10 +63,20 @@ impl ThreadPool {
             let (tx, rx) = unbounded();
             ctrl_chans.push(tx);
 
+            let (f_tx, f_rx) = unbounded();
+            fb_chans.push(f_rx);
+
             thread::spawn(clone!(task_graph, dsp_edges => move || {
+                let mut init = true;
                 core_affinity::set_for_current(current_id);
 
                 loop {
+                    if !init {
+                        f_tx.send(FeedbackMsg::Done).unwrap();
+                    } else {
+                        init = false;
+                    }
+
                     match rx.recv() {
                         Err(_) => {
                             println!("Failed to get more control messages");
@@ -91,6 +108,7 @@ impl ThreadPool {
 
         ThreadPool {
             ctrl_chans,
+            fb_chans,
         }
     }
 
@@ -101,6 +119,10 @@ impl ThreadPool {
 
         for chan in self.ctrl_chans.iter() {
             chan.send(CtrlMsg::Start).unwrap();
+        }
+
+        for chan in self.fb_chans.iter() {
+            chan.recv().expect("Could not get feedback messages");
         }
     }
 }
