@@ -86,6 +86,18 @@ for dag in dags:
     except subprocess.TimeoutExpired:
         pass
 
+    try:
+        subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
+                        file, "hlfet"], timeout=10.0)
+    except subprocess.TimeoutExpired:
+        pass
+
+    try:
+        subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
+                        file, "etf"], timeout=10.0)
+    except subprocess.TimeoutExpired:
+        pass
+
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_test",
