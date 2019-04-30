@@ -55,8 +55,12 @@ dags = sorted_nicely(dags)
 x = []
 seq = []
 seq_wtime = []
-static = []
-static_wtime = []
+static_rand = []
+static_rand_wtime = []
+static_hlfet = []
+static_hlfet_wtime = []
+static_etf = []
+static_etf_wtime = []
 dynamic = []
 dynamic_wtime = []
 
@@ -78,7 +82,7 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
-                        file], timeout=10.0)
+                        file, "rand"], timeout=10.0)
     except subprocess.TimeoutExpired:
         pass
 
@@ -106,19 +110,28 @@ for dag in dags:
     dynamic.append(atime)
     dynamic_wtime.append(wtime)
 
-    # Parse the log for static scheduling execution
-    atime, wtime = parse_file("tmp/static_sched_log.txt")
-    static.append(atime)
-    static_wtime.append(wtime)
+    # Parse the log for rand static scheduling execution
+    atime, wtime = parse_file("tmp/static_rand_sched_log.txt")
+    static_rand.append(atime)
+    static_rand_wtime.append(wtime)
 
-# print(x)
-# print(seq)
-# print(static)
-# print(dynamic)
+    # Parse the log for hlfet static scheduling execution
+    atime, wtime = parse_file("tmp/static_hlfet_sched_log.txt")
+    static_hlfet.append(atime)
+    static_hlfet_wtime.append(wtime)
 
-plt.plot(x, seq, label='Sequenciel Temps Moyen')
+    # Parse the log for etf static scheduling execution
+    atime, wtime = parse_file("tmp/static_etf_sched_log.txt")
+    static_etf.append(atime)
+    static_etf_wtime.append(wtime)
+
+
+plt.plot(x, seq , label='Sequenciel Temps Moyen')
 plt.plot(x, dynamic, label='Work Stealing')
-plt.plot(x, static, label='Static Scheduling')
+plt.plot(x, static_rand , label='Static Rand Scheduling')
+plt.plot(x, static_hlfet , label='Static HLFET Scheduling')
+plt.plot(x, static_etf , label='Static ETF Scheduling')
+
 plt.legend()
 
 plt.title('average cycle time for :'+sys.argv[1])
@@ -132,7 +145,9 @@ plt.close()
 
 plt.plot(x, seq_wtime, label='Pire Temps Sequenciel')
 plt.plot(x, dynamic_wtime, label='Pire Temps Work Stealing')
-plt.plot(x, static_wtime, label='Pire Temps Static')
+plt.plot(x, static_rand_wtime, label='Pire Temps Static Rand')
+plt.plot(x, static_hlfet_wtime, label='Pire Temps Static HLFET')
+plt.plot(x, static_etf_wtime, label='Pire Temps Static')
 plt.legend()
 
 plt.title('worst cycle time for : '+sys.argv[1])
