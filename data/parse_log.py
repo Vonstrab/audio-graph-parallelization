@@ -57,7 +57,7 @@ def parse_file(path):
         average_time = time / number
         average_next = next / number
 
-        print("Results for " + path + ":")
+        print("\nResults for " + path + ":")
         print("Cycles count: " + str(number))
         print("Average time: " + str(average_time) + "µs")
         print("Average time left before the deadline: "
