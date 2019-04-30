@@ -8,7 +8,7 @@ use crate::measure::MeasureDestination;
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
 
-use super::static_alg::hlfet;
+use super::static_alg::{schedule, SchedulingAlgorithm};
 use super::thread_pool::ThreadPool;
 
 // Make moving clones into closures more convenient
@@ -31,10 +31,17 @@ macro_rules! clone {
 
 pub fn run_static_sched(
     graph: Arc<RwLock<TaskGraph>>,
+    sched_algo: SchedulingAlgorithm,
     tx: Sender<MeasureDestination>,
 ) -> Result<(), jack::Error> {
+    let output_file = String::from(match sched_algo {
+        SchedulingAlgorithm::Random => "tmp/static_rand_sched_log.txt",
+        SchedulingAlgorithm::HLFET => "tmp/static_hlfet_sched_log.txt",
+        SchedulingAlgorithm::ETF => "tmp/static_etf_sched_log.txt",
+    });
+
     tx.send(MeasureDestination::File(
-        "tmp/static_sched_log.txt".to_string(),
+        output_file.clone(),
         format!("Beginning of the execution"),
     ))
     .expect("logging error");
@@ -47,7 +54,7 @@ pub fn run_static_sched(
     let nb_exit_nodes = graph.write().unwrap().get_exit_nodes().len();
 
     tx.send(MeasureDestination::File(
-        "tmp/static_sched_log.txt".to_string(),
+        output_file.clone(),
         format!("Number of exit nodes: {}", nb_exit_nodes),
     ))
     .expect("logging error");
@@ -66,7 +73,7 @@ pub fn run_static_sched(
         &client,
     )));
 
-    let sched = hlfet(&mut graph.write().unwrap(), 4);
+    let sched = schedule(&mut graph.write().unwrap(), 4, sched_algo);
 
     let thread_pool = Arc::new(RwLock::new(ThreadPool::create(
         4,
@@ -78,7 +85,7 @@ pub fn run_static_sched(
     let callback = jack::ClosureProcessHandler::new(clone!(thread_pool => move |_, ps| {
         let start_time = std::time::SystemTime::now();;
         tx.send(MeasureDestination::File(
-            "tmp/static_sched_log.txt".to_string(),
+            output_file.clone(),
             format!("\nBeginning of a cycle at: {:#?}", start_time),
         ))
         .expect("logging error");
@@ -100,6 +107,7 @@ pub fn run_static_sched(
             }
         }
 
+        // TODO: move this into `TaskGraph`'s method
         // We must set the activation counters of each node
         let nb_nodes = graph.read().unwrap().get_nb_node();
         for node_index in 0..nb_nodes {
@@ -121,7 +129,7 @@ pub fn run_static_sched(
         let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
         tx.send(MeasureDestination::File(
-            "tmp/static_sched_log.txt".to_string(),
+            output_file.clone(),
             format!(
                 "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs\nTime left before the deadline: {}µs",
                 start_time,

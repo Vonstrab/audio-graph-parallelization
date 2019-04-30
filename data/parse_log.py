@@ -18,7 +18,21 @@ except subprocess.TimeoutExpired:
 # We run the audio for 60s using the TimeOutExpired exception
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
-                    sys.argv[1]], timeout=60.0)
+                    sys.argv[1], "rand"], timeout=60.0)
+except subprocess.TimeoutExpired:
+    pass
+
+# We run the audio for 60s using the TimeOutExpired exception
+try:
+    subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
+                    sys.argv[1], "hlfet"], timeout=60.0)
+except subprocess.TimeoutExpired:
+    pass
+
+# We run the audio for 60s using the TimeOutExpired exception
+try:
+    subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
+                    sys.argv[1], "etf"], timeout=60.0)
 except subprocess.TimeoutExpired:
     pass
 
@@ -43,7 +57,7 @@ def parse_file(path):
         average_time = time / number
         average_next = next / number
 
-        print("Results for " + path + ":")
+        print("\nResults for " + path + ":")
         print("Cycles count: " + str(number))
         print("Average time: " + str(average_time) + "µs")
         print("Average time left before the deadline: "
@@ -56,5 +70,7 @@ parse_file("tmp/seq_log.txt")
 # Parse the log for work stealing execution
 parse_file("tmp/work_stealing_log.txt")
 
-# Parse the log for static scheduling execution
-parse_file("tmp/static_sched_log.txt")
+# Parse the logs for static scheduling execution
+parse_file("tmp/static_rand_sched_log.txt")
+parse_file("tmp/static_hlfet_sched_log.txt")
+parse_file("tmp/static_etf_sched_log.txt")
