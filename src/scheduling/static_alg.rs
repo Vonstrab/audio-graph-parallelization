@@ -5,6 +5,27 @@ use task_graph::{graph::TaskGraph, state::TaskState};
 use scheduling::processor::Processor;
 use scheduling::schedule::Schedule;
 
+#[derive(Clone, Copy)]
+pub enum SchedulingAlgorithm {
+    Random,
+    HLFET,
+    ETF,
+    // CPFD,
+}
+
+pub fn schedule(
+    graph: &mut TaskGraph,
+    nb_processors: usize,
+    algo: SchedulingAlgorithm,
+) -> Schedule {
+    match algo {
+        SchedulingAlgorithm::Random => random(graph, nb_processors),
+        SchedulingAlgorithm::HLFET => hlfet(graph, nb_processors),
+        SchedulingAlgorithm::ETF => etf(graph, nb_processors),
+    }
+}
+
+
 //return the cpn dominant sequence
 fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
     //add the parents list to the sequence

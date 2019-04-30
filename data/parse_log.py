@@ -27,12 +27,12 @@ def parse_file(path):
 
         for line in file:
             words = line.strip().split(" ")
-            if len(words) == 1 and words[0].endswith("µs"):
+            if len(words) == 1 and words[0].endswith("µs") and number > 15:
                 c_time = int(words[0].rstrip("µs"))
                 if c_time > worst_time:
                     worst_time = c_time
                 time += int(words[0].rstrip("µs"))
-            if words[0] == "Time":
+            if words[0] == "Time" and number > 15:
                 next += int(words[5].rstrip("µs"))
             number += 1
 
@@ -82,25 +82,6 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
-                        file, "rand"], timeout=10.0)
-    except subprocess.TimeoutExpired:
-        pass
-
-    try:
-        subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
-                        file, "hlfet"], timeout=10.0)
-    except subprocess.TimeoutExpired:
-        pass
-
-    try:
-        subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
-                        file, "etf"], timeout=10.0)
-    except subprocess.TimeoutExpired:
-        pass
-
-    # We run the audio for 60s using the TimeOutExpired exception
-    try:
-        subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_test",
                         file], timeout=10.0)
     except subprocess.TimeoutExpired:
         pass
@@ -108,6 +89,25 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
+                        file, "rand"], timeout=10.0)
+    except subprocess.TimeoutExpired:
+        pass
+
+    try:
+        subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
+                        file, "hlfet"], timeout=10.0)
+    except subprocess.TimeoutExpired:
+        pass
+
+    try:
+        subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
+                        file, "etf"], timeout=10.0)
+    except subprocess.TimeoutExpired:
+        pass
+
+    # We run the audio for 60s using the TimeOutExpired exception
+    try:
+        subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_test",
                         file], timeout=10.0)
     except subprocess.TimeoutExpired:
         pass
