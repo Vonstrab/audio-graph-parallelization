@@ -585,36 +585,6 @@ n94 =
 };
 n95 =
 {
-    kind: "mod",
-    volume: 1.0,
-    freq: 55,
-};
-n96 =
-{
-    kind: "mod",
-    volume: 1.0,
-    freq: 55,
-};
-n97 =
-{
-    kind: "mod",
-    volume: 1.0,
-    freq: 55,
-};
-n98 =
-{
-    kind: "mod",
-    volume: 1.0,
-    freq: 55,
-};
-n99 =
-{
-    kind: "mod",
-    volume: 1.0,
-    freq: 55,
-};
-n100 =
-{
     kind: "sink",
     volume: 1.0,
 };
@@ -714,8 +684,3 @@ n91.1 -> n92.1;
 n92.1 -> n93.1;
 n93.1 -> n94.1;
 n94.1 -> n95.1;
-n95.1 -> n96.1;
-n96.1 -> n97.1;
-n97.1 -> n98.1;
-n98.1 -> n99.1;
-n99.1 -> n100.1;

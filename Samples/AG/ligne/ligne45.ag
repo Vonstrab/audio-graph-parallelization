@@ -1,0 +1,325 @@
+n1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+n2 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n4 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n5 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n6 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n7 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n8 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n9 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n10 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n11 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n12 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n13 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n14 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n15 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n16 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n17 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n18 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n19 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n20 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n21 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n22 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n23 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n24 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n25 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n26 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n27 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n28 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n29 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n30 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n31 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n32 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n33 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n34 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n35 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n36 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n37 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n38 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n39 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n40 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n41 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+n42 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n43 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n44 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+n45 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+
+n1.1 -> n2.1;
+n2.1 -> n3.1;
+n3.1 -> n4.1;
+n4.1 -> n5.1;
+n5.1 -> n6.1;
+n6.1 -> n7.1;
+n7.1 -> n8.1;
+n8.1 -> n9.1;
+n9.1 -> n10.1;
+n10.1 -> n11.1;
+n11.1 -> n12.1;
+n12.1 -> n13.1;
+n13.1 -> n14.1;
+n14.1 -> n15.1;
+n15.1 -> n16.1;
+n16.1 -> n17.1;
+n17.1 -> n18.1;
+n18.1 -> n19.1;
+n19.1 -> n20.1;
+n20.1 -> n21.1;
+n21.1 -> n22.1;
+n22.1 -> n23.1;
+n23.1 -> n24.1;
+n24.1 -> n25.1;
+n25.1 -> n26.1;
+n26.1 -> n27.1;
+n27.1 -> n28.1;
+n28.1 -> n29.1;
+n29.1 -> n30.1;
+n30.1 -> n31.1;
+n31.1 -> n32.1;
+n32.1 -> n33.1;
+n33.1 -> n34.1;
+n34.1 -> n35.1;
+n35.1 -> n36.1;
+n36.1 -> n37.1;
+n37.1 -> n38.1;
+n38.1 -> n39.1;
+n39.1 -> n40.1;
+n40.1 -> n41.1;
+n41.1 -> n42.1;
+n42.1 -> n43.1;
+n43.1 -> n44.1;
+n44.1 -> n45.1;
