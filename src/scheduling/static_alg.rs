@@ -25,7 +25,6 @@ pub fn schedule(
     }
 }
 
-
 //return the cpn dominant sequence
 fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
     //add the parents list to the sequence
