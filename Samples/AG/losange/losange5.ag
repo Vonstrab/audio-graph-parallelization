@@ -1,0 +1,42 @@
+n1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+n2 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+n3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+n4 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+    volume: 1.0,
+};
+
+n5 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+n1.1 -> n2.1;
+n1.1 -> n3.1;
+n2.1 -> n4.1;
+n3.1 -> n4.2;
+n4.1 -> n5.1;
