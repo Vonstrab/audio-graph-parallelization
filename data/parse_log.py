@@ -6,12 +6,18 @@ import matplotlib.pyplot as plt
 import re
 
 
-def sorted_nicely(l):
-    """ Sort the given iterable in the way that humans expect."""
-    def convert(text): return int(text) if text.isdigit() else text
+def convert(text):
+    return int(text) if text.isdigit() else text
 
-    def alphanum_key(key): return [convert(c)
-                                   for c in re.split('([0-9]+)', key)]
+
+def alphanum_key(key):
+    return [convert(c) for c in re.split('([0-9]+)', key)]
+
+
+def sorted_nicely(l):
+    """
+    Sort the given iterable in the way that humans expect
+    """
     return sorted(l, key=alphanum_key)
 
 
@@ -28,9 +34,9 @@ def parse_file(path):
         for line in file:
             words = line.strip().split(" ")
             if len(words) == 1 and words[0].endswith("µs") and number > 15:
-                c_time = int(words[0].rstrip("µs"))
-                if c_time > worst_time:
-                    worst_time = c_time
+                current_time = int(words[0].rstrip("µs"))
+                if current_time > worst_time:
+                    worst_time = current_time
                 time += int(words[0].rstrip("µs"))
             if words[0] == "Time" and number > 15:
                 next += int(words[5].rstrip("µs"))
@@ -151,8 +157,7 @@ plt.ylabel('time (µs)')
 plt.xlabel('number of nodes')
 
 # plt.show()
-plt.savefig('tmp/average.png',bbox_inches='tight')
-
+plt.savefig('tmp/average.png', bbox_inches='tight')
 plt.close()
 
 plt.plot(x, seq_wtime, label='Pire Temps Sequenciel')
@@ -167,5 +172,5 @@ plt.ylabel('time (µs)')
 plt.xlabel('number of nodes')
 
 # plt.show()
-plt.savefig('tmp/worst.png',bbox_inches='tight')
+plt.savefig('tmp/worst.png', bbox_inches='tight')
 plt.close()
