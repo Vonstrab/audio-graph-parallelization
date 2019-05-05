@@ -147,32 +147,31 @@ for dag in dags:
     static_etf_wtime.append(wtime)
 
 
-plt.plot(x, seq , label='Sequenciel Temps Moyen')
-plt.plot(x, dynamic, label='Work Stealing')
-plt.plot(x, static_rand , label='Static Rand Scheduling')
-plt.plot(x, static_hlfet , label='Static HLFET Scheduling')
-plt.plot(x, static_etf , label='Static ETF Scheduling')
-
+plt.plot(x, seq, 'r+', label='Sequential Scheduling')
+plt.plot(x, dynamic, 'b^', label='Work Stealing Scheduling')
+plt.plot(x, static_rand, 'gx', label='Static Rand Scheduling')
+plt.plot(x, static_hlfet, 'bx', label='Static HLFET Scheduling')
+plt.plot(x, static_etf, 'rx', label='Static ETF Scheduling')
 plt.legend()
 
-plt.title('average cycle time for :'+sys.argv[1])
-plt.ylabel('time (µs)')
-plt.xlabel('number of nodes')
+plt.title('Average execution time:'+sys.argv[1])
+plt.ylabel('Time (µs)')
+plt.xlabel('Number of nodes')
 
 # plt.show()
 plt.savefig('tmp/average.png', bbox_inches='tight')
 plt.close()
 
-plt.plot(x, seq_wtime, label='Pire Temps Sequenciel')
-plt.plot(x, dynamic_wtime, label='Pire Temps Work Stealing')
-plt.plot(x, static_rand_wtime, label='Pire Temps Static Rand')
-plt.plot(x, static_hlfet_wtime, label='Pire Temps Static HLFET')
-plt.plot(x, static_etf_wtime, label='Pire Temps Static')
+plt.plot(x, seq_wtime, 'r+', label='Sequential Scheduling')
+plt.plot(x, dynamic_wtime, 'b^', label='Work Stealing Scheduling')
+plt.plot(x, static_rand_wtime, 'gx', label='Static Rand Scheduling')
+plt.plot(x, static_hlfet_wtime, 'bx', label='Static HLFET Scheduling')
+plt.plot(x, static_etf_wtime, 'rx', label='Static ETF Scheduling')
 plt.legend()
 
-plt.title('worst cycle time for : '+sys.argv[1])
-plt.ylabel('time (µs)')
-plt.xlabel('number of nodes')
+plt.title('Worst execution time: '+sys.argv[1])
+plt.ylabel('Time (µs)')
+plt.xlabel('Number of nodes')
 
 # plt.show()
 plt.savefig('tmp/worst.png', bbox_inches='tight')
