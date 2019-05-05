@@ -70,6 +70,9 @@ static_etf_wtime = []
 dynamic = []
 dynamic_wtime = []
 
+subprocess.run(["cargo", "build", "--release", "--bin", "seq_test"])
+subprocess.run(["cargo", "build", "--release", "--bin", "static_sched_test"])
+subprocess.run(["cargo", "build", "--release", "--bin", "work_stealing_test"])
 
 for dag in dags:
 
@@ -88,33 +91,33 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "seq_test",
-                        file], timeout=1.0)
+                        file], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
-                        file, "rand"], timeout=1.0)
+                        file, "rand"], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
-                        file, "hlfet"], timeout=1.0)
+                        file, "hlfet"], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_test",
-                        file, "etf"], timeout=1.0)
+                        file, "etf"], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_test",
-                        file], timeout=1.0)
+                        file], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
