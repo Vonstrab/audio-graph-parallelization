@@ -1,18 +1,26 @@
+//! This module implement the Schedule on one Processor
+
 use scheduling::timeslot::TimeSlot;
 use std::fmt::{Display, Error, Formatter};
 
 #[derive(Clone, Default)]
+///Repressent the schedule on one Processor
 pub struct Processor {
+    ///The List of TImeSlots scheduled on the Processors
     pub time_slots: Vec<TimeSlot>,
     completion_time: f64,
 }
 
 impl Processor {
+    ///Returns an empty Processor
     pub fn new() -> Processor {
         Processor::default()
     }
 
-    //duplcate from a Processor
+    ///Duplicate the Schedule on another Processor
+    ///
+    ///# Arguments
+    /// * dup_proc - The Processor to duplicate into
     pub fn duplication_from(&mut self, dup_proc: &Processor) {
         self.time_slots = dup_proc.time_slots.clone();
         self.completion_time = dup_proc.completion_time;
@@ -29,6 +37,13 @@ impl Processor {
         );
     }
 
+    ///Return true if the TimeSlot is correctly added on the Processor
+    ///
+    /// # Arguments
+    ///
+    /// * node - The TaskGraph Node scheduled
+    /// * start_time - The Start Time of the TimeSLot
+    /// * Completion_time - The Completion TimeSlot
     pub fn add_timeslot(&mut self, node: usize, start_time: f64, completion_time: f64) -> bool {
         //check pre-condition
         debug_assert!(
@@ -59,11 +74,17 @@ impl Processor {
         false
     }
 
+    ///Return the Completion Time of the Schedule
+
     pub fn get_completion_time(&self) -> f64 {
         self.completion_time
     }
 
-    //true if its allocate a certain node
+    ///Return true if the Processor allocate a certain TaskGraph Node
+    ///
+    /// # Arguments
+    ///
+    /// * node_index - The Node Index to look for  
     pub fn contains_node(&self, node_index: usize) -> bool {
         for timeslot in &self.time_slots {
             if timeslot.get_node() == node_index {
@@ -73,7 +94,11 @@ impl Processor {
         false
     }
 
-    //true if its allocate one of nodes
+    ///Return true if the Processor allocate ONE of the TaskGraph Nodes
+    ///
+    /// # Arguments
+    ///
+    /// * list_node_index - The list of Node Index to look for
     pub fn contains_list_node(&self, list_node_index: &Vec<usize>) -> bool {
         for node in list_node_index {
             if self.contains_node(*node) {
@@ -84,7 +109,11 @@ impl Processor {
         false
     }
 
-    //true if its allocate all of nodes
+    ///Return true if the Processor allocate ALL of the TaskGraph Nodes
+    ///
+    /// # Arguments
+    ///
+    /// * list_node_index - The list of Node Index to look for
     pub fn contains_all_list_node(&self, list_node_index: &Vec<usize>) -> bool {
         for node in list_node_index {
             if !self.contains_node(*node) {
@@ -95,7 +124,11 @@ impl Processor {
         true
     }
 
-    //return all the nodes not in the processor
+    ///Return the list of all the ThaskGraph Nodes not in the processor
+    /// 
+    /// # Arguments
+    ///
+    /// * list_node_index - The list of Node Index to look for
     pub fn nodes_not_in_proc(&self, list_node_index: &Vec<usize>) -> Vec<usize> {
         let mut output = Vec::new();
         for node in list_node_index {
