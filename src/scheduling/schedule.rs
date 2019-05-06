@@ -1,4 +1,4 @@
-//! This module implements a schedule
+//! This module implements a Schedule
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -10,25 +10,33 @@ use scheduling::timeslot::TimeSlot;
 use std::fmt::{Display, Error, Formatter};
 
 #[derive(Clone, Default)]
+///Repressent the Schedule
 pub struct Schedule {
+    ///List of all the Processors Scheduled
     pub processors: Vec<Processor>,
 }
 
 impl Schedule {
+    //Return an empty Schedule
     pub fn new() -> Schedule {
         Schedule::default()
     }
 
+    ///Add an empty Processor and return the number of Processors Scheduled
     pub fn add_processor(&mut self) -> usize {
         self.processors.push(Processor::new());
         self.processors.len() - 1
     }
 
+    //Return The number of Processors Scheduled
     pub fn get_nb_processor(&self) -> usize {
         self.processors.len()
     }
 
-    //return the timeslot of the node with the earliest completion time
+    ///Return the Timeslot , if any of the node with the earliest completion time
+    /// 
+    /// # Arguments
+    /// * node_index - the Node Index to look for
     pub fn get_time_slot(&self, node_index: usize) -> Option<TimeSlot> {
         let mut output = None;
         for procs in &self.processors {
@@ -48,6 +56,7 @@ impl Schedule {
         output
     }
 
+    ///Return The Completion time of all the Processors 
     pub fn get_completion_time(&self) -> f64 {
         let mut time: f64 = 0.0;
 
@@ -58,6 +67,7 @@ impl Schedule {
         time
     }
 
+    
     pub fn output(&self, ganttname: &str) -> Result<(), std::io::Error> {
         let mut out_file = String::new();
 
@@ -87,7 +97,11 @@ impl Schedule {
         write!(file, "{}", out_file)
     }
 
-    //return the timeslot if any containing the predecessor with the last completion
+    ///Return the Timeslot, if any containing the predecessor with the last completion
+    /// 
+    /// # Arguments 
+    /// 
+    /// * predecessors - the list of Node Index to look for
     pub fn get_last_predecessor(&self, predecesssors: &Vec<usize>) -> Option<TimeSlot> {
         if predecesssors.is_empty() {
             return None;
@@ -111,7 +125,10 @@ impl Schedule {
         output
     }
 
-    //return the set of processors that allocate the predecesssors
+    ///Return the List of Processors that allocate the predecesssors 
+    /// 
+    ///# Argument
+    /// * predecessors - List of Node Index to look for
     pub fn get_p_set(&self, predecesssors: &Vec<usize>) -> Vec<usize> {
         let mut p_set = Vec::new();
         for (proc_index, processor) in self.processors.iter().enumerate() {
