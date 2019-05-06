@@ -10,7 +10,7 @@ pub enum SchedulingAlgorithm {
     Random,
     HLFET,
     ETF,
-    // CPFD,
+    CPFD,
 }
 
 pub fn schedule(
@@ -22,6 +22,7 @@ pub fn schedule(
         SchedulingAlgorithm::Random => random(graph, nb_processors),
         SchedulingAlgorithm::HLFET => hlfet(graph, nb_processors),
         SchedulingAlgorithm::ETF => etf(graph, nb_processors),
+        SchedulingAlgorithm::CPFD => cpfd(graph, 1.0),
     }
 }
 
@@ -54,7 +55,7 @@ fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
         }
     }
 
-    let mut sequence = Vec::new(); //graph.get_entry_nodes();
+    let mut sequence = Vec::new();
     let sortie_nodes = graph.get_exit_nodes();
 
     for cp in sortie_nodes {
@@ -75,12 +76,10 @@ fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
 fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
     let predecessors = graph.get_predecessors(node).unwrap();
 
-    let time = sched
+    sched
         .get_last_predecessor(&predecessors)
         .unwrap_or_default()
         .get_completion_time();
-
-    time
 }
 
 // Sets the status of all reachable nodes from the entry
@@ -116,44 +115,42 @@ fn optimal_proc(
         get_ready_time(candidate, graph, schedule).max(control.get_completion_time());
     let predecessors = graph.get_predecessors(candidate).unwrap_or_default();
 
-    if !predecessors.is_empty() {
-        if !duplicate_proc.contains_all_list_node(&predecessors) {
-            start_time = (get_ready_time(candidate, graph, schedule) + communication_cost)
-                .max(control.get_completion_time());
+    if !predecessors.is_empty() && !duplicate_proc.contains_all_list_node(&predecessors) {
+        start_time = (get_ready_time(candidate, graph, schedule) + communication_cost)
+            .max(control.get_completion_time());
 
-            let mut last_pred = None;
-            let mut last_pred_message = 0.0;
+        let mut last_pred = None;
+        let mut last_pred_message = 0.0;
 
-            for not_in_proc_pred in duplicate_proc.nodes_not_in_proc(&predecessors) {
-                let message_arrive = schedule
-                    .get_time_slot(not_in_proc_pred)
-                    .unwrap()
-                    .get_completion_time()
-                    + communication_cost;
-                if last_pred.is_none() {
-                    last_pred = Some(not_in_proc_pred);
-                    last_pred_message = message_arrive;
-                } else if last_pred_message < message_arrive {
-                    last_pred = Some(not_in_proc_pred);
-                    last_pred_message = message_arrive;
-                }
+        for not_in_proc_pred in duplicate_proc.nodes_not_in_proc(&predecessors) {
+            let message_arrive = schedule
+                .get_time_slot(not_in_proc_pred)
+                .unwrap()
+                .get_completion_time()
+                + communication_cost;
+            if last_pred.is_none() {
+                last_pred = Some(not_in_proc_pred);
+                last_pred_message = message_arrive;
+            } else if last_pred_message < message_arrive {
+                last_pred = Some(not_in_proc_pred);
+                last_pred_message = message_arrive;
             }
+        }
 
-            if last_pred.is_some() {
-                duplicate_proc = optimal_proc(
-                    graph,
-                    &duplicate_proc,
-                    last_pred.unwrap(),
-                    communication_cost,
-                    schedule,
-                );
-                let pred_dup_start_time = duplicate_proc.get_completion_time();
+        if last_pred.is_some() {
+            duplicate_proc = optimal_proc(
+                graph,
+                &duplicate_proc,
+                last_pred.unwrap(),
+                communication_cost,
+                schedule,
+            );
+            let pred_dup_start_time = duplicate_proc.get_completion_time();
 
-                if pred_dup_start_time > start_time {
-                    duplicate_proc.duplication_from(control);
-                } else {
-                    start_time = pred_dup_start_time;
-                }
+            if pred_dup_start_time > start_time {
+                duplicate_proc.duplication_from(control);
+            } else {
+                start_time = pred_dup_start_time;
             }
         }
     }

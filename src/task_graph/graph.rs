@@ -354,7 +354,7 @@ impl TaskGraph {
             }
         }
 
-        return true;
+        true
     }
 }
 
@@ -376,18 +376,6 @@ pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
     let pdf_filename = format!("tmp/{}.pdf", graph_name);
 
     println!("Run dot command");
-
-    //using sfdp instead of dot , uglier but a lot quicker in big graphs
-
-    // Command::new("sfdp")
-    //     .arg("-x")
-    //     .arg("-Goverlap=scale")
-    //     .arg("-Tpng")
-    //     .arg(tmp_dot)
-    //     .arg(" > ")
-    //     .arg(pdf_filename)
-    //     .output()
-    //     .unwrap_or_else(|e| panic!("failed to execute process: {}", e));
 
     Command::new("dot")
         .arg("-Tpdf")

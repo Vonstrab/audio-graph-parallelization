@@ -31,7 +31,7 @@ pub fn run_seq(
 ) -> Result<(), jack::Error> {
     tx.send(MeasureDestination::File(
         "tmp/seq_log.txt".to_string(),
-        format!("Beginning of the execution"),
+        "Beginning of the execution".to_string(),
     ))
     .expect("logging error");
 

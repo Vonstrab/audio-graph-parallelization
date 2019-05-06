@@ -38,6 +38,8 @@ pub fn run_static_sched(
         SchedulingAlgorithm::Random => "tmp/static_rand_sched_log.txt",
         SchedulingAlgorithm::HLFET => "tmp/static_hlfet_sched_log.txt",
         SchedulingAlgorithm::ETF => "tmp/static_etf_sched_log.txt",
+        SchedulingAlgorithm::CPFD => "tmp/static_cpfd_sched_log.txt",
+
     });
 
     tx.send(MeasureDestination::File(

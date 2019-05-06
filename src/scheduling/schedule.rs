@@ -34,7 +34,7 @@ impl Schedule {
     }
 
     ///Return the Timeslot , if any of the node with the earliest completion time
-    /// 
+    ///
     /// # Arguments
     /// * node_index - the Node Index to look for
     pub fn get_time_slot(&self, node_index: usize) -> Option<TimeSlot> {
@@ -44,10 +44,8 @@ impl Schedule {
                 if ts.get_node() == node_index {
                     if output.is_none() {
                         output = Some(*ts);
-                    } else {
-                        if output.unwrap().get_completion_time() > ts.get_completion_time() {
-                            output = Some(*ts);
-                        }
+                    } else if output.unwrap().get_completion_time() > ts.get_completion_time() {
+                        output = Some(*ts);
                     }
                 }
             }
@@ -56,7 +54,7 @@ impl Schedule {
         output
     }
 
-    ///Return The Completion time of all the Processors 
+    ///Return The Completion time of all the Processors
     pub fn get_completion_time(&self) -> f64 {
         let mut time: f64 = 0.0;
 
@@ -67,7 +65,6 @@ impl Schedule {
         time
     }
 
-    
     pub fn output(&self, ganttname: &str) -> Result<(), std::io::Error> {
         let mut out_file = String::new();
 
@@ -98,9 +95,9 @@ impl Schedule {
     }
 
     ///Return the Timeslot, if any containing the predecessor with the last completion
-    /// 
-    /// # Arguments 
-    /// 
+    ///
+    /// # Arguments
+    ///
     /// * predecessors - the list of Node Index to look for
     pub fn get_last_predecessor(&self, predecesssors: &Vec<usize>) -> Option<TimeSlot> {
         if predecesssors.is_empty() {
@@ -125,8 +122,8 @@ impl Schedule {
         output
     }
 
-    ///Return the List of Processors that allocate the predecesssors 
-    /// 
+    ///Return the List of Processors that allocate the predecesssors
+    ///
     ///# Argument
     /// * predecessors - List of Node Index to look for
     pub fn get_p_set(&self, predecesssors: &Vec<usize>) -> Vec<usize> {
