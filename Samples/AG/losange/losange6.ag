@@ -1,27 +1,32 @@
-n1 =
+o1 =
 {
     kind: "osc",
     volume: 1.0,
     freq: 110,
 };
 
-n2 =
+mi2 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo3 =
 {
     kind: "mod",
     volume: 1.0,
     freq: 55,
 };
 
-
-n3 =
+mo4 =
 {
     kind: "mod",
     volume: 1.0,
     freq: 55,
 };
 
-
-n4 =
+mi5 =
 {
     kind: "mix",
     in: 2,
@@ -29,14 +34,15 @@ n4 =
     volume: 1.0,
 };
 
-n5 =
+s6 =
 {
     kind: "sink",
     volume: 1.0,
 };
 
-n1.1 -> n2.1;
-n1.1 -> n3.1;
-n2.1 -> n4.1;
-n3.1 -> n4.2;
-n4.1 -> n5.1;
+o1.1 -> mi2.1;
+mi2.1 -> mo3.1;
+mi2.2 -> mo4.1;
+mo3.1 -> mi5.1;
+mo4.1 -> mi5.2;
+mi5.1 -> s6.1;

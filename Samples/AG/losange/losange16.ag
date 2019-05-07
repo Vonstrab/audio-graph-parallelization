@@ -1,0 +1,129 @@
+o1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mi2 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo4 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi5 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi6 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo7 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo8 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo9 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo10 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi11 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi12 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mo13 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo14 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mi15 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+s16 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+o1.1 -> mi2.1;
+mi2.1 -> mo3.1;
+mi2.2 -> mo4.1;
+mo3.1 -> mi5.1;
+mo4.1 -> mi6.1;
+mi5.1 -> mo7.1;
+mi5.2 -> mo8.1;
+mi6.1 -> mo9.1;
+mi6.2 -> mo10.1;
+mo7.1 -> mi11.1;
+mo8.1 -> mi11.2;
+mo9.1 -> mi12.1;
+mo10.1 -> mi12.2;
+mi11.1 -> mo13.1;
+mi12.1 -> mo14.1;
+mo13.1 -> mi15.1;
+mo14.1 -> mi15.2;
+mi15.1 -> s16.1;
