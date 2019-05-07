@@ -294,7 +294,7 @@ impl TaskGraph {
         }
     }
 
-    pub fn output_dot(&self, filename: &str) -> Result<(), std::io::Error> {
+    pub fn output_dot(&self, path: &str) -> Result<(), std::io::Error> {
         let mut dot_file = String::new();
 
         dot_file.push_str("strict digraph{\n");
@@ -313,8 +313,7 @@ impl TaskGraph {
 
         dot_file.push_str("}\n");
 
-        let path = Path::new(filename);
-        let mut file = File::create(&path).expect("Impossible to create file.");
+        let mut file = File::create(path).expect("Impossible to create file.");
 
         write!(file, "{}", dot_file)
     }

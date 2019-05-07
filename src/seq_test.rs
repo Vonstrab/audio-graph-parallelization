@@ -1,6 +1,7 @@
 extern crate agp_lib;
 extern crate crossbeam;
 
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use crossbeam::channel::unbounded;
@@ -17,7 +18,14 @@ fn main() {
     let dag = agp_lib::parser::audiograph::parser::actual_parse(&args[1])
         .expect("Failed to parse audio graph");
 
-    agp_lib::task_graph::graph::run_dot(&dag, "seq");
+    let dag_name = Path::new(&args[1])
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .trim_end_matches(".ag");
+
+    agp_lib::task_graph::graph::run_dot(&dag, dag_name);
 
     let (tx, rx) = unbounded();
     let mut measure_thread = Measure::new(rx);
