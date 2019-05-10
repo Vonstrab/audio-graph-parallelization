@@ -1,3 +1,4 @@
+//! This module implments all the Scheduling algorithms
 use std::collections::HashMap;
 
 use task_graph::{graph::TaskGraph, state::TaskState};
@@ -79,7 +80,7 @@ fn get_ready_time(node: usize, graph: &TaskGraph, sched: &Schedule) -> f64 {
     sched
         .get_last_predecessor(&predecessors)
         .unwrap_or_default()
-        .get_completion_time();
+        .get_completion_time()
 }
 
 // Sets the status of all reachable nodes from the entry
@@ -128,10 +129,7 @@ fn optimal_proc(
                 .unwrap()
                 .get_completion_time()
                 + communication_cost;
-            if last_pred.is_none() {
-                last_pred = Some(not_in_proc_pred);
-                last_pred_message = message_arrive;
-            } else if last_pred_message < message_arrive {
+            if last_pred.is_none() || last_pred_message < message_arrive {
                 last_pred = Some(not_in_proc_pred);
                 last_pred_message = message_arrive;
             }
@@ -185,6 +183,11 @@ fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, graph: &TaskGraph) -> usiz
     out_node.unwrap()
 }
 
+///Schedule the TaskGraph randomly
+///
+///# Arguments
+/// * graph - The TaskGraph to schedule
+/// * nb_processors - The number of processors available
 pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     println!("creation of the schedule");
     // Build the schedule
@@ -243,6 +246,11 @@ pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     out_schedule
 }
 
+///Schedule the TaskGraph with the HLFET Algorithm
+///
+///# Arguments
+/// * graph - The TaskGraph to schedule
+/// * nb_processors - The number of processors available
 pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     // Build the schedule
     let mut out_schedule = Schedule::new();
@@ -310,6 +318,11 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     out_schedule
 }
 
+///Schedule the TaskGraph with the EFT Algorithm
+///
+///# Arguments
+/// * graph - The TaskGraph to schedule
+/// * nb_processors - The number of processors available
 pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     // Build the schedule
     let mut out_schedule = Schedule::new();
@@ -391,6 +404,11 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     out_schedule
 }
 
+///Schedule the TaskGraph with the CPFD Algorithm
+///
+///# Arguments
+/// * graph - The TaskGraph to schedule
+/// * communication_cost - The cominication time between processors
 pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
     //initialise the schedule
     let mut out_schedule = Schedule::new();

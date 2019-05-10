@@ -38,13 +38,13 @@ impl Schedule {
     /// # Arguments
     /// * node_index - the Node Index to look for
     pub fn get_time_slot(&self, node_index: usize) -> Option<TimeSlot> {
-        let mut output = None;
+        let mut output: Option<TimeSlot> = None;
         for procs in &self.processors {
             for ts in &procs.time_slots {
                 if ts.get_node() == node_index {
-                    if output.is_none() {
-                        output = Some(*ts);
-                    } else if output.unwrap().get_completion_time() > ts.get_completion_time() {
+                    if output.is_none()
+                        || output.unwrap().get_completion_time() > ts.get_completion_time()
+                    {
                         output = Some(*ts);
                     }
                 }
@@ -104,16 +104,15 @@ impl Schedule {
             return None;
         }
 
-        let mut output = None;
+        let mut output: Option<TimeSlot> = None;
 
         for pred in predecesssors {
             let pred_ts = self.get_time_slot(*pred);
             if pred_ts.is_none() {
                 continue;
             }
-            if output.is_none() {
-                output = pred_ts;
-            } else if output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
+            if output.is_none()
+                || output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
             {
                 output = pred_ts;
             }

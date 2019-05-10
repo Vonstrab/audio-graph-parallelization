@@ -1,5 +1,4 @@
 //! This module implements a TimeSlot
-//!
 
 use std::fmt::{Display, Error, Formatter};
 
@@ -11,6 +10,12 @@ pub struct TimeSlot {
 }
 
 impl TimeSlot {
+    ///Create a new time slot
+    ///
+    ///# Arguments
+    /// * node - The Node Index scheduled
+    /// * start - The start time
+    /// * completion - The completion time
     pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
         //check pre-condition
         debug_assert!(start < completion, "TimeSlot::new() : completions < start");
@@ -25,14 +30,17 @@ impl TimeSlot {
         ts
     }
 
+    ///Return the start time
     pub fn get_start_time(&self) -> f64 {
         self.start_time
     }
 
+    ///Return the completion time
     pub fn get_completion_time(&self) -> f64 {
         self.completion_time
     }
 
+    ///Return the node Index
     pub fn get_node(&self) -> usize {
         self.node
     }

@@ -1,3 +1,4 @@
+//!Implement a Task graph
 use std::collections::HashMap;
 
 use std::fs::File;
@@ -21,6 +22,11 @@ pub struct TaskGraph {
 }
 
 impl TaskGraph {
+    ///Create a new TaskGraph
+    ///
+    ///# Arguments
+    /// * node_count - The number of nodes expected scheduled
+    /// * edges_count - The number of edges expected scheduled
     pub fn new(nodes_count: usize, edges_count: usize) -> TaskGraph {
         let mut adj_list = Vec::with_capacity(nodes_count);
 
@@ -37,14 +43,17 @@ impl TaskGraph {
         }
     }
 
+    ///Return the number of nodes
     pub fn get_nb_node(&self) -> usize {
         self.adj_list.len()
     }
 
+    ///Return the number of edges
     pub fn get_nb_edge(&self) -> usize {
         self.edges.len()
     }
 
+    ///Return the List of Entry nodes; an Entry Node is Node that doesn't have predecessors
     pub fn get_entry_nodes(&mut self) -> Vec<usize> {
         if self.entry_nodes.is_empty() {
             for i in 0..self.nodes.len() {
@@ -57,6 +66,7 @@ impl TaskGraph {
         self.entry_nodes.clone()
     }
 
+    ///Return the List of Exit nodes; an Exit Node is Node that doesn't have successors
     pub fn get_exit_nodes(&mut self) -> Vec<usize> {
         if self.exit_nodes.is_empty() {
             for i in 0..self.nodes.len() {
@@ -69,6 +79,10 @@ impl TaskGraph {
         self.exit_nodes.clone()
     }
 
+    ///Return the Predecessors List of the Node
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_predecessors(&self, node_index: usize) -> Option<Vec<usize>> {
         if node_index < self.nodes.len() {
             Some(self.adj_list[node_index].1.clone())
@@ -77,6 +91,10 @@ impl TaskGraph {
         }
     }
 
+    ///Return the Successor List of the Node
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_successors(&self, node_index: usize) -> Option<Vec<usize>> {
         if node_index < self.nodes.len() {
             Some(self.adj_list[node_index].0.clone())
@@ -85,10 +103,12 @@ impl TaskGraph {
         }
     }
 
+    ///Return The Hashmap with the relation between the edge and the communication time
     pub fn get_edges(&self) -> HashMap<(usize, usize), Option<f64>> {
         self.edges.clone()
     }
 
+    ///Return the List of nodes in Topological order
     pub fn get_topological_order(&self) -> Vec<usize> {
         let mut top_ord = self.get_rev_topological_order();
         top_ord.reverse();
@@ -96,6 +116,7 @@ impl TaskGraph {
         top_ord
     }
 
+    ///Return the List of nodes in Reverse Topological order
     pub fn get_rev_topological_order(&self) -> Vec<usize> {
         let mut stack = Vec::new();
         let mut visited: Vec<bool> = std::iter::repeat(false).take(self.nodes.len()).collect();
@@ -122,11 +143,10 @@ impl TaskGraph {
         stack.push(node_index);
     }
 
-    // May be useless
-    pub fn find_task(&self, _taks: &Task) -> Option<usize> {
-        unimplemented!()
-    }
-
+    ///Return the DSP Task of the Node if any
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_dsp(&self, node_index: usize) -> Arc<Mutex<Option<DspTask>>> {
         if node_index < self.nodes.len() {
             self.nodes[node_index].dsp_task.clone()
@@ -135,6 +155,10 @@ impl TaskGraph {
         }
     }
 
+    ///Return the calculated wcet of the Node if any
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_wcet(&mut self, node_index: usize) -> Option<f64> {
         if node_index < self.nodes.len() {
             self.nodes[node_index].get_wcet()
@@ -143,6 +167,10 @@ impl TaskGraph {
         }
     }
 
+    ///Return the State of the Node if any
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_state(&self, node_index: usize) -> Option<TaskState> {
         if node_index < self.nodes.len() {
             Some(self.nodes[node_index].state)
@@ -151,6 +179,11 @@ impl TaskGraph {
         }
     }
 
+    ///Set the calculated wcet of the Node if any
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
+    /// * state - the state value to set
     pub fn set_state(&mut self, node_index: usize, state: TaskState) -> bool {
         if node_index < self.nodes.len() {
             self.nodes[node_index].state = state;
@@ -160,6 +193,11 @@ impl TaskGraph {
         }
     }
 
+    ///Set the calculated wcet of the Node if any
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
+    /// * state - the state value to set
     pub fn dec_activation_count(&mut self, node_index: usize) -> bool {
         if node_index < self.nodes.len() {
             match self.nodes[node_index].state {
@@ -179,6 +217,11 @@ impl TaskGraph {
         }
     }
 
+    ///Return the communication cost between two nodes
+    ///
+    ///# Arguments
+    /// * src_node_index - The Index of the source node
+    /// * dest_node_index - The Index of the destination node
     pub fn get_communication_cost(
         &self,
         src_node_index: usize,
@@ -190,6 +233,10 @@ impl TaskGraph {
             .unwrap_or(None)
     }
 
+    ///Return the t level of the node
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_t_level(&mut self, node_index: usize) -> Option<f64> {
         let top_ord = self.get_topological_order();
         let mut t_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
@@ -219,6 +266,10 @@ impl TaskGraph {
         t_levels.get(node_index).map(|val| *val)
     }
 
+    ///Return the b level of the node
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_b_level(&mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut b_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
@@ -242,6 +293,10 @@ impl TaskGraph {
         b_levels.get(node_index).map(|val| *val)
     }
 
+    ///Return the static level of the node
+    ///
+    ///# Arguments
+    /// * node_index - The Node Index
     pub fn get_static_level(&mut self, node_index: usize) -> Option<f64> {
         let rev_top_ord = self.get_rev_topological_order();
         let mut s_levels: Vec<f64> = std::iter::repeat(0.0).take(self.nodes.len()).collect();
@@ -265,26 +320,35 @@ impl TaskGraph {
         s_levels.get(node_index).map(|val| *val)
     }
 
+    ///Add a task to the graph and Return it Index
+    ///
+    ///# Arguments
+    /// * task - The Task to add
     pub fn add_task(&mut self, task: Task) -> usize {
         self.nodes.push(Node::new(task));
 
         self.nodes.len() - 1
     }
 
+    ///Add a DSP to the graph and Return it Index
+    ///
+    ///# Arguments
+    /// * dsp - The DspTask to add
     pub fn add_dsp(&mut self, dsp: DspTask) -> usize {
         self.nodes.push(Node::with_dsp(dsp));
 
         self.nodes.len() - 1
     }
 
+    ///Return true if an edge between two nodes is Correctly Added
+    ///
+    ///# Arguments
+    /// * src_node_index - The Index of the source node
+    /// * dest_node_index - The Index of the destination node
     pub fn add_edge(&mut self, src_node_index: usize, dest_node_index: usize) -> bool {
         if src_node_index < self.nodes.len() && dest_node_index < self.nodes.len() {
             self.adj_list[src_node_index].0.push(dest_node_index);
             self.adj_list[dest_node_index].1.push(src_node_index);
-
-            // self.nodes[dest_node_index]
-            //     .predecessors
-            //     .push(src_node_index);
 
             self.edges.insert((src_node_index, dest_node_index), None);
 
@@ -294,6 +358,10 @@ impl TaskGraph {
         }
     }
 
+    ///Output the Graph to the .dot Graphviz format
+    ///
+    ///# Arguments
+    /// * filename - the file where the dot will be saved
     pub fn output_dot(&self, path: &str) -> Result<(), std::io::Error> {
         let mut dot_file = String::new();
 
@@ -328,7 +396,10 @@ impl TaskGraph {
         write!(file, "{}", dot_file)
     }
 
-    //validate the postcondition of the static schedules
+    ///Return true if the schedule is valid for the graph
+    ///
+    ///# Arguments
+    /// * schedule - the schedule to validate
     pub fn schedule_is_valid(&mut self, schedule: &crate::scheduling::schedule::Schedule) -> bool {
         for node in self.get_topological_order() {
             let ts_node = schedule.get_time_slot(node);
@@ -342,7 +413,6 @@ impl TaskGraph {
             let wcet = self.get_wcet(node).unwrap();
 
             if (time - wcet) >= 0.00004 {
-                println!("wcet : {} ts time {}", wcet, time);
                 return false;
             }
 

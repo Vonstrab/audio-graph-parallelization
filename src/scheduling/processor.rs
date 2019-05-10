@@ -31,7 +31,7 @@ impl Processor {
         );
         //check post-condition
         debug_assert!(
-            self.get_completion_time() == dup_proc.get_completion_time()
+            (self.get_completion_time() - dup_proc.get_completion_time()).abs() < std::f64::EPSILON
                 && self.time_slots == dup_proc.time_slots,
             "Processor::duplication_from : post-condition Error"
         );
@@ -65,7 +65,7 @@ impl Processor {
 
             //check post-condition
             debug_assert!(
-                self.completion_time == completion_time,
+                (self.completion_time - completion_time).abs() < std::f64::EPSILON,
                 "Processor::add_timeslot : post-condition Error"
             );
             return true;
@@ -125,7 +125,7 @@ impl Processor {
     }
 
     ///Return the list of all the ThaskGraph Nodes not in the processor
-    /// 
+    ///
     /// # Arguments
     ///
     /// * list_node_index - The list of Node Index to look for

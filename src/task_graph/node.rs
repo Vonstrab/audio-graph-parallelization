@@ -20,6 +20,7 @@ pub struct Node {
 }
 
 impl Node {
+    ///Create a new Node with a task
     pub fn new(task: Task) -> Node {
         Node {
             task,
@@ -29,6 +30,7 @@ impl Node {
         }
     }
 
+    ///Create a new Node with a DspTask
     pub fn with_dsp(dsp: DspTask) -> Node {
         Node {
             task: Task::Constant(0.0),
@@ -38,6 +40,7 @@ impl Node {
         }
     }
 
+    ///Return the wcet of the node
     pub fn get_wcet(&mut self) -> Option<f64> {
         if self.wcet.is_none() {
             self.estimate_wcet();
@@ -46,6 +49,7 @@ impl Node {
         self.wcet
     }
 
+    ///Estimate the wcet of the node, udes by get_wcet()
     fn estimate_wcet(&mut self) {
         let dsp = self.dsp_task.lock().unwrap();
 
@@ -124,7 +128,7 @@ impl Node {
                     }
                 }
 
-                self.wcet = Some(max_duration.subsec_micros() as f64 / 1_000_000.0);
+                self.wcet = Some(f64::from(max_duration.subsec_micros()) / 1_000_000.0);
             }
         }
     }
