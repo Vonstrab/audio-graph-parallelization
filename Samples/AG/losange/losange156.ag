@@ -1,0 +1,1277 @@
+o1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mi2 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo4 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi5 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi6 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo7 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo8 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo9 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo10 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mi11 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi12 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi13 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi14 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo15 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo16 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo17 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo18 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo19 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo20 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo21 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo22 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mi23 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi24 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi25 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi26 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi27 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi28 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi29 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi30 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo31 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo32 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo33 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo34 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo35 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo36 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo37 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo38 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo39 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo40 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo41 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo42 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo43 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo44 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo45 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo46 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi47 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi48 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi49 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi50 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi51 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi52 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi53 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi54 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi55 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi56 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi57 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi58 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi59 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi60 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi61 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mi62 =
+{
+    kind: "mix",
+    in: 1,
+    out: 2,
+};
+
+mo63 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo64 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo65 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo66 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo67 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo68 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo69 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo70 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo71 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo72 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo73 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo74 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo75 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo76 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo77 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo78 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo79 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo80 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo81 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo82 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo83 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo84 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo85 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo86 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo87 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo88 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo89 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo90 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo91 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo92 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo93 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mo94 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 330,
+};
+
+mi95 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi96 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi97 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi98 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi99 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi100 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi101 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi102 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi103 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi104 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi105 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi106 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi107 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi108 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi109 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi110 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mo111 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo112 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo113 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo114 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo115 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo116 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo117 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo118 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo119 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo120 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo121 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo122 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo123 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo124 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo125 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo126 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi127 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi128 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi129 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi130 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi131 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi132 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi133 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi134 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mo135 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo136 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo137 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo138 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo139 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo140 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo141 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo142 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi143 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi144 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi145 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi146 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mo147 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo148 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo149 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mo150 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mi151 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mi152 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+mo153 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mo154 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 110,
+};
+
+mi155 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+};
+
+s156 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+o1.1 -> mi2.1;
+mi2.1 -> mo3.1;
+mi2.2 -> mo4.1;
+mo3.1 -> mi5.1;
+mo4.1 -> mi6.1;
+mi5.1 -> mo7.1;
+mi5.2 -> mo8.1;
+mi6.1 -> mo9.1;
+mi6.2 -> mo10.1;
+mo7.1 -> mi11.1;
+mo8.1 -> mi12.1;
+mo9.1 -> mi13.1;
+mo10.1 -> mi14.1;
+mi11.1 -> mo15.1;
+mi11.2 -> mo16.1;
+mi12.1 -> mo17.1;
+mi12.2 -> mo18.1;
+mi13.1 -> mo19.1;
+mi13.2 -> mo20.1;
+mi14.1 -> mo21.1;
+mi14.2 -> mo22.1;
+mo15.1 -> mi23.1;
+mo16.1 -> mi24.1;
+mo17.1 -> mi25.1;
+mo18.1 -> mi26.1;
+mo19.1 -> mi27.1;
+mo20.1 -> mi28.1;
+mo21.1 -> mi29.1;
+mo22.1 -> mi30.1;
+mi23.1 -> mo31.1;
+mi23.2 -> mo32.1;
+mi24.1 -> mo33.1;
+mi24.2 -> mo34.1;
+mi25.1 -> mo35.1;
+mi25.2 -> mo36.1;
+mi26.1 -> mo37.1;
+mi26.2 -> mo38.1;
+mi27.1 -> mo39.1;
+mi27.2 -> mo40.1;
+mi28.1 -> mo41.1;
+mi28.2 -> mo42.1;
+mi29.1 -> mo43.1;
+mi29.2 -> mo44.1;
+mi30.1 -> mo45.1;
+mi30.2 -> mo46.1;
+mo31.1 -> mi47.1;
+mo32.1 -> mi48.1;
+mo33.1 -> mi49.1;
+mo34.1 -> mi50.1;
+mo35.1 -> mi51.1;
+mo36.1 -> mi52.1;
+mo37.1 -> mi53.1;
+mo38.1 -> mi54.1;
+mo39.1 -> mi55.1;
+mo40.1 -> mi56.1;
+mo41.1 -> mi57.1;
+mo42.1 -> mi58.1;
+mo43.1 -> mi59.1;
+mo44.1 -> mi60.1;
+mo45.1 -> mi61.1;
+mo46.1 -> mi62.1;
+mi47.1 -> mo63.1;
+mi47.2 -> mo64.1;
+mi48.1 -> mo65.1;
+mi48.2 -> mo66.1;
+mi49.1 -> mo67.1;
+mi49.2 -> mo68.1;
+mi50.1 -> mo69.1;
+mi50.2 -> mo70.1;
+mi51.1 -> mo71.1;
+mi51.2 -> mo72.1;
+mi52.1 -> mo73.1;
+mi52.2 -> mo74.1;
+mi53.1 -> mo75.1;
+mi53.2 -> mo76.1;
+mi54.1 -> mo77.1;
+mi54.2 -> mo78.1;
+mi55.1 -> mo79.1;
+mi55.2 -> mo80.1;
+mi56.1 -> mo81.1;
+mi56.2 -> mo82.1;
+mi57.1 -> mo83.1;
+mi57.2 -> mo84.1;
+mi58.1 -> mo85.1;
+mi58.2 -> mo86.1;
+mi59.1 -> mo87.1;
+mi59.2 -> mo88.1;
+mi60.1 -> mo89.1;
+mi60.2 -> mo90.1;
+mi61.1 -> mo91.1;
+mi61.2 -> mo92.1;
+mi62.1 -> mo93.1;
+mi62.2 -> mo94.1;
+mo63.1 -> mi95.1;
+mo64.1 -> mi95.2;
+mo65.1 -> mi96.1;
+mo66.1 -> mi96.2;
+mo67.1 -> mi97.1;
+mo68.1 -> mi97.2;
+mo69.1 -> mi98.1;
+mo70.1 -> mi98.2;
+mo71.1 -> mi99.1;
+mo72.1 -> mi99.2;
+mo73.1 -> mi100.1;
+mo74.1 -> mi100.2;
+mo75.1 -> mi101.1;
+mo76.1 -> mi101.2;
+mo77.1 -> mi102.1;
+mo78.1 -> mi102.2;
+mo79.1 -> mi103.1;
+mo80.1 -> mi103.2;
+mo81.1 -> mi104.1;
+mo82.1 -> mi104.2;
+mo83.1 -> mi105.1;
+mo84.1 -> mi105.2;
+mo85.1 -> mi106.1;
+mo86.1 -> mi106.2;
+mo87.1 -> mi107.1;
+mo88.1 -> mi107.2;
+mo89.1 -> mi108.1;
+mo90.1 -> mi108.2;
+mo91.1 -> mi109.1;
+mo92.1 -> mi109.2;
+mo93.1 -> mi110.1;
+mo94.1 -> mi110.2;
+mi95.1 -> mo111.1;
+mi96.1 -> mo112.1;
+mi97.1 -> mo113.1;
+mi98.1 -> mo114.1;
+mi99.1 -> mo115.1;
+mi100.1 -> mo116.1;
+mi101.1 -> mo117.1;
+mi102.1 -> mo118.1;
+mi103.1 -> mo119.1;
+mi104.1 -> mo120.1;
+mi105.1 -> mo121.1;
+mi106.1 -> mo122.1;
+mi107.1 -> mo123.1;
+mi108.1 -> mo124.1;
+mi109.1 -> mo125.1;
+mi110.1 -> mo126.1;
+mo111.1 -> mi127.1;
+mo112.1 -> mi127.2;
+mo113.1 -> mi128.1;
+mo114.1 -> mi128.2;
+mo115.1 -> mi129.1;
+mo116.1 -> mi129.2;
+mo117.1 -> mi130.1;
+mo118.1 -> mi130.2;
+mo119.1 -> mi131.1;
+mo120.1 -> mi131.2;
+mo121.1 -> mi132.1;
+mo122.1 -> mi132.2;
+mo123.1 -> mi133.1;
+mo124.1 -> mi133.2;
+mo125.1 -> mi134.1;
+mo126.1 -> mi134.2;
+mi127.1 -> mo135.1;
+mi128.1 -> mo136.1;
+mi129.1 -> mo137.1;
+mi130.1 -> mo138.1;
+mi131.1 -> mo139.1;
+mi132.1 -> mo140.1;
+mi133.1 -> mo141.1;
+mi134.1 -> mo142.1;
+mo135.1 -> mi143.1;
+mo136.1 -> mi143.2;
+mo137.1 -> mi144.1;
+mo138.1 -> mi144.2;
+mo139.1 -> mi145.1;
+mo140.1 -> mi145.2;
+mo141.1 -> mi146.1;
+mo142.1 -> mi146.2;
+mi143.1 -> mo147.1;
+mi144.1 -> mo148.1;
+mi145.1 -> mo149.1;
+mi146.1 -> mo150.1;
+mo147.1 -> mi151.1;
+mo148.1 -> mi151.2;
+mo149.1 -> mi152.1;
+mo150.1 -> mi152.2;
+mi151.1 -> mo153.1;
+mi152.1 -> mo154.1;
+mo153.1 -> mi155.1;
+mo154.1 -> mi155.2;
+mi155.1 -> s156.1;

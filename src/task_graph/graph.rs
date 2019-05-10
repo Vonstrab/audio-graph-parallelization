@@ -294,27 +294,36 @@ impl TaskGraph {
         }
     }
 
-    pub fn output_dot(&self, filename: &str) -> Result<(), std::io::Error> {
+    pub fn output_dot(&self, path: &str) -> Result<(), std::io::Error> {
         let mut dot_file = String::new();
 
         dot_file.push_str("strict digraph{\n");
 
-        for i in 0..(self.nodes.len() - 1) {
-            let ligne = format!("{};\n", i);
+        for (i, node) in self.nodes.iter().enumerate() {
+            let line = match (*node.dsp_task.lock().unwrap()).as_ref() {
+                None => format!("{};\n", i),
+                Some(dsp) => format!("{};\n", dsp.id),
+            };
 
-            dot_file.push_str(ligne.as_str());
+            dot_file.push_str(&line);
         }
 
         for ((s, t), _) in &self.edges {
-            let ligne = format!("{} -> {};\n", s, t);
+            let line = if let (Some(src_dsp), Some(dst_dsp)) = (
+                (*self.nodes[*s].dsp_task.lock().unwrap()).as_ref(),
+                (*self.nodes[*t].dsp_task.lock().unwrap()).as_ref(),
+            ) {
+                format!("{} -> {};\n", src_dsp.id, dst_dsp.id)
+            } else {
+                format!("{} -> {};\n", s, t)
+            };
 
-            dot_file.push_str(ligne.as_str());
+            dot_file.push_str(line.as_str());
         }
 
         dot_file.push_str("}\n");
 
-        let path = Path::new(filename);
-        let mut file = File::create(&path).expect("Impossible to create file.");
+        let mut file = File::create(path).expect("Impossible to create file.");
 
         write!(file, "{}", dot_file)
     }
@@ -352,15 +361,14 @@ impl TaskGraph {
 pub fn run_dot(graph: &TaskGraph, graph_name: &str) {
     let tmp_dot = format!("tmp/{}.dot", graph_name);
 
-    println!("Creation of the tmp dir");
+    println!("Creating tmp directory");
     if !Path::new("./tmp").exists() {
         std::fs::DirBuilder::new()
             .create("./tmp")
             .expect("failed to create tmp firectory");
     }
 
-    println!("output the graph to dot file");
-
+    println!("Writing the DOT file");
     graph
         .output_dot(tmp_dot.as_str())
         .unwrap_or_else(|e| panic!("failed to output graph: {}", e));
