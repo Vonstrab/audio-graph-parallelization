@@ -3,31 +3,13 @@ use std::sync::{Arc, RwLock};
 use crossbeam::channel::Sender;
 
 use crate::dsp::DspNode;
-use crate::execution::build_dsp_edges;
 use crate::measure::MeasureDestination;
+use crate::static_scheduling::algorithms::{schedule, SchedulingAlgorithm};
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
 
-use super::static_alg::{schedule, SchedulingAlgorithm};
-use super::thread_pool::ThreadPool;
-
-// Make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
+use super::thread_pool::static_scheduling::ThreadPool;
+use super::utils::build_dsp_edges;
 
 pub fn run_static_sched(
     graph: Arc<RwLock<TaskGraph>>,

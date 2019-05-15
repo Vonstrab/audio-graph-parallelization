@@ -1,11 +1,14 @@
-extern crate agp_lib;
 extern crate crossbeam;
+
+extern crate libaudiograph;
 
 use std::sync::{Arc, RwLock};
 
 use crossbeam::channel::unbounded;
 
-use agp_lib::measure::Measure;
+use libaudiograph::execution::work_stealing::run_work_stealing;
+use libaudiograph::measure::Measure;
+use libaudiograph::parser::audiograph::parser::parse_audio_graph;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -14,8 +17,7 @@ fn main() {
         panic!("No files supplied");
     }
 
-    let dag = agp_lib::parser::audiograph::parser::actual_parse(&args[1])
-        .expect("Failed to parse audio graph");
+    let dag = parse_audio_graph(&args[1]).expect("Failed to parse audio graph");
 
     let (tx, rx) = unbounded();
     let mut measure_thread = Measure::new(rx);
@@ -24,7 +26,7 @@ fn main() {
         measure_thread.receive();
     });
 
-    match agp_lib::work_stealing::execution::run_work_stealing(Arc::new(RwLock::new(dag)), tx) {
+    match run_work_stealing(Arc::new(RwLock::new(dag)), tx) {
         Ok(_) => {}
         e => {
             eprintln!("Failed to run because: {:?}", e);

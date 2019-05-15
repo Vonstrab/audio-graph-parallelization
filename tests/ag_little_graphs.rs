@@ -1,9 +1,8 @@
-extern crate agp_lib;
+extern crate libaudiograph;
 extern crate proc_macro;
 
-use agp_lib::parser;
-
-use agp_lib::scheduling::static_alg::*;
+use libaudiograph::parser;
+use libaudiograph::static_scheduling::algorithms::{cpfd, etf, hlfet, random};
 
 fn static_schedule_file(filepath: &std::path::PathBuf) {
     println!("File : {:?}", filepath);

@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use task_graph::{graph::TaskGraph, state::TaskState};
 
-use scheduling::processor::Processor;
-use scheduling::schedule::Schedule;
+use super::processor::Processor;
+use super::schedule::Schedule;
 
 #[derive(Clone, Copy)]
 pub enum SchedulingAlgorithm {

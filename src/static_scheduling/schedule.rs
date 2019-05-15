@@ -5,8 +5,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use scheduling::processor::Processor;
-use scheduling::timeslot::TimeSlot;
+use static_scheduling::processor::Processor;
+use static_scheduling::timeslot::TimeSlot;
 
 #[derive(Clone, Default)]
 /// A list of the `Processor`s which will execute the tasks of the `Schedule`

@@ -3,10 +3,10 @@ extern crate criterion;
 
 use criterion::Criterion;
 
-extern crate agp_lib;
+extern crate libaudiograph;
 
-use agp_lib::parser;
-use agp_lib::scheduling::static_alg::*;
+use libaudiograph::parser;
+use libaudiograph::static_scheduling::algorithms::{cpfd, etf, hlfet, random};
 
 fn static_all_schedule_file(filepath: &std::path::PathBuf) {
     let mut graph =
