@@ -6,10 +6,9 @@ use crossbeam::channel::{unbounded, Receiver, Sender};
 use crossbeam::utils::Backoff;
 
 use crate::dsp::{DspEdge, DspNode};
+use crate::scheduling::schedule::Schedule;
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
-
-use super::schedule::Schedule;
 
 // Make moving clones into closures more convenient
 macro_rules! clone {

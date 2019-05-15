@@ -24,7 +24,7 @@ fn main() {
         measure_thread.receive();
     });
 
-    match agp_lib::work_stealing::execution::run_work_stealing(Arc::new(RwLock::new(dag)), tx) {
+    match agp_lib::execution::work_stealing::run_work_stealing(Arc::new(RwLock::new(dag)), tx) {
         Ok(_) => {}
         e => {
             eprintln!("Failed to run because: {:?}", e);

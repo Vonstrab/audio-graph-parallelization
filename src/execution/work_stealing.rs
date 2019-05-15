@@ -3,13 +3,12 @@ use std::sync::{Arc, RwLock};
 use crossbeam::channel::Sender;
 
 use crate::dsp::DspNode;
-use crate::execution::build_dsp_edges;
 use crate::measure::MeasureDestination;
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
 
-use super::static_alg::{schedule, SchedulingAlgorithm};
-use super::thread_pool::ThreadPool;
+use super::thread_pool::work_stealing::ThreadPool;
+use super::utils::build_dsp_edges;
 
 // Make moving clones into closures more convenient
 macro_rules! clone {
@@ -29,26 +28,18 @@ macro_rules! clone {
     );
 }
 
-pub fn run_static_sched(
+pub fn run_work_stealing(
     graph: Arc<RwLock<TaskGraph>>,
-    sched_algo: SchedulingAlgorithm,
     tx: Sender<MeasureDestination>,
 ) -> Result<(), jack::Error> {
-    let output_file = String::from(match sched_algo {
-        SchedulingAlgorithm::Random => "tmp/static_rand_sched_log.txt",
-        SchedulingAlgorithm::HLFET => "tmp/static_hlfet_sched_log.txt",
-        SchedulingAlgorithm::ETF => "tmp/static_etf_sched_log.txt",
-        SchedulingAlgorithm::CPFD => "tmp/static_cpfd_sched_log.txt",
-    });
-
     tx.send(MeasureDestination::File(
-        output_file.clone(),
+        "tmp/work_stealing_log.txt".to_string(),
         format!("Beginning of the execution"),
     ))
     .expect("logging error");
 
     let (client, _) = jack::Client::new(
-        "audio_graph_static_sched",
+        "audio_graph_work_stealing",
         jack::ClientOptions::NO_START_SERVER,
     )?;
 
@@ -61,7 +52,7 @@ pub fn run_static_sched(
     let nb_exit_nodes = graph.write().unwrap().get_exit_nodes().len();
 
     tx.send(MeasureDestination::File(
-        output_file.clone(),
+        "tmp/work_stealing_log.txt".to_string(),
         format!("Number of exit nodes: {}", nb_exit_nodes),
     ))
     .expect("logging error");
@@ -80,19 +71,16 @@ pub fn run_static_sched(
         &client,
     )));
 
-    let sched = schedule(&mut graph.write().unwrap(), 4, sched_algo);
-
     let thread_pool = Arc::new(RwLock::new(ThreadPool::create(
         4,
         graph.clone(),
         dsp_edges.clone(),
-        sched,
     )));
 
     let callback = jack::ClosureProcessHandler::new(clone!(thread_pool => move |_, ps| {
         let start_time = std::time::SystemTime::now();;
         tx.send(MeasureDestination::File(
-            output_file.clone(),
+            "tmp/work_stealing_log.txt".to_string(),
             format!("\nBeginning of a cycle at: {:#?}", start_time),
         ))
         .expect("logging error");
@@ -114,7 +102,6 @@ pub fn run_static_sched(
             }
         }
 
-        // TODO: move this into `TaskGraph`'s method
         // We must set the activation counters of each node
         let nb_nodes = graph.read().unwrap().get_nb_node();
         for node_index in 0..nb_nodes {
@@ -136,7 +123,7 @@ pub fn run_static_sched(
         let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
         tx.send(MeasureDestination::File(
-            output_file.clone(),
+            "tmp/work_stealing_log.txt".to_string(),
             format!(
                 "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs\nTime left before the deadline: {}µs",
                 start_time,
@@ -154,6 +141,8 @@ pub fn run_static_sched(
 
     let mut user_input = String::new();
     let _ignored = std::io::stdin().read_line(&mut user_input);
+
+    thread_pool.read().unwrap().stop();
 
     Ok(())
 }

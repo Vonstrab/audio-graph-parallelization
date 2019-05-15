@@ -34,7 +34,7 @@ fn main() {
         measure_thread.receive();
     });
 
-    match agp_lib::execution::run_seq(Arc::new(Mutex::new(dag)), tx) {
+    match agp_lib::execution::sequential::run_seq(Arc::new(Mutex::new(dag)), tx) {
         Ok(_) => {}
         e => {
             eprintln!("Failed to run because: {:?}", e);

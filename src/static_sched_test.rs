@@ -35,7 +35,7 @@ fn main() {
         measure_thread.receive();
     });
 
-    match agp_lib::scheduling::execution::run_static_sched(
+    match agp_lib::execution::static_scheduling::run_static_sched(
         Arc::new(RwLock::new(dag)),
         sched_algo,
         tx,

@@ -14,4 +14,3 @@ pub mod measure;
 pub mod parser;
 pub mod scheduling;
 pub mod task_graph;
-pub mod work_stealing;
