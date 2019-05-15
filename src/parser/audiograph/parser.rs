@@ -70,7 +70,7 @@ fn parse_node(pair: Pair<Rule>) -> Task {
     }
 }
 
-fn parse_actual_node(pair: Pair<Rule>) -> DspTask {
+fn parse_dsp_node(pair: Pair<Rule>) -> DspTask {
     let mut inner_rules = pair.into_inner();
     let id: String = inner_rules.next().unwrap().as_str().to_string();
     let mut nb_inlets: usize = 0;
@@ -193,7 +193,7 @@ pub fn parse_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError
     Ok(taskgraph)
 }
 
-pub fn parse_actual_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
+pub fn parse_dsp_audiograph(audiograph: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
     let audiograph = AudiographParser::parse(Rule::file, audiograph)?
         .next()
         .unwrap();
@@ -204,7 +204,7 @@ pub fn parse_actual_audiograph(audiograph: &str) -> Result<graph::TaskGraph, Par
         .filter(|ref r| r.as_rule() != Rule::deadline)
         .partition(|ref r| r.as_rule() == Rule::node);
 
-    let nodes = nodes.into_iter().map(parse_actual_node).collect::<Vec<_>>();
+    let nodes = nodes.into_iter().map(parse_dsp_node).collect::<Vec<_>>();
     let edges = edges.into_iter().flat_map(parse_edge).collect::<Vec<_>>();
     let mut node_indices: HashMap<String, usize> = HashMap::new();
 
@@ -243,11 +243,11 @@ pub fn parse(filename: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
     parse_audiograph(&s)
 }
 
-pub fn actual_parse(path: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
+pub fn parse_audio_graph(path: &str) -> Result<graph::TaskGraph, ParseError<Rule>> {
     let mut file = File::open(path).expect("Failed to open file.");
     let mut s = String::new();
 
     file.read_to_string(&mut s).expect("Failed to read file.");
 
-    parse_actual_audiograph(&s)
+    parse_dsp_audiograph(&s)
 }

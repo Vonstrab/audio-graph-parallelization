@@ -14,7 +14,7 @@ fn main() {
         panic!("No files supplied");
     }
 
-    let dag = agp_lib::parser::audiograph::parser::actual_parse(&args[1])
+    let dag = agp_lib::parser::audiograph::parser::parse_audio_graph(&args[1])
         .expect("Failed to parse audio graph");
 
     let (tx, rx) = unbounded();

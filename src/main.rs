@@ -15,7 +15,7 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
     tx.send(MeasureDestination::Stdout(String::from("Parsing")))
         .unwrap();
 
-    let mut graph = parser::actual_parse(&filepath).expect("Failed parsing the audio graph\n");
+    let mut graph = parser::parse_audio_graph(&filepath).expect("Failed parsing the audio graph\n");
 
     tx.send(MeasureDestination::Stdout(String::from(
         "\nComputing number of nodes",

@@ -15,7 +15,7 @@ fn main() {
         panic!("Usage: static_sched_test <AG File> <{rand, hlfet, etf}>");
     }
 
-    let dag = agp_lib::parser::audiograph::parser::actual_parse(&args[1])
+    let dag = agp_lib::parser::audiograph::parser::parse_audio_graph(&args[1])
         .expect("Failed to parse audio graph");
 
     let sched_algo = if args[2] == "rand" {
