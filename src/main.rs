@@ -1,12 +1,13 @@
 extern crate crossbeam;
 
-extern crate agp_lib;
+extern crate libaudiograph;
 
 use crossbeam::channel::{unbounded, Sender};
 
-use agp_lib::measure::{Measure, MeasureDestination};
-use agp_lib::parser::audiograph::parser;
-use agp_lib::static_scheduling::algorithms::{cpfd, etf, hlfet, random};
+use libaudiograph::measure::{Measure, MeasureDestination};
+use libaudiograph::parser::audiograph::parser;
+use libaudiograph::static_scheduling::algorithms::{cpfd, etf, hlfet, random};
+use libaudiograph::task_graph::graph::create_dot;
 
 fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
     tx.send(MeasureDestination::Stdout(format!("File: {:?}", filepath)))
@@ -33,7 +34,7 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
             "\nOutput of the DOT representation in tmp/graph.got",
         )))
         .unwrap();
-        agp_lib::task_graph::graph::create_dot(&graph, "graph");
+        create_dot(&graph, "graph");
     }
 
     let nb_procs = 9;

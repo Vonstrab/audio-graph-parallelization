@@ -1,12 +1,16 @@
-extern crate agp_lib;
 extern crate crossbeam;
+
+extern crate libaudiograph;
 
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use crossbeam::channel::unbounded;
 
-use agp_lib::measure::Measure;
+use libaudiograph::execution::sequential::run_seq;
+use libaudiograph::measure::Measure;
+use libaudiograph::parser::audiograph::parser::parse_audio_graph;
+use libaudiograph::task_graph::graph::create_dot;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -15,8 +19,7 @@ fn main() {
         panic!("No files supplied");
     }
 
-    let dag = agp_lib::parser::audiograph::parser::parse_audio_graph(&args[1])
-        .expect("Failed to parse audio graph");
+    let dag = parse_audio_graph(&args[1]).expect("Failed to parse audio graph");
 
     let dag_name = Path::new(&args[1])
         .file_name()
@@ -25,7 +28,7 @@ fn main() {
         .unwrap()
         .trim_end_matches(".ag");
 
-    agp_lib::task_graph::graph::create_dot(&dag, dag_name);
+    create_dot(&dag, dag_name);
 
     let (tx, rx) = unbounded();
     let mut measure_thread = Measure::new(rx);
@@ -34,7 +37,7 @@ fn main() {
         measure_thread.receive();
     });
 
-    match agp_lib::execution::sequential::run_seq(Arc::new(Mutex::new(dag)), tx) {
+    match run_seq(Arc::new(Mutex::new(dag)), tx) {
         Ok(_) => {}
         e => {
             eprintln!("Failed to run because: {:?}", e);

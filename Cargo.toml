@@ -20,7 +20,7 @@ name = "work_stealing_test"
 path = "src/work_stealing_test.rs"
 
 [lib]
-name = "agp_lib"
+name = "libaudiograph"
 
 [dev-dependencies]
 criterion = "0.2"

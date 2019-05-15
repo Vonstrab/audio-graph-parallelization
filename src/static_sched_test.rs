@@ -1,12 +1,15 @@
-extern crate agp_lib;
 extern crate crossbeam;
+
+extern crate libaudiograph;
 
 use std::sync::{Arc, RwLock};
 
 use crossbeam::channel::unbounded;
 
-use agp_lib::measure::Measure;
-use agp_lib::static_scheduling::algorithms::SchedulingAlgorithm;
+use libaudiograph::execution::static_scheduling::run_static_sched;
+use libaudiograph::measure::Measure;
+use libaudiograph::parser::audiograph::parser::parse_audio_graph;
+use libaudiograph::static_scheduling::algorithms::SchedulingAlgorithm;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -15,8 +18,7 @@ fn main() {
         panic!("Usage: static_sched_test <AG File> <{rand, hlfet, etf}>");
     }
 
-    let dag = agp_lib::parser::audiograph::parser::parse_audio_graph(&args[1])
-        .expect("Failed to parse audio graph");
+    let dag = parse_audio_graph(&args[1]).expect("Failed to parse audio graph");
 
     let sched_algo = if args[2] == "rand" {
         SchedulingAlgorithm::Random
@@ -35,11 +37,7 @@ fn main() {
         measure_thread.receive();
     });
 
-    match agp_lib::execution::static_scheduling::run_static_sched(
-        Arc::new(RwLock::new(dag)),
-        sched_algo,
-        tx,
-    ) {
+    match run_static_sched(Arc::new(RwLock::new(dag)), sched_algo, tx) {
         Ok(_) => {}
         e => {
             eprintln!("Failed to run because: {:?}", e);
