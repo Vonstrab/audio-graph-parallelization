@@ -3,7 +3,7 @@ extern crate proc_macro;
 
 use agp_lib::parser;
 
-use agp_lib::scheduling::static_alg::*;
+use agp_lib::static_scheduling::algorithms::{cpfd, etf, hlfet, random};
 
 fn static_schedule_file(filepath: &std::path::PathBuf) {
     println!("File : {:?}", filepath);

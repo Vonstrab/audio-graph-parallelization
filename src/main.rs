@@ -6,7 +6,7 @@ use crossbeam::channel::{unbounded, Sender};
 
 use agp_lib::measure::{Measure, MeasureDestination};
 use agp_lib::parser::audiograph::parser;
-use agp_lib::scheduling::static_alg::*;
+use agp_lib::static_scheduling::algorithms::{cpfd, etf, hlfet, random};
 
 fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
     tx.send(MeasureDestination::Stdout(format!("File: {:?}", filepath)))

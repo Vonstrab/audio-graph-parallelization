@@ -6,7 +6,7 @@ use std::sync::{Arc, RwLock};
 use crossbeam::channel::unbounded;
 
 use agp_lib::measure::Measure;
-use agp_lib::scheduling::static_alg::SchedulingAlgorithm;
+use agp_lib::static_scheduling::algorithms::SchedulingAlgorithm;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();

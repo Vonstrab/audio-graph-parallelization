@@ -1,6 +1,6 @@
 //! This module implements a `Processor` which is a part of a static scheduling.
 
-use scheduling::timeslot::TimeSlot;
+use static_scheduling::timeslot::TimeSlot;
 use std::fmt::{Display, Error, Formatter};
 
 #[derive(Clone, Default)]

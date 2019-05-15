@@ -6,7 +6,7 @@ use crossbeam::channel::{unbounded, Receiver, Sender};
 use crossbeam::utils::Backoff;
 
 use crate::dsp::{DspEdge, DspNode};
-use crate::scheduling::schedule::Schedule;
+use crate::static_scheduling::schedule::Schedule;
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
 

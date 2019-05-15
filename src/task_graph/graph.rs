@@ -7,7 +7,7 @@ use std::path::Path;
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 
-use crate::scheduling::schedule::Schedule;
+use crate::static_scheduling::schedule::Schedule;
 
 use super::node::Node;
 use super::state::TaskState;

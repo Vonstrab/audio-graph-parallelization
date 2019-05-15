@@ -4,7 +4,7 @@ use crossbeam::channel::Sender;
 
 use crate::dsp::DspNode;
 use crate::measure::MeasureDestination;
-use crate::scheduling::static_alg::{schedule, SchedulingAlgorithm};
+use crate::static_scheduling::algorithms::{schedule, SchedulingAlgorithm};
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
 
