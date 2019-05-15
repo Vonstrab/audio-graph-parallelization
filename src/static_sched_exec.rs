@@ -15,7 +15,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() != 3 {
-        panic!("Usage: static_sched_test <AG File> <{rand, hlfet, etf}>");
+        panic!("Usage: static_sched_exec <AG File> <{rand, hlfet, etf}>");
     }
 
     let dag = parse_audio_graph(&args[1]).expect("Failed to parse audio graph");

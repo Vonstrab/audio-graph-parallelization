@@ -8,16 +8,16 @@ name = "agp_bin"
 path = "src/main.rs"
 
 [[bin]]
-name = "seq_test"
-path = "src/seq_test.rs"
+name = "seq_exec"
+path = "src/seq_exec.rs"
 
 [[bin]]
-name = "static_sched_test"
-path = "src/static_sched_test.rs"
+name = "static_sched_exec"
+path = "src/static_sched_exec.rs"
 
 [[bin]]
-name = "work_stealing_test"
-path = "src/work_stealing_test.rs"
+name = "work_stealing_exec"
+path = "src/work_stealing_exec.rs"
 
 [lib]
 name = "libaudiograph"
