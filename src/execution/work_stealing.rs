@@ -10,24 +10,6 @@ use crate::task_graph::state::TaskState;
 use super::thread_pool::work_stealing::ThreadPool;
 use super::utils::build_dsp_edges;
 
-// Make moving clones into closures more convenient
-macro_rules! clone {
-    (@param _) => ( _ );
-    (@param $x:ident) => ( $x );
-    ($($n:ident),+ => move || $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move || $body
-        }
-    );
-    ($($n:ident),+ => move |$($p:tt),+| $body:expr) => (
-        {
-            $( let $n = $n.clone(); )+
-                move |$(clone!(@param $p),)+| $body
-        }
-    );
-}
-
 pub fn run_work_stealing(
     graph: Arc<RwLock<TaskGraph>>,
     tx: Sender<MeasureDestination>,
