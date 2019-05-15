@@ -27,9 +27,9 @@ pub fn schedule(
     }
 }
 
-//return the cpn dominant sequence
+// Returns the cpn dominant sequence
 fn get_cpn_dominant_sequence(graph: &mut TaskGraph) -> Vec<usize> {
-    //add the parents list to the sequence
+    // Add the parents list to the sequence
     fn add_node(graph: &mut TaskGraph, sequence: &mut Vec<usize>, node: usize) {
         let mut not_in_seq_parents = Vec::new();
 
@@ -100,7 +100,7 @@ fn predecessors_scheduled(node: usize, graph: &TaskGraph) -> bool {
         .all(|pred| graph.get_state(*pred).unwrap() == TaskState::Scheduled)
 }
 
-//return the best Processor possible using the duplication method
+// Returns the best `Processor` possible using the duplication method
 fn optimal_proc(
     graph: &mut TaskGraph,
     control: &Processor,
@@ -129,6 +129,7 @@ fn optimal_proc(
                 .unwrap()
                 .get_completion_time()
                 + communication_cost;
+
             if last_pred.is_none() || last_pred_message < message_arrive {
                 last_pred = Some(not_in_proc_pred);
                 last_pred_message = message_arrive;
@@ -143,6 +144,7 @@ fn optimal_proc(
                 communication_cost,
                 schedule,
             );
+
             let pred_dup_start_time = duplicate_proc.get_completion_time();
 
             if pred_dup_start_time > start_time {
@@ -162,41 +164,44 @@ fn optimal_proc(
     duplicate_proc
 }
 
-//Return the minimum value from a ready list
-//ties broken by number of successors (most first)
+// Returns the minimum value from a ready list
+// ties are broken by number of successors (most first)
 fn get_max_tie_misf(ready_list: &HashMap<usize, f64>, graph: &TaskGraph) -> usize {
     let mut out_node: Option<usize> = None;
 
-    for (node, b_level) in ready_list {
+    for (&node, &b_level) in ready_list {
         if out_node.is_none() {
-            out_node = Some(*node);
-        } else if (*b_level - ready_list[&out_node.unwrap()]).abs() < std::f64::EPSILON {
-            //Not strict comparison, but within error margin
-            if graph.get_successors(*node) > graph.get_successors(out_node.unwrap()) {
-                out_node = Some(*node);
+            out_node = Some(node);
+        } else if (b_level - ready_list[&out_node.unwrap()]).abs() < std::f64::EPSILON {
+            // Not strict comparison, but within error margin
+            if graph.get_successors(node) > graph.get_successors(out_node.unwrap()) {
+                out_node = Some(node);
             }
-        } else if *b_level > *ready_list.get(&out_node.unwrap()).unwrap() {
-            out_node = Some(*node);
+        } else if b_level > *ready_list.get(&out_node.unwrap()).unwrap() {
+            out_node = Some(node);
         }
     }
 
     out_node.unwrap()
 }
 
-///Schedule the TaskGraph randomly
+/// Randomly schedules the `TaskGraph`
 ///
-///# Arguments
-/// * graph - The TaskGraph to schedule
-/// * nb_processors - The number of processors available
+/// # Arguments
+/// * `graph` - The `TaskGraph` to schedule
+/// * `nb_processors` - The number of processors available
 pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
-    println!("creation of the schedule");
+    println!("computing of the schedule");
+
     // Build the schedule
     let mut out_schedule = Schedule::new();
+
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
 
     println!("reset the graph");
+
     // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
 
@@ -241,19 +246,20 @@ pub fn random(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         ready_list.remove(rand_indice);
     }
 
-    debug_assert!(graph.schedule_is_valid(&out_schedule));
+    debug_assert!(graph.is_valid_schedule(&out_schedule));
 
     out_schedule
 }
 
-///Schedule the TaskGraph with the HLFET Algorithm
+/// Schedules the `TaskGraph` with the HLFET algorithm
 ///
-///# Arguments
-/// * graph - The TaskGraph to schedule
-/// * nb_processors - The number of processors available
+/// # Arguments
+/// * `graph` - The `TaskGraph` to schedule
+/// * `nb_processors` - The number of processors available
 pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     // Build the schedule
     let mut out_schedule = Schedule::new();
+
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
@@ -266,6 +272,7 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
 
     // The ready list is a HashMap
     let mut ready_list: HashMap<usize, f64> = HashMap::new();
+
     for node in first_nodes {
         ready_list.insert(node, graph.get_b_level(node).unwrap());
     }
@@ -275,13 +282,14 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         // Get the first node by b_level
         let first_node = get_max_tie_misf(&ready_list, graph);
 
-        //First consider the first processor
+        // First consider the first processor
         let mut chosen_proc = 0;
         let mut chosen_proc_start_time = out_schedule.processors[chosen_proc].get_completion_time();
 
         // Choose another processor if it is better suited
         for i in 1..out_schedule.processors.len() {
             let current_proc_start_time = out_schedule.processors[i].get_completion_time();
+
             if current_proc_start_time < chosen_proc_start_time {
                 chosen_proc = i;
                 chosen_proc_start_time = current_proc_start_time;
@@ -313,19 +321,20 @@ pub fn hlfet(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         ready_list.remove(&first_node);
     }
 
-    debug_assert!(graph.schedule_is_valid(&out_schedule));
+    debug_assert!(graph.is_valid_schedule(&out_schedule));
 
     out_schedule
 }
 
-///Schedule the TaskGraph with the EFT Algorithm
+/// Schedules the `TaskGraph` with the EFT algorithm
 ///
-///# Arguments
-/// * graph - The TaskGraph to schedule
-/// * nb_processors - The number of processors available
+/// # Arguments
+/// * `graph` - The `TaskGraph` to schedule
+/// * `nb_processors` - The number of processors available
 pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
     // Build the schedule
     let mut out_schedule = Schedule::new();
+
     for _ in 0..nb_processors {
         out_schedule.add_processor();
     }
@@ -360,7 +369,7 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
                     min_proc = Some(i);
                     node_index = j;
                 }
-                //Not stric comparaison, but within error margin
+                // Not stric comparaison, but within error margin
                 if (current_start_time - min_start_time.unwrap()).abs() < std::f64::EPSILON
                     && graph.get_b_level(min_node.unwrap()).unwrap() < current_blevel
                 {
@@ -399,40 +408,31 @@ pub fn etf(graph: &mut TaskGraph, nb_processors: usize) -> Schedule {
         ready_list.remove(node_index);
     }
 
-    debug_assert!(graph.schedule_is_valid(&out_schedule));
+    debug_assert!(graph.is_valid_schedule(&out_schedule));
 
     out_schedule
 }
 
-///Schedule the TaskGraph with the CPFD Algorithm
+/// Schedules the `TaskGraph` with the CPFD algorithm
 ///
-///# Arguments
-/// * graph - The TaskGraph to schedule
-/// * communication_cost - The cominication time between processors
+/// # Arguments
+/// * `graph` - The `TaskGraph` to schedule
+/// * `communication_cost` - The communication time between processors
 pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
-    //initialise the schedule
+    // Initialise the schedule
     let mut out_schedule = Schedule::new();
 
     // Reset the status of all reachable nodes to `WaitingDependencies`
     set_status_waiting(graph);
 
-    //the cpn_dominant sequence
     let cpn_sequence: Vec<usize> = get_cpn_dominant_sequence(graph);
-
-    // println!("CPN Dominant sequence {:?}", cpn_sequence);
-    // println!("CPN Dominant sequence size {}", cpn_sequence.len());
 
     for candidate in cpn_sequence {
         let pred = graph.get_predecessors(candidate).unwrap_or_default();
-        //construction of the p_set
+
         let p_set = out_schedule.get_p_set(&pred);
 
-        // println!("\nschedule {}", out_schedule);
-
-        // println!("\npred {:?}", pred);
-        // println!("p_set {:?}", p_set);
-
-        //test with an empty proc
+        // Test with an empty `Processor`
         let empty_proc = optimal_proc(
             graph,
             &Processor::new(),
@@ -443,15 +443,12 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
 
         let empty_proc_et = empty_proc.get_completion_time();
 
-        // println!("empty_proc_et {:?}", empty_proc_et);
-        // println!("empty_proc {}", empty_proc);
-
         let mut et = None;
         let mut proce = 0;
         let mut best_proc: Processor = Processor::default();
 
         for p in p_set {
-            //best configuration with current proc
+            // Best configuration with the current `Processor`
             let p_proc = optimal_proc(
                 graph,
                 &out_schedule.processors[p],
@@ -470,15 +467,11 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
             }
         }
 
-        // println!("et {:?}", et);
-        // println!("proc {}", best_proc);
-
-        //if only the empty_proc
         if et.is_none() {
             out_schedule.processors.push(empty_proc.clone());
         } else {
-            //else we get the best
-            //we test  <= because we benefit the duplications on an empty proc
+            // Else we get the best
+            // We test  <= because we benefit the duplications on an empty proc
             if (empty_proc_et - et.unwrap()) > 0.5 {
                 out_schedule.processors.push(empty_proc);
             } else {
@@ -487,7 +480,7 @@ pub fn cpfd(graph: &mut TaskGraph, communication_cost: f64) -> Schedule {
         }
     }
 
-    debug_assert!(graph.schedule_is_valid(&out_schedule));
+    debug_assert!(graph.is_valid_schedule(&out_schedule));
 
     out_schedule
 }
@@ -518,6 +511,7 @@ mod tests {
 
         let sche_hlfelt = hlfet(&mut g, 2);
         let sche_rand = random(&mut g, 2);
+
         println!("schedule {}", sche_hlfelt);
         assert_eq!(sche_hlfelt.get_completion_time(), 5.0);
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
@@ -544,6 +538,7 @@ mod tests {
 
         let sche_etf = etf(&mut g, 2);
         let sche_rand = random(&mut g, 2);
+
         println!("schedule {}", sche_etf);
         assert_eq!(sche_etf.get_completion_time(), 5.0);
         assert!(sche_etf.get_completion_time() <= sche_rand.get_completion_time());
@@ -569,7 +564,9 @@ mod tests {
         g.add_edge(1, 0);
 
         let sche_cpfd = cpfd(&mut g, 0.0);
+
         println!("schedule {}", sche_cpfd);
+
         assert_eq!(sche_cpfd.get_completion_time(), 5.0);
     }
 
@@ -595,6 +592,7 @@ mod tests {
         let mut sche_etf = etf(&mut g, 2);
         let mut sche_hlfelt = hlfet(&mut g, 2);
         let mut sche_rand = random(&mut g, 2);
+
         println!("schedule {}", sche_etf);
         println!("schedule {}", sche_hlfelt);
         println!("schedule {}", sche_rand);
@@ -605,11 +603,10 @@ mod tests {
         sche_etf = etf(&mut g, 3);
         sche_hlfelt = hlfet(&mut g, 3);
         sche_rand = random(&mut g, 3);
+
         println!("schedule {}", sche_etf);
         println!("schedule {}", sche_hlfelt);
         println!("schedule {}", sche_rand);
-
-        println!("schedule {}", sche_etf);
 
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
@@ -617,6 +614,7 @@ mod tests {
         sche_etf = etf(&mut g, 4);
         sche_hlfelt = hlfet(&mut g, 4);
         sche_rand = random(&mut g, 4);
+
         println!("schedule {}", sche_etf);
         println!("schedule {}", sche_hlfelt);
         println!("schedule {}", sche_rand);
@@ -673,18 +671,21 @@ mod tests {
         let mut sche_etf = etf(&mut g, 2);
         let mut sche_hlfelt = hlfet(&mut g, 2);
         let mut sche_rand = random(&mut g, 2);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 3);
         sche_hlfelt = hlfet(&mut g, 3);
         sche_rand = random(&mut g, 3);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 4);
         sche_hlfelt = hlfet(&mut g, 4);
         sche_rand = random(&mut g, 4);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
     }
@@ -742,24 +743,28 @@ mod tests {
         let mut sche_etf = etf(&mut g, 3);
         let mut sche_hlfelt = hlfet(&mut g, 3);
         let mut sche_rand = random(&mut g, 3);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 4);
         sche_hlfelt = hlfet(&mut g, 4);
         sche_rand = random(&mut g, 4);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 5);
         sche_hlfelt = hlfet(&mut g, 5);
         sche_rand = random(&mut g, 5);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
 
         sche_etf = etf(&mut g, 6);
         sche_hlfelt = hlfet(&mut g, 6);
         sche_rand = random(&mut g, 56);
+
         assert!(sche_hlfelt.get_completion_time() <= sche_rand.get_completion_time());
         assert!(sche_etf.get_completion_time() <= sche_hlfelt.get_completion_time());
     }

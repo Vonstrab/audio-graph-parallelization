@@ -25,7 +25,7 @@ fn main() {
         .unwrap()
         .trim_end_matches(".ag");
 
-    agp_lib::task_graph::graph::run_dot(&dag, dag_name);
+    agp_lib::task_graph::graph::create_dot(&dag, dag_name);
 
     let (tx, rx) = unbounded();
     let mut measure_thread = Measure::new(rx);

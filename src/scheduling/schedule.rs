@@ -1,5 +1,6 @@
-//! This module implements a Schedule
+//! This module implements the representation of a static scheduling
 
+use std::fmt::{Display, Error, Formatter};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -7,38 +8,36 @@ use std::path::Path;
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
 
-use std::fmt::{Display, Error, Formatter};
-
 #[derive(Clone, Default)]
-///Repressent the Schedule
+/// A list of the `Processor`s which will execute the tasks of the `Schedule`
 pub struct Schedule {
-    ///List of all the Processors Scheduled
     pub processors: Vec<Processor>,
 }
 
 impl Schedule {
-    //Return an empty Schedule
+    /// Returns an empty `Schedule`
     pub fn new() -> Schedule {
         Schedule::default()
     }
 
-    ///Add an empty Processor and return the number of Processors Scheduled
+    /// Adds an empty `Processor` and returns the previous number of `Processor`s in the `Schedule`.
     pub fn add_processor(&mut self) -> usize {
         self.processors.push(Processor::new());
         self.processors.len() - 1
     }
 
-    //Return The number of Processors Scheduled
+    //Returns the number of `Processor`s in the `Schedule`.
     pub fn get_nb_processor(&self) -> usize {
         self.processors.len()
     }
 
-    ///Return the Timeslot , if any of the node with the earliest completion time
+    /// Returns the `TimeSlot`, of a `TaskGraph` node, with the earliest completion time.
     ///
     /// # Arguments
-    /// * node_index - the Node Index to look for
+    /// * `node_index` - The index of the node
     pub fn get_time_slot(&self, node_index: usize) -> Option<TimeSlot> {
         let mut output: Option<TimeSlot> = None;
+
         for procs in &self.processors {
             for ts in &procs.time_slots {
                 if ts.get_node() == node_index {
@@ -54,7 +53,7 @@ impl Schedule {
         output
     }
 
-    ///Return The Completion time of all the Processors
+    /// Returns the completion time of the static scheduling.
     pub fn get_completion_time(&self) -> f64 {
         let mut time: f64 = 0.0;
 
@@ -65,7 +64,7 @@ impl Schedule {
         time
     }
 
-    pub fn output(&self, ganttname: &str) -> Result<(), std::io::Error> {
+    pub fn output(&self, filename: &str) -> Result<(), std::io::Error> {
         let mut out_file = String::new();
 
         for i in 0..self.processors.len() {
@@ -80,25 +79,23 @@ impl Schedule {
             }
         }
 
-        let tmp_dot = format!("tmp/{}.txt", ganttname);
-        let path = Path::new(tmp_dot.as_str());
-
         if !Path::new("./tmp").exists() {
             std::fs::DirBuilder::new()
                 .create("./tmp")
-                .expect("failed to create tmp firectory");
+                .expect("failed to create tmp directory");
         }
 
-        let mut file = File::create(&path).expect("Impossible to create file.");
+        let path = format!("tmp/{}.txt", filename);
+        let mut file = File::create(&path).expect("failed to create file");
 
         write!(file, "{}", out_file)
     }
 
-    ///Return the Timeslot, if any containing the predecessor with the last completion
+    /// Returns the `TimeSlot`, containing one of the `predecessors`, with the latest completion time.
     ///
     /// # Arguments
     ///
-    /// * predecessors - the list of Node Index to look for
+    /// * `predecessors` - The list of the predecesssors
     pub fn get_last_predecessor(&self, predecesssors: &Vec<usize>) -> Option<TimeSlot> {
         if predecesssors.is_empty() {
             return None;
@@ -108,9 +105,11 @@ impl Schedule {
 
         for pred in predecesssors {
             let pred_ts = self.get_time_slot(*pred);
+
             if pred_ts.is_none() {
                 continue;
             }
+
             if output.is_none()
                 || output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
             {
@@ -121,17 +120,19 @@ impl Schedule {
         output
     }
 
-    ///Return the List of Processors that allocate the predecesssors
+    /// Returns the list of `Processor`s on which the `predecesssors` are scheduled
     ///
-    ///# Argument
-    /// * predecessors - List of Node Index to look for
+    /// # Argument
+    /// * `predecessors` - The list of the indices of the predecessors
     pub fn get_p_set(&self, predecesssors: &Vec<usize>) -> Vec<usize> {
         let mut p_set = Vec::new();
+
         for (proc_index, processor) in self.processors.iter().enumerate() {
             if processor.contains_list_node(&predecesssors) {
                 p_set.push(proc_index);
             }
         }
+
         p_set
     }
 }
@@ -151,15 +152,18 @@ impl Display for Schedule {
 #[cfg(test)]
 mod schedule_test {
     use super::*;
+
     #[test]
     fn test_constructor() {
         let sche = Schedule::new();
+
         assert_eq!(sche.processors.len(), 0);
     }
 
     #[test]
     fn test_add_processor() {
         let mut sche = Schedule::new();
+
         sche.add_processor();
         sche.add_processor();
         sche.add_processor();

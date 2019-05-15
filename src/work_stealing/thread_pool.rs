@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::thread;
-// use std::thread::JoinHandle;
 
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use crossbeam::deque::{Injector, Steal, Worker};
@@ -41,8 +40,6 @@ enum FeedbackMsg {
 }
 
 pub struct ThreadPool {
-    // join_handles: Vec<JoinHandle<()>>,
-
     task_graph: Arc<RwLock<TaskGraph>>,
 
     ctrl_chans: Vec<Sender<CtrlMsg>>,
@@ -145,8 +142,6 @@ impl ThreadPool {
         }
 
         ThreadPool {
-            // join_handles,
-
             task_graph,
 
             ctrl_chans,
