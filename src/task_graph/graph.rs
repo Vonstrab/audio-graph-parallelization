@@ -34,10 +34,7 @@ impl TaskGraph {
     /// # Arguments
     /// * `node_count` - The number of nodes in the `TaskGraph`
     /// * `edges_count` - The number of edges in the `TaskGraph`
-    pub fn new(
-        nodes_count: usize,
-        edges_count: usize,
-    ) -> TaskGraph {
+    pub fn new(nodes_count: usize, edges_count: usize) -> TaskGraph {
         let mut adj_list = Vec::with_capacity(nodes_count);
 
         for _ in 0..nodes_count {

@@ -44,7 +44,10 @@ pub fn run_work_stealing(
     )?;
 
     graph.write().unwrap().set_sample_rate(client.sample_rate());
-    graph.write().unwrap().set_buffer_size(client.buffer_size() as usize);
+    graph
+        .write()
+        .unwrap()
+        .set_buffer_size(client.buffer_size() as usize);
 
     let nb_exit_nodes = graph.write().unwrap().get_exit_nodes().len();
 

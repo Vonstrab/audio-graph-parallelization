@@ -13,7 +13,10 @@ impl TimeSlot {
     /// Creates a new `TimeSlot` for a task.
     pub fn new(node: usize, start_time: f64, completion_time: f64) -> TimeSlot {
         // Check pre-condition
-        debug_assert!(start_time < completion_time, "TimeSlot::new() : completions < start");
+        debug_assert!(
+            start_time < completion_time,
+            "TimeSlot::new() : completions < start"
+        );
 
         let ts = TimeSlot {
             start_time: start_time,
