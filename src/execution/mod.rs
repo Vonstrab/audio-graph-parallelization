@@ -31,7 +31,7 @@ pub fn run_seq(
 ) -> Result<(), jack::Error> {
     tx.send(MeasureDestination::File(
         "tmp/seq_log.txt".to_string(),
-        format!("Beginning of the execution"),
+        "Beginning of the execution".to_string(),
     ))
     .expect("logging error");
 
@@ -39,6 +39,12 @@ pub fn run_seq(
         "audio_graph_sequential",
         jack::ClientOptions::NO_START_SERVER,
     )?;
+
+    graph.lock().unwrap().set_sample_rate(client.sample_rate());
+    graph
+        .lock()
+        .unwrap()
+        .set_buffer_size(client.buffer_size() as usize);
 
     let nb_exit_nodes = graph.lock().unwrap().get_exit_nodes().len();
 

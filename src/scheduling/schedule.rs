@@ -1,5 +1,6 @@
-//! This module implements a schedule
+//! This module implements the representation of a static scheduling
 
+use std::fmt::{Display, Error, Formatter};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -7,39 +8,43 @@ use std::path::Path;
 use scheduling::processor::Processor;
 use scheduling::timeslot::TimeSlot;
 
-use std::fmt::{Display, Error, Formatter};
-
 #[derive(Clone, Default)]
+/// A list of the `Processor`s which will execute the tasks of the `Schedule`
 pub struct Schedule {
     pub processors: Vec<Processor>,
 }
 
 impl Schedule {
+    /// Returns an empty `Schedule`
     pub fn new() -> Schedule {
         Schedule::default()
     }
 
+    /// Adds an empty `Processor` and returns the previous number of `Processor`s in the `Schedule`.
     pub fn add_processor(&mut self) -> usize {
         self.processors.push(Processor::new());
         self.processors.len() - 1
     }
 
+    //Returns the number of `Processor`s in the `Schedule`.
     pub fn get_nb_processor(&self) -> usize {
         self.processors.len()
     }
 
-    //return the timeslot of the node with the earliest completion time
+    /// Returns the `TimeSlot`, of a `TaskGraph` node, with the earliest completion time.
+    ///
+    /// # Arguments
+    /// * `node_index` - The index of the node
     pub fn get_time_slot(&self, node_index: usize) -> Option<TimeSlot> {
-        let mut output = None;
+        let mut output: Option<TimeSlot> = None;
+
         for procs in &self.processors {
             for ts in &procs.time_slots {
                 if ts.get_node() == node_index {
-                    if output.is_none() {
+                    if output.is_none()
+                        || output.unwrap().get_completion_time() > ts.get_completion_time()
+                    {
                         output = Some(*ts);
-                    } else {
-                        if output.unwrap().get_completion_time() > ts.get_completion_time() {
-                            output = Some(*ts);
-                        }
                     }
                 }
             }
@@ -48,6 +53,7 @@ impl Schedule {
         output
     }
 
+    /// Returns the completion time of the static scheduling.
     pub fn get_completion_time(&self) -> f64 {
         let mut time: f64 = 0.0;
 
@@ -58,7 +64,7 @@ impl Schedule {
         time
     }
 
-    pub fn output(&self, ganttname: &str) -> Result<(), std::io::Error> {
+    pub fn output(&self, filename: &str) -> Result<(), std::io::Error> {
         let mut out_file = String::new();
 
         for i in 0..self.processors.len() {
@@ -73,36 +79,39 @@ impl Schedule {
             }
         }
 
-        let tmp_dot = format!("tmp/{}.txt", ganttname);
-        let path = Path::new(tmp_dot.as_str());
-
         if !Path::new("./tmp").exists() {
             std::fs::DirBuilder::new()
                 .create("./tmp")
-                .expect("failed to create tmp firectory");
+                .expect("failed to create tmp directory");
         }
 
-        let mut file = File::create(&path).expect("Impossible to create file.");
+        let path = format!("tmp/{}.txt", filename);
+        let mut file = File::create(&path).expect("failed to create file");
 
         write!(file, "{}", out_file)
     }
 
-    //return the timeslot if any containing the predecessor with the last completion
+    /// Returns the `TimeSlot`, containing one of the `predecessors`, with the latest completion time.
+    ///
+    /// # Arguments
+    ///
+    /// * `predecessors` - The list of the predecesssors
     pub fn get_last_predecessor(&self, predecesssors: &Vec<usize>) -> Option<TimeSlot> {
         if predecesssors.is_empty() {
             return None;
         }
 
-        let mut output = None;
+        let mut output: Option<TimeSlot> = None;
 
         for pred in predecesssors {
             let pred_ts = self.get_time_slot(*pred);
+
             if pred_ts.is_none() {
                 continue;
             }
-            if output.is_none() {
-                output = pred_ts;
-            } else if output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
+
+            if output.is_none()
+                || output.unwrap().get_completion_time() < pred_ts.unwrap().get_completion_time()
             {
                 output = pred_ts;
             }
@@ -111,14 +120,19 @@ impl Schedule {
         output
     }
 
-    //return the set of processors that allocate the predecesssors
+    /// Returns the list of `Processor`s on which the `predecesssors` are scheduled
+    ///
+    /// # Argument
+    /// * `predecessors` - The list of the indices of the predecessors
     pub fn get_p_set(&self, predecesssors: &Vec<usize>) -> Vec<usize> {
         let mut p_set = Vec::new();
+
         for (proc_index, processor) in self.processors.iter().enumerate() {
             if processor.contains_list_node(&predecesssors) {
                 p_set.push(proc_index);
             }
         }
+
         p_set
     }
 }
@@ -138,15 +152,18 @@ impl Display for Schedule {
 #[cfg(test)]
 mod schedule_test {
     use super::*;
+
     #[test]
     fn test_constructor() {
         let sche = Schedule::new();
+
         assert_eq!(sche.processors.len(), 0);
     }
 
     #[test]
     fn test_add_processor() {
         let mut sche = Schedule::new();
+
         sche.add_processor();
         sche.add_processor();
         sche.add_processor();

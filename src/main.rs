@@ -33,7 +33,7 @@ fn static_schedule_file(filepath: &str, tx: Sender<MeasureDestination>) {
             "\nOutput of the DOT representation in tmp/graph.got",
         )))
         .unwrap();
-        agp_lib::task_graph::graph::run_dot(&graph, "graph");
+        agp_lib::task_graph::graph::create_dot(&graph, "graph");
     }
 
     let nb_procs = 9;

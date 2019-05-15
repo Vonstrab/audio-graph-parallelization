@@ -38,6 +38,7 @@ pub fn run_static_sched(
         SchedulingAlgorithm::Random => "tmp/static_rand_sched_log.txt",
         SchedulingAlgorithm::HLFET => "tmp/static_hlfet_sched_log.txt",
         SchedulingAlgorithm::ETF => "tmp/static_etf_sched_log.txt",
+        SchedulingAlgorithm::CPFD => "tmp/static_cpfd_sched_log.txt",
     });
 
     tx.send(MeasureDestination::File(
@@ -50,6 +51,12 @@ pub fn run_static_sched(
         "audio_graph_static_sched",
         jack::ClientOptions::NO_START_SERVER,
     )?;
+
+    graph.write().unwrap().set_sample_rate(client.sample_rate());
+    graph
+        .write()
+        .unwrap()
+        .set_buffer_size(client.buffer_size() as usize);
 
     let nb_exit_nodes = graph.write().unwrap().get_exit_nodes().len();
 

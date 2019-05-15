@@ -1,5 +1,4 @@
-//! This module implements a TimeSlot
-//!
+//! This module implements a `TimeSlot` which is a part of a static scheduling.
 
 use std::fmt::{Display, Error, Formatter};
 
@@ -11,28 +10,37 @@ pub struct TimeSlot {
 }
 
 impl TimeSlot {
-    pub fn new(node: usize, start: f64, completion: f64) -> TimeSlot {
-        //check pre-condition
-        debug_assert!(start < completion, "TimeSlot::new() : completions < start");
+    /// Creates a new `TimeSlot` for a task.
+    pub fn new(node: usize, start_time: f64, completion_time: f64) -> TimeSlot {
+        // Check pre-condition
+        debug_assert!(
+            start_time < completion_time,
+            "TimeSlot::new() : completions < start"
+        );
 
         let ts = TimeSlot {
-            start_time: start,
-            completion_time: completion,
+            start_time: start_time,
+            completion_time: completion_time,
             node,
         };
-        //check invariant
+
+        // Check invariants
         debug_assert!(ts.check_invariants(), "TimeSlot::new() : Invariants Error");
+
         ts
     }
 
+    /// Returns the start time of the `TimeSlot`.
     pub fn get_start_time(&self) -> f64 {
         self.start_time
     }
 
+    /// Returns the completion time of the `TimeSlot`.
     pub fn get_completion_time(&self) -> f64 {
         self.completion_time
     }
 
+    /// Returns the index of the task's node.
     pub fn get_node(&self) -> usize {
         self.node
     }
