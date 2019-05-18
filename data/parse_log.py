@@ -30,11 +30,13 @@ def parse_file(path):
         time = 0
         next = 0
         number = 0
+        hist = []
 
         for line in file:
             words = line.strip().split(" ")
             if len(words) == 1 and words[0].endswith("µs") and number > 15:
                 current_time = int(words[0].rstrip("µs"))
+                hist.append(current_time)
                 if current_time > worst_time:
                     worst_time = current_time
                 time += int(words[0].rstrip("µs"))
@@ -52,7 +54,7 @@ def parse_file(path):
         print("Average time left before the deadline: "
               + str(average_next) + "µs")
 
-    return (average_time, worst_time)
+    return (hist, average_time, worst_time)
 
 
 if len(sys.argv) != 3:
@@ -64,14 +66,19 @@ dags = sorted_nicely(dags)
 
 x = []
 seq = []
+seq_hist = []
 seq_wtime = []
 static_rand = []
+static_rand_hist = []
 static_rand_wtime = []
 static_hlfet = []
+static_hlfet_hist = []
 static_hlfet_wtime = []
 static_etf = []
+static_etf_hist = []
 static_etf_wtime = []
 dynamic = []
+dynamic_hist = []
 dynamic_wtime = []
 
 subprocess.run(["cargo", "build", "--release", "--bin", "seq_exec"])
@@ -127,27 +134,29 @@ for dag in dags:
         pass
 
     # Parse the log for sequential execution
-    atime, wtime = parse_file("tmp/seq_log.txt")
+    seq_hist, atime, wtime = parse_file("tmp/seq_log.txt")
     seq.append(atime)
     seq_wtime.append(wtime)
 
     # Parse the log for work stealing execution
-    atime, wtime = parse_file("tmp/work_stealing_log.txt")
+    dynamic_hist, atime, wtime = parse_file("tmp/work_stealing_log.txt")
     dynamic.append(atime)
     dynamic_wtime.append(wtime)
 
     # Parse the log for rand static scheduling execution
-    atime, wtime = parse_file("tmp/static_rand_sched_log.txt")
+    static_rand_hist, atime, wtime = parse_file(
+        "tmp/static_rand_sched_log.txt")
     static_rand.append(atime)
     static_rand_wtime.append(wtime)
 
     # Parse the log for hlfet static scheduling execution
-    atime, wtime = parse_file("tmp/static_hlfet_sched_log.txt")
+    static_hlfet_hist, atime, wtime = parse_file(
+        "tmp/static_hlfet_sched_log.txt")
     static_hlfet.append(atime)
     static_hlfet_wtime.append(wtime)
 
     # Parse the log for etf static scheduling execution
-    atime, wtime = parse_file("tmp/static_etf_sched_log.txt")
+    static_etf_hist, atime, wtime = parse_file("tmp/static_etf_sched_log.txt")
     static_etf.append(atime)
     static_etf_wtime.append(wtime)
 
@@ -159,11 +168,11 @@ plt.plot(x, static_hlfet, 'bx', label='Static HLFET Scheduling')
 plt.plot(x, static_etf, 'rx', label='Static ETF Scheduling')
 plt.legend()
 
+
 plt.title('Average execution time:'+sys.argv[1])
 plt.ylabel('Time (µs)')
 plt.xlabel('Number of nodes')
 
-# plt.show()
 plt.savefig('tmp/average.png', bbox_inches='tight')
 plt.close()
 
@@ -178,6 +187,17 @@ plt.title('Worst execution time: '+sys.argv[1])
 plt.ylabel('Time (µs)')
 plt.xlabel('Number of nodes')
 
-# plt.show()
 plt.savefig('tmp/worst.png', bbox_inches='tight')
+plt.close()
+
+plt.hist([seq_hist, dynamic_hist, static_rand_hist, static_hlfet_hist,
+          static_etf_hist], align='mid', 
+          label=['Sequential Scheduling', 'Work Stealing Scheduling', 'Static Rand Scheduling', 'Static HLFET Scheduling', 'Static ETF Scheduling'])
+plt.legend()
+
+plt.title('Cycle time Histogram of :' +sys.argv[1])
+plt.xlabel('Cycle Time (µs)')
+plt.ylabel('Number of cycles')
+
+plt.savefig('tmp/hist.png', bbox_inches='tight')
 plt.close()
