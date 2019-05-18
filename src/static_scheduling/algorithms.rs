@@ -11,7 +11,7 @@ pub enum SchedulingAlgorithm {
     Random,
     HLFET,
     ETF,
-    CPFD,
+    // CPFD, This one cannot be executed without further treatment
 }
 
 pub fn schedule(
@@ -23,7 +23,6 @@ pub fn schedule(
         SchedulingAlgorithm::Random => random(graph, nb_processors),
         SchedulingAlgorithm::HLFET => hlfet(graph, nb_processors),
         SchedulingAlgorithm::ETF => etf(graph, nb_processors),
-        SchedulingAlgorithm::CPFD => cpfd(graph, 1.0),
     }
 }
 
