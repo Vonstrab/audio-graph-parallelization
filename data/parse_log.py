@@ -55,6 +55,10 @@ def parse_file(path):
     return (average_time, worst_time)
 
 
+if len(sys.argv) != 3:
+    print("Usage: parse_log.py <AG Directory> <Number of threads>")
+    sys.exit(-1)
+
 dags = [f for f in listdir(sys.argv[1]) if isfile(join(sys.argv[1], f))]
 dags = sorted_nicely(dags)
 
@@ -76,7 +80,8 @@ subprocess.run(["cargo", "build", "--release", "--bin", "work_stealing_exec"])
 
 for dag in dags:
 
-    file = sys.argv[1] + "/" + dag
+    file = sys.argv[1].rstrip("/ ") + "/" + dag
+    nb_threads = sys.argv[2]
 
     print("**********************************")
     print("File : " + file)
@@ -98,26 +103,26 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, "rand"], timeout=2.0)
+                        file, nb_threads, "rand"], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, "hlfet"], timeout=2.0)
+                        file, nb_threads, "hlfet"], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, "etf"], timeout=2.0)
+                        file, nb_threads, "etf"], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_exec",
-                        file], timeout=2.0)
+                        file, nb_threads], timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
 

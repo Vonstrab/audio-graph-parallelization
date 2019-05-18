@@ -12,6 +12,7 @@ use super::utils::build_dsp_edges;
 
 pub fn run_work_stealing(
     graph: Arc<RwLock<TaskGraph>>,
+    nb_threads: usize,
     tx: Sender<MeasureDestination>,
 ) -> Result<(), jack::Error> {
     tx.send(MeasureDestination::File(
@@ -54,7 +55,7 @@ pub fn run_work_stealing(
     )));
 
     let thread_pool = Arc::new(RwLock::new(ThreadPool::create(
-        4,
+        nb_threads,
         graph.clone(),
         dsp_edges.clone(),
     )));
