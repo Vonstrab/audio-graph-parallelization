@@ -5,7 +5,8 @@ use std::thread;
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use crossbeam::utils::Backoff;
 
-use crate::dsp::{DspEdge, DspNode};
+use crate::dsp::DspEdge;
+use crate::execution::utils::exec_task;
 use crate::static_scheduling::schedule::Schedule;
 use crate::task_graph::graph::TaskGraph;
 use crate::task_graph::state::TaskState;
@@ -65,6 +66,12 @@ impl ThreadPool {
                     'processing: for node_index in sched.processors[i].time_slots.iter().map(|ts| ts.get_node()) {
                         let backoff = Backoff::new();
 
+                        debug_assert!(
+                            task_graph.read().unwrap().get_state(node_index)
+                            != Some(TaskState::Completed),
+                            "Task already executed?!"
+                        );
+
                         while task_graph.read().unwrap().get_state(node_index) != Some(TaskState::Ready) {
                             // Do not wait any longer if the next cycle already started
                             if rx.try_recv() == Ok(CtrlMsg::Reset) {
@@ -74,7 +81,7 @@ impl ThreadPool {
                             backoff.snooze();
                         }
 
-                        exec_task(node_index, task_graph.clone(), dsp_edges.clone());
+                        exec_task(node_index, task_graph.clone(), dsp_edges.clone(), None);
                     }
 
                     f_tx.send(FeedbackMsg::Done).unwrap();
@@ -99,58 +106,6 @@ impl ThreadPool {
 
         for chan in self.fb_chans.iter() {
             chan.recv().expect("Could not get feedback messages");
-        }
-    }
-}
-
-fn exec_task(
-    node_index: usize,
-    task_graph: Arc<RwLock<TaskGraph>>,
-    dsp_edges: Arc<RwLock<HashMap<(usize, usize), Arc<RwLock<DspEdge>>>>>,
-) {
-    let predecessors = task_graph.read().unwrap().get_predecessors(node_index);
-    let successors = task_graph.read().unwrap().get_successors(node_index);
-
-    if let (Some(predecessors), Some(successors)) = (predecessors, successors) {
-        let in_edges: Vec<_> = predecessors
-            .iter()
-            .map(|&src| {
-                dsp_edges
-                    .read()
-                    .unwrap()
-                    .get(&(src, node_index))
-                    .unwrap()
-                    .clone()
-            })
-            .collect();
-        let out_edges: Vec<_> = successors
-            .iter()
-            .map(|&dst| {
-                dsp_edges
-                    .read()
-                    .unwrap()
-                    .get(&(node_index, dst))
-                    .unwrap()
-                    .clone()
-            })
-            .collect();
-
-        let task = task_graph.read().unwrap().get_dsp(node_index);
-        let task = &mut *task.lock().unwrap();
-
-        if let Some(task) = task {
-            match task.dsp {
-                DspNode::Oscillator(ref mut o) => o.process(out_edges[0].clone()),
-                DspNode::Modulator(ref mut m) => {
-                    m.process(in_edges[0].clone(), out_edges[0].clone())
-                }
-                DspNode::InputsOutputsAdaptor(ref mut ioa) => ioa.process(in_edges, out_edges),
-                DspNode::Sink(ref mut s) => s.process(in_edges[0].clone()),
-            }
-        }
-
-        for succ in successors {
-            task_graph.write().unwrap().dec_activation_count(succ);
         }
     }
 }
