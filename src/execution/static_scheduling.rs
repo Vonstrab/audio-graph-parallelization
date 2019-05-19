@@ -120,10 +120,9 @@ pub fn run_static_sched(
         tx.send(MeasureDestination::File(
             output_file.clone(),
             format!(
-                "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs\nTime left before the deadline: {}µs",
+                "\nEnd of cycle at: {:#?} \nIn: {}µs\nTime left before the deadline: {}µs",
                 start_time,
-                elapsed_time.subsec_millis(),
-                elapsed_time.subsec_nanos(),
+                elapsed_time.as_micros(),
                 time_left,
             ),
         ))

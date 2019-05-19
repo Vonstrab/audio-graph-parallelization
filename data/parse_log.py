@@ -29,26 +29,28 @@ def parse_file(path):
         worst_time = 0
         time = 0
         next = 0
-        number = 0
+        nb_times = 0
+        nb_next = 0
         hist = []
 
         for line in file:
             words = line.strip().split(" ")
-            if len(words) == 1 and words[0].endswith("µs") and number > 15:
-                current_time = int(words[0].rstrip("µs"))
-                hist.append(current_time/100000)
+            if len(words) == 2 and words[1].endswith("µs"):
+                current_time = int(words[1].rstrip("µs"))
+                hist.append(current_time / 1000)
                 if current_time > worst_time:
                     worst_time = current_time
-                time += int(words[0].rstrip("µs"))
-            if words[0] == "Time" and number > 15:
+                time += current_time
+                nb_times += 1
+            if words[0] == "Time":
                 next += int(words[5].rstrip("µs"))
-            number += 1
+                nb_next += 1
 
-        average_time = time / number
-        average_next = next / number
+        average_time = time // nb_times
+        average_next = next // nb_next
 
         print("\nResults for " + path + ":")
-        print("Cycles count: " + str(number))
+        print("Cycles count: " + str(nb_times))
         print("Worst time: " + str(worst_time) + "µs")
         print("Average time: " + str(average_time) + "µs")
         print("Average time left before the deadline: "
@@ -183,66 +185,59 @@ plt.plot(x, static_hlfet_wtime, 'bx', label='Static HLFET Scheduling')
 plt.plot(x, static_etf_wtime, 'rx', label='Static ETF Scheduling')
 plt.legend()
 
-plt.title('Worst execution time: '+sys.argv[1])
+plt.title('Worst execution time:' + sys.argv[1])
 plt.ylabel('Time (µs)')
 plt.xlabel('Number of nodes')
 
 plt.savefig('tmp/worst.png', bbox_inches='tight')
 plt.close()
 
-plt.hist(seq_hist, bins=50, range=[20, 600],color='red')
 
-plt.title('Sequencial')
+plt.hist(seq_hist, bins=50, color='red')
+
+plt.title('Sequential')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
-
-plt.ylim([0,40])
 
 plt.savefig('tmp/hist_seq.png', bbox_inches='tight')
 plt.close()
 
-plt.hist(dynamic_hist, bins=50, range=[20, 600],color='green')
+
+plt.hist(dynamic_hist, bins=50, color='green')
 
 plt.title('Work Stealing')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
 
-plt.ylim([0,40])
-
-
 plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
 plt.close()
 
-plt.hist(static_rand_hist, bins=50, range=[20, 600],color='blue')
 
-plt.title('Rand')
+plt.hist(static_rand_hist, bins=50, color='blue')
+
+plt.title('Random static scheduling')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
-
-plt.ylim([0,40])
 
 plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
 plt.close()
 
-plt.hist(static_hlfet_hist, bins=50, range=[20, 600],color='grey')
+
+plt.hist(static_hlfet_hist, bins=50, color='grey')
 
 plt.title('HLFET')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
 
-plt.ylim([0,40])
-
-
 plt.savefig('tmp/hist_hlfet.png', bbox_inches='tight')
 plt.close()
 
-plt.hist(static_etf_hist, bins=50, range=[20, 600],color='black')
+
+plt.hist(static_etf_hist, bins=50, color='black')
 
 plt.title('ETF')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
-
-plt.ylim([0,40])
 
 plt.savefig('tmp/hist_etf.png', bbox_inches='tight')
 plt.close()
