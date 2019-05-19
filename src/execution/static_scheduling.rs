@@ -13,6 +13,7 @@ use super::utils::build_dsp_edges;
 
 pub fn run_static_sched(
     graph: Arc<RwLock<TaskGraph>>,
+    nb_threads: usize,
     sched_algo: SchedulingAlgorithm,
     tx: Sender<MeasureDestination>,
 ) -> Result<(), jack::Error> {
@@ -20,7 +21,6 @@ pub fn run_static_sched(
         SchedulingAlgorithm::Random => "tmp/static_rand_sched_log.txt",
         SchedulingAlgorithm::HLFET => "tmp/static_hlfet_sched_log.txt",
         SchedulingAlgorithm::ETF => "tmp/static_etf_sched_log.txt",
-        SchedulingAlgorithm::CPFD => "tmp/static_cpfd_sched_log.txt",
     });
 
     tx.send(MeasureDestination::File(
@@ -62,10 +62,10 @@ pub fn run_static_sched(
         &client,
     )));
 
-    let sched = schedule(&mut graph.write().unwrap(), 4, sched_algo);
+    let sched = schedule(&mut graph.write().unwrap(), nb_threads, sched_algo);
 
     let thread_pool = Arc::new(RwLock::new(ThreadPool::create(
-        4,
+        nb_threads,
         graph.clone(),
         dsp_edges.clone(),
         sched,
