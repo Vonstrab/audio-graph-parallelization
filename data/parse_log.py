@@ -36,7 +36,7 @@ def parse_file(path):
             words = line.strip().split(" ")
             if len(words) == 1 and words[0].endswith("µs") and number > 15:
                 current_time = int(words[0].rstrip("µs"))
-                hist.append(current_time)
+                hist.append(current_time/100000)
                 if current_time > worst_time:
                     worst_time = current_time
                 time += int(words[0].rstrip("µs"))
@@ -190,14 +190,59 @@ plt.xlabel('Number of nodes')
 plt.savefig('tmp/worst.png', bbox_inches='tight')
 plt.close()
 
-plt.hist([seq_hist, dynamic_hist, static_rand_hist, static_hlfet_hist,
-          static_etf_hist], align='mid', 
-          label=['Sequential Scheduling', 'Work Stealing Scheduling', 'Static Rand Scheduling', 'Static HLFET Scheduling', 'Static ETF Scheduling'])
-plt.legend()
+plt.hist(seq_hist, bins=50, range=[20, 600],color='red')
 
-plt.title('Cycle time Histogram of :' +sys.argv[1])
-plt.xlabel('Cycle Time (µs)')
-plt.ylabel('Number of cycles')
+plt.title('Sequencial')
+plt.xlabel('Cycle Time (ms)')
+plt.ylabel('Count')
 
-plt.savefig('tmp/hist.png', bbox_inches='tight')
+plt.ylim([0,40])
+
+plt.savefig('tmp/hist_seq.png', bbox_inches='tight')
+plt.close()
+
+plt.hist(dynamic_hist, bins=50, range=[20, 600],color='green')
+
+plt.title('Work Stealing')
+plt.xlabel('Cycle Time (ms)')
+plt.ylabel('Count')
+
+plt.ylim([0,40])
+
+
+plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
+plt.close()
+
+plt.hist(static_rand_hist, bins=50, range=[20, 600],color='blue')
+
+plt.title('Rand')
+plt.xlabel('Cycle Time (ms)')
+plt.ylabel('Count')
+
+plt.ylim([0,40])
+
+plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
+plt.close()
+
+plt.hist(static_hlfet_hist, bins=50, range=[20, 600],color='grey')
+
+plt.title('HLFET')
+plt.xlabel('Cycle Time (ms)')
+plt.ylabel('Count')
+
+plt.ylim([0,40])
+
+
+plt.savefig('tmp/hist_hlfet.png', bbox_inches='tight')
+plt.close()
+
+plt.hist(static_etf_hist, bins=50, range=[20, 600],color='black')
+
+plt.title('ETF')
+plt.xlabel('Cycle Time (ms)')
+plt.ylabel('Count')
+
+plt.ylim([0,40])
+
+plt.savefig('tmp/hist_etf.png', bbox_inches='tight')
 plt.close()
