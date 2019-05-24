@@ -1,3 +1,4 @@
+import math
 import subprocess
 import sys
 from os import listdir
@@ -19,6 +20,29 @@ def sorted_nicely(l):
     Sort the given iterable in the way that humans expect
     """
     return sorted(l, key=alphanum_key)
+
+def get_scale(data):
+    max_count = 0
+    max_time = 0.0
+
+    for d in data:
+        for x in d:
+            if x > max_time:
+                max_time = x
+
+    max_time = math.ceil(max_time) + 1
+
+    for d in data:
+        n, bins, patches = plt.hist(d, bins=100, range=(0, max_time))
+
+        for count in n:
+            if count > max_count:
+                max_count = count
+
+        plt.clf()
+
+    return max_time, max_count + 1
+
 
 
 def parse_file(path):
@@ -121,7 +145,7 @@ a = a.ravel()
 
 for idx, ax in enumerate(a):
 
-    ax.hist(data[idx], bins=50, color=color[idx])
+    ax.hist(data[idx], bins=100, color=color[idx])
     ax.set_title(titles[idx])
     ax.set_xlabel(xaxes[idx])
     ax.set_ylabel(yaxes[idx])
@@ -130,51 +154,65 @@ plt.tight_layout()
 plt.savefig('tmp/hist_all.png')
 plt.close()
 
-plt.hist(seq_hist, bins=50, color='red')
+max_x, max_y = get_scale(
+    [seq_data, dynamic_data, static_rand_data, static_hlfet_data, static_etf_data])
+
+
+plt.hist(seq_data, bins=100, range=(0, max_x), color='red')
 
 plt.title('Sequential')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
+plt.xlim(0, max_x)
+plt.ylim(0, max_y)
 
 plt.savefig('tmp/hist_seq.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(dynamic_hist, bins=50, color='green')
+plt.hist(dynamic_data, bins=100, range=(0, max_x), color='green')
 
 plt.title('Work Stealing')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
+plt.xlim(0, max_x)
+plt.ylim(0, max_y)
 
 plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_rand_hist, bins=50, color='blue')
+plt.hist(static_rand_data, bins=100, range=(0, max_x), color='blue')
 
 plt.title('Random static scheduling')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
+plt.xlim(0, max_x)
+plt.ylim(0, max_y)
 
 plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_hlfet_hist, bins=50, color='grey')
+plt.hist(static_hlfet_data, bins=100, range=(0, max_x), color='grey')
 
 plt.title('HLFET')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
+plt.xlim(0, max_x)
+plt.ylim(0, max_y)
 
 plt.savefig('tmp/hist_hlfet.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_etf_hist, bins=50, color='black')
+plt.hist(static_etf_data, bins=100, range=(0, max_x), color='black')
 
 plt.title('ETF')
 plt.xlabel('Cycle Time (ms)')
 plt.ylabel('Count')
+plt.xlim(0, max_x)
+plt.ylim(0, max_y)
 
 plt.savefig('tmp/hist_etf.png', bbox_inches='tight')
 plt.close()
