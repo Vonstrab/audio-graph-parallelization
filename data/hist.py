@@ -155,10 +155,10 @@ plt.savefig('tmp/hist_all.png')
 plt.close()
 
 max_x, max_y = get_scale(
-    [seq_data, dynamic_data, static_rand_data, static_hlfet_data, static_etf_data])
+    [seq_hist, dynamic_hist, static_rand_hist, static_hlfet_hist, static_etf_hist])
 
 
-plt.hist(seq_data, bins=100, range=(0, max_x), color='red')
+plt.hist(seq_hist, bins=100, range=(0, max_x), color='red')
 
 plt.title('Sequential')
 plt.xlabel('Cycle Time (ms)')
@@ -170,7 +170,7 @@ plt.savefig('tmp/hist_seq.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(dynamic_data, bins=100, range=(0, max_x), color='green')
+plt.hist(dynamic_hist, bins=100, range=(0, max_x), color='green')
 
 plt.title('Work Stealing')
 plt.xlabel('Cycle Time (ms)')
@@ -182,7 +182,7 @@ plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_rand_data, bins=100, range=(0, max_x), color='blue')
+plt.hist(static_rand_hist, bins=100, range=(0, max_x), color='blue')
 
 plt.title('Random static scheduling')
 plt.xlabel('Cycle Time (ms)')
@@ -194,7 +194,7 @@ plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_hlfet_data, bins=100, range=(0, max_x), color='grey')
+plt.hist(static_hlfet_hist, bins=100, range=(0, max_x), color='grey')
 
 plt.title('HLFET')
 plt.xlabel('Cycle Time (ms)')
@@ -206,7 +206,7 @@ plt.savefig('tmp/hist_hlfet.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_etf_data, bins=100, range=(0, max_x), color='black')
+plt.hist(static_etf_hist, bins=100, range=(0, max_x), color='black')
 
 plt.title('ETF')
 plt.xlabel('Cycle Time (ms)')

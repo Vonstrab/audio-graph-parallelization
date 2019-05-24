@@ -32,13 +32,11 @@ def parse_file(path):
         next = 0
         nb_times = 0
         nb_next = 0
-        data = []
 
         for line in file:
             words = line.strip().split(" ")
             if len(words) == 2 and words[1].endswith("µs"):
                 current_time = int(words[1].rstrip("µs"))
-                data.append(current_time / 1000)
                 if current_time > worst_time:
                     worst_time = current_time
                 time += current_time
@@ -57,30 +55,7 @@ def parse_file(path):
         print("Average time left before the deadline: "
               + str(average_next) + "µs")
 
-    return (data, average_time, worst_time)
-
-
-def get_scale(data):
-    max_count = 0
-    max_time = 0.0
-
-    for d in data:
-        for x in d:
-            if x > max_time:
-                max_time = x
-
-    max_time = math.ceil(max_time) + 1
-
-    for d in data:
-        n, bins, patches = plt.hist(d, bins=100, range=(0, max_time))
-
-        for count in n:
-            if count > max_count:
-                max_count = count
-
-        plt.clf()
-
-    return max_time, max_count + 1
+    return (average_time, worst_time)
 
 
 if len(sys.argv) != 3:
@@ -92,19 +67,14 @@ dags = sorted_nicely(dags)
 
 x = []
 seq = []
-seq_data = []
 seq_wtime = []
 static_rand = []
-static_rand_data = []
 static_rand_wtime = []
 static_hlfet = []
-static_hlfet_data = []
 static_hlfet_wtime = []
 static_etf = []
-static_etf_data = []
 static_etf_wtime = []
 dynamic = []
-dynamic_data = []
 dynamic_wtime = []
 
 subprocess.run(["cargo", "build", "--release", "--bin", "seq_exec"])
@@ -160,29 +130,29 @@ for dag in dags:
         pass
 
     # Parse the log for sequential execution
-    seq_data, atime, wtime = parse_file("tmp/seq_log.txt")
+    atime, wtime = parse_file("tmp/seq_log.txt")
     seq.append(atime)
     seq_wtime.append(wtime)
 
     # Parse the log for work stealing execution
-    dynamic_data, atime, wtime = parse_file("tmp/work_stealing_log.txt")
+    atime, wtime = parse_file("tmp/work_stealing_log.txt")
     dynamic.append(atime)
     dynamic_wtime.append(wtime)
 
     # Parse the log for rand static scheduling execution
-    static_rand_data, atime, wtime = parse_file(
+    atime, wtime = parse_file(
         "tmp/static_rand_sched_log.txt")
     static_rand.append(atime)
     static_rand_wtime.append(wtime)
 
     # Parse the log for hlfet static scheduling execution
-    static_hlfet_data, atime, wtime = parse_file(
+    atime, wtime = parse_file(
         "tmp/static_hlfet_sched_log.txt")
     static_hlfet.append(atime)
     static_hlfet_wtime.append(wtime)
 
     # Parse the log for etf static scheduling execution
-    static_etf_data, atime, wtime = parse_file("tmp/static_etf_sched_log.txt")
+    atime, wtime = parse_file("tmp/static_etf_sched_log.txt")
     static_etf.append(atime)
     static_etf_wtime.append(wtime)
 
@@ -214,68 +184,4 @@ plt.ylabel('Time (µs)')
 plt.xlabel('Number of nodes')
 
 plt.savefig('tmp/worst.png', bbox_inches='tight')
-plt.close()
-
-
-max_x, max_y = get_scale(
-    [seq_data, dynamic_data, static_rand_data, static_hlfet_data, static_etf_data])
-
-
-plt.hist(seq_data, bins=100, range=(0, max_x), color='red')
-
-plt.title('Sequential')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_seq.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(dynamic_data, bins=100, range=(0, max_x), color='green')
-
-plt.title('Work Stealing')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(static_rand_data, bins=100, range=(0, max_x), color='blue')
-
-plt.title('Random static scheduling')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(static_hlfet_data, bins=100, range=(0, max_x), color='grey')
-
-plt.title('HLFET')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_hlfet.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(static_etf_data, bins=100, range=(0, max_x), color='black')
-
-plt.title('ETF')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_etf.png', bbox_inches='tight')
 plt.close()
