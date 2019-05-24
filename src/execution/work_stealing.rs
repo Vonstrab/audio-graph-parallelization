@@ -108,10 +108,9 @@ pub fn run_work_stealing(
         tx.send(MeasureDestination::File(
             "tmp/work_stealing_log.txt".to_string(),
             format!(
-                "\nEnd of cycle at: {:#?} \nIn: {}ms \n{}µs\nTime left before the deadline: {}µs",
+                "\nEnd of cycle at: {:#?} \nIn: {}µs\nTime left before the deadline: {}µs",
                 start_time,
-                elapsed_time.subsec_millis(),
-                elapsed_time.subsec_nanos(),
+                elapsed_time.as_micros(),
                 time_left,
             ),
         ))
