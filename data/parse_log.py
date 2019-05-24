@@ -129,33 +129,33 @@ for dag in dags:
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "seq_exec",
-                        file], timeout=2.0)
+                        file], timeout=5.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, nb_threads, "rand"], timeout=2.0)
+                        file, nb_threads, "rand"], timeout=5.0)
     except subprocess.TimeoutExpired:
         pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, nb_threads, "hlfet"], timeout=2.0)
+                        file, nb_threads, "hlfet"], timeout=5.0)
     except subprocess.TimeoutExpired:
         pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, nb_threads, "etf"], timeout=2.0)
+                        file, nb_threads, "etf"], timeout=5.0)
     except subprocess.TimeoutExpired:
         pass
 
     # We run the audio for 60s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_exec",
-                        file, nb_threads], timeout=2.0)
+                        file, nb_threads], timeout=5.0)
     except subprocess.TimeoutExpired:
         pass
 
