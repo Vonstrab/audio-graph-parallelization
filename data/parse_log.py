@@ -6,22 +6,6 @@ from os.path import isfile, join
 import matplotlib.pyplot as plt
 import re
 
-
-def convert(text):
-    return int(text) if text.isdigit() else text
-
-
-def alphanum_key(key):
-    return [convert(c) for c in re.split('([0-9]+)', key)]
-
-
-def sorted_nicely(l):
-    """
-    Sort the given iterable in the way that humans expect
-    """
-    return sorted(l, key=alphanum_key)
-
-
 def parse_file(path):
     """
     Function for parsing a file containing measurements
