@@ -8,6 +8,12 @@ use crate::task_graph::graph::TaskGraph;
 
 use super::utils::build_dsp_edges;
 
+/// Sequentially executes an audio graph with JACK.
+///
+/// # Arguments
+///
+/// * `graph` - The audio graph to be executed
+/// * `tx` - The channel used for sending statistical measurements
 pub fn run_seq(
     graph: Arc<Mutex<TaskGraph>>,
     tx: Sender<MeasureDestination>,
@@ -46,6 +52,7 @@ pub fn run_seq(
         out_ports.push(out_port);
     }
 
+    // Allocate the audio buffers used by the DSPs of the audio graph
     let dsp_edges = Arc::new(Mutex::new(build_dsp_edges(
         &*graph.lock().unwrap(),
         &client,
@@ -54,7 +61,9 @@ pub fn run_seq(
     // Get the sequential scheduling of the audio graph
     let exec_order = Arc::new(RwLock::new(graph.lock().unwrap().get_topological_order()));
 
+    // The audio callback funtion
     let callback = jack::ClosureProcessHandler::new(clone!(dsp_edges => move | _ , ps | {
+        // Save the time at which the function started its execution
         let start_time = std::time::SystemTime::now();
         tx.send(MeasureDestination::File(
             "tmp/seq_log.txt".to_string(),
@@ -65,8 +74,8 @@ pub fn run_seq(
         let graph = &mut *graph.lock().unwrap();
         let dsp_edges = &mut *dsp_edges.lock().unwrap();
 
-        // We must give new buffers for the sinks to write into, every time this callback
-        // function is called by jack
+        // We must give new buffers for the sinks to write into,
+        // every time this callback function is called by JACK
         for (i, &node_index) in graph.get_exit_nodes().iter().enumerate() {
             let buffer = out_ports[i].as_mut_slice(ps);
             let frames = ps.n_frames();
@@ -121,6 +130,7 @@ pub fn run_seq(
             }
         }
 
+        // Get the time spent for the execution of the audio graph
         let elapsed_time = start_time.elapsed().unwrap();
         let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
@@ -135,11 +145,15 @@ pub fn run_seq(
         ))
         .expect("logging error");
 
+        // JACK will continue to call this function
         jack::Control::Continue
     }));
 
+    // Tell JACK to start calling the callback function
     let _active_client = client.activate_async((), callback)?;
 
+    // Wait for an input from the user in order to not immediately exit
+    // the program
     let mut user_input = String::new();
     let _ignored = std::io::stdin().read_line(&mut user_input);
 

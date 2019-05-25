@@ -25,6 +25,12 @@ macro_rules! clone {
     );
 }
 
+/// Allocate the audio buffers for the audio graph.
+///
+/// # Arguments
+///
+/// * `graph` - The audio graph to allocate the buffers for
+/// * `client` - The JACK client data to know the size of the buffers and the sample rate
 pub fn build_dsp_edges(
     graph: &TaskGraph,
     client: &jack::Client,
@@ -44,6 +50,14 @@ pub fn build_dsp_edges(
     edges
 }
 
+/// Helper function for executing a single task.
+///
+/// # Arguments
+///
+/// * `node_index` - The index of the task's node within the audio graph
+/// * `task_graph` - The ausio graph of the node
+/// * `dsp_edges` - The buffers of the graph
+/// * `worker_queue` - Used by the work stealing execution: it allows to directly add the ready tasks to the worker's queue
 pub fn exec_task(
     node_index: usize,
     task_graph: Arc<RwLock<TaskGraph>>,
