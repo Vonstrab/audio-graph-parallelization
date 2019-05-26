@@ -482,7 +482,8 @@ donc avec une priorité plus élevée que les autres.
 Dans cette partie, nous ne parlerons pas de façon détaillée de l\textquoteright implémentation
 : en effet, cette dernière est déjà amplement commentée et documentée
 dans le code source du projet. De même, la documentation utilisateur
-est contenue dans le README du projet.
+est contenue dans le README du projet {[} Dépôt : https://gitlab.com/Vonstrab/audio-graph-parallelization
+{]}.
 
 Nous nous concentrerons ici sur la présentation de l\textquoteright architecture
 globale ainsi que sur les points importants de l\textquoteright implémentation.
@@ -907,6 +908,8 @@ DAG qui commence linéairement puis qui va se paralléliser petit a
 petit pour enfin se ré-linéariser. On s'attend que l\textquoteright exécution
 séquentielle soit plus efficace sur les petits losanges, mais que
 le gain de la parallélisation soit significatif sur les plus grands.
+Cette configuration se veut proche des cas rencontrées dans la vie
+réelle. 
 \begin{figure}[H]
 \begin{centering}
 \includegraphics[scale=0.25]{dot/losange16/losange16-1}
@@ -914,9 +917,7 @@ le gain de la parallélisation soit significatif sur les plus grands.
 \caption{Exemples de Losange avec 16 n½uds}
 \end{figure}
 \par\end{flushleft}
-
 \end{itemize}
-{[}Expliquer les mesures faites{]}
 
 \subsection*{Première variable: le nombre de threads}
 
@@ -1000,7 +1001,9 @@ léger surcoût de la parallélisation explicable par l'overhead nécessaire
 a la gestions des pool de threads et des locks.
 
 Pour le Losange on note l'irrégularité de HLFET qui détonne par rapport
-aux trois autres méthodes.
+aux trois autres méthodes. Dans cette configuration on voit que les
+4 c½urs ne font pas perdre tant de performances que ça, juste un légère
+augmentation du nombre de deadlines rates.
 
 \subsection*{Seconde variable: la taille du buffer}
 
@@ -1045,6 +1048,10 @@ de 16, 32, 64,128, 256, et enfin 512.
 
 \subsection*{Dernière variable: la charge de la machine}
 
+Dans cette série de mesures on va fier le buffer a 128, le nombre
+de threads a 3 et on va comparer l'éxécution entre la machine au repos
+et la machine qui lit une vidéo en haute qualité.
+
 \begin{figure}[H]
 \includegraphics[scale=0.4]{ligne_3_128/average}\includegraphics[scale=0.4]{ligne_3_128/misses}\includegraphics[scale=0.4]{ligne_3_128/worst}
 
@@ -1054,7 +1061,7 @@ de 16, 32, 64,128, 256, et enfin 512.
 \begin{figure}[H]
 \includegraphics[scale=0.4]{\string"ligne_3_128 _charge/average\string".eps}\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/misses\string".eps}\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/worst\string".eps}
 
-\caption{ligne en regardant un film}
+\caption{ligne en regardant une vidéo}
 \end{figure}
 
 \begin{figure}[H]
@@ -1066,7 +1073,7 @@ de 16, 32, 64,128, 256, et enfin 512.
 \begin{figure}[H]
 \includegraphics[scale=0.4]{losange_3_128_charge/average}\includegraphics[scale=0.4]{losange_3_128_charge/misses}\includegraphics[scale=0.4]{losange_3_128_charge/worst}
 
-\caption{losange en regardant un film}
+\caption{losange en regardant une vidéo}
 \end{figure}
 
 \begin{figure}[H]
@@ -1078,9 +1085,16 @@ de 16, 32, 64,128, 256, et enfin 512.
 \begin{figure}[H]
 \includegraphics[scale=0.4]{rateau_3_128_charge/average}\includegraphics[scale=0.4]{rateau_3_128_charge/misses}\includegraphics[scale=0.4]{rateau_3_128_charge/worst}
 
-\caption{râteau en regardant un film}
+\caption{râteau en regardant une vidéo}
 \end{figure}
 
+Le cas le plus intéressant est celui du Râteau ou on voit que lors
+de la lecture de la vidéo, toutes les méthodes parallèles ont plus
+de mal a tenir les deadlines, contrairement a l\textquoteright exécution
+séquentielle qui elle tient la ligne avec la surcharge, on analyser
+cette dichotomie par le fait que la lecture d'une vidéo va monopoliser
+un partie non négligeable des ressources de la machine ce qui néglige
+une partie des gain de la parallélisation.
 
 \subsection*{La stabilité des Algorithmes}
 
@@ -1126,7 +1140,8 @@ l\textquoteright exécution séquentielle, qui dans les différents cas
 de figure est de loin la méthode la plus fiable et la plus efficace.
 Pour les autre méthodes on voit qu'HLFET est vraiment a la traîne
 au niveau des performances. L'algorithme ETF offre une stabilité,
-visible nottement
+visible notamment dans l'histogramme du losange et du râteau, cette
+méthode peut être prometteuse surtout avec un soin porté a son implémentation.
 
 \part*{Évolutions possibles}
 
