@@ -127,7 +127,7 @@ ture logicielle ayant permis leur mise en œuvre.
 ents.
  Finalement, nous ferons une critique de la réalisation du projet en indiquant
  les aspects de l’implémentation qui pourraient être améliorés et les fonctionna
-litées qui pourraient être développées par la suite.
+lités qui pourraient être développées par la suite.
 \end_layout
 
 \begin_layout Subsection*
@@ -188,7 +188,7 @@ Un signal audio est caractérisé par sa fréquence d’échantillonnage indiqua
 status open
 
 \begin_layout Plain Layout
-L'API JACK que nous utilisons utilise deux buffers, le principe est le meme,
+L'API JACK que nous utilisons utilise deux buffers, le principe est le même,
  la durée des cycle est doublée
 \end_layout
 
@@ -196,7 +196,7 @@ L'API JACK que nous utilisons utilise deux buffers, le principe est le meme,
 
 .
  Si un nouveau buffer n’est pas disponible au delà de cette échéance, alors
- la carte audio va se mettre à lire des échantillons nulls ou bien le même
+ la carte audio va se mettre à lire des échantillons nuls ou bien le même
  buffer qu’au cycle précédent, ce qui produit un “tick” désagréable à l’oreille.
  La durée d’un cycle audio constitue donc la contrainte temps réel que doit
  respecter le traitement audio : le temps de calcul des traitements audio,
@@ -453,12 +453,27 @@ Deux attributs sont fréquemment utilisés pour déterminer la priorité d’une
 \end_layout
 
 \begin_layout Subsection*
-L’algorithme CP/MISF
+L’algorithme HLFET avec départage CP/MISF
 \end_layout
 
 \begin_layout Standard
-Le premier algorithme est l’algorithme CP/MISF (pour “Critical Path / Most
- Immediate Successors First”).
+Le premier algorithme est l’algorithme HLFET (pour 
+\begin_inset Quotes fld
+\end_inset
+
+Highest Level First with Estimated Times
+\begin_inset Quotes frd
+\end_inset
+
+) avec un départage des égalités avec CP/MISF (pour 
+\begin_inset Quotes fld
+\end_inset
+
+Critical Path / Most Immediate Successors First
+\begin_inset Quotes frd
+\end_inset
+
+).
  Pour celui-ci, la priorité d’un nœud est définie par son SL.
  Lorsque plusieurs nœuds ont le même SL, on choisi d’abord celui ayant le
  plus grand nombre de successeurs.
@@ -943,7 +958,7 @@ name "Algorithme 2"
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Ordonnement CPFD
+Ordonnancement CPFD
 \end_layout
 
 \end_inset
@@ -962,7 +977,7 @@ candidate
 \begin_layout Plain Layout
 
 \series bold
-Repeter:
+Répéter:
 \end_layout
 
 \begin_layout Plain Layout
@@ -2096,22 +2111,22 @@ s constituant les SIM (parfois, il n’est même pas possible d’avoir une prio
 \end_layout
 
 \begin_layout Standard
-Dans cette optique regerder juste le temps moyen uniquement n'est pas pertinent,
- il faut qussi regarder les pires cas et le nombre de deadlines dépassées,
+Dans cette optique regarder juste le temps moyen uniquement n'est pas pertinent,
+ il faut aussi regarder les pires cas et le nombre de deadlines dépassées,
  ce que nous recherchons c'est des algorithmes qui sont statistiquement
  stables et qui dépassent le moins possible le temps qui leurs est impartis,
- ainsi nous tendrons a privililégier un algorithme qui est moins bon en
- moyenne mais plus stable dans les résultats.
+ ainsi nous tendrons a privilégier un algorithme qui est moins bon en moyenne
+ mais plus stable dans les résultats.
 \end_layout
 
 \begin_layout Standard
 La machine utilisée pour faire les mesures est un Ubuntu 18.04 avec le noyau
  linux : 4.15.0-50-generic, un processeur Intel i5-7200U @2.50GHz avec 3072
- KB de cache et 4 coeurs, avec le gouverneur en mode performances.
+ KB de cache et 4 cœurs, avec le gouverneur en mode performances.
 \end_layout
 
 \begin_layout Standard
-Les paramètres qui penvent influencer les resultat de l'éxecution sur un
+Les paramètres qui peuvent influencer les résultat de l’exécution sur un
  même dag sont:
 \end_layout
 
@@ -2120,8 +2135,8 @@ Le nombre de threads utilisées
 \end_layout
 
 \begin_layout Itemize
-La taille des buffers, qui fait varier le temps d'un cycle ainsi le delais.
- Les valeurs courantes que nous étudirons sont : 1024, 512, 256, 128, 64,
+La taille des buffers, qui fait varier le temps d'un cycle ainsi le délais.
+ Les valeurs courantes que nous étudierons sont : 1024, 512, 256, 128, 64,
  32
 \end_layout
 
@@ -2140,7 +2155,7 @@ Les Configurations de DAGS étudiées
 \noindent
 \align left
 Nous allons concentrer notre analyse sur trois configurations particulières
- de dags :
+ de DAGS :
 \end_layout
 
 \begin_layout Itemize
@@ -2148,7 +2163,7 @@ Nous allons concentrer notre analyse sur trois configurations particulières
 \align left
 La ligne; chaîne de tâches ou chaqu’une s'exécute l’une après l’autre, dans
  cette configuration la parallélisation est impossible, toute exécution
- est nécessairement séquentielle, ces dags vont nous servir de “groupe témoin”
+ est nécessairement séquentielle, ces DAGS vont nous servir de “groupe témoin”
  afin de comparer le surcoût de chaque méthode.
  
 \begin_inset Float figure
@@ -2172,7 +2187,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Exemples de Ligne avec 5 noeuds
+Exemples de Ligne avec 5 nœuds
 \end_layout
 
 \end_inset
@@ -2192,7 +2207,7 @@ Exemples de Ligne avec 5 noeuds
 \begin_layout Itemize
 \noindent
 \align left
-Le râteau; dans cette configuration c’est plusieures lignes qui s’unissent
+Le Râteau; dans cette configuration c’est plusieurs lignes qui s’unissent
  au bout, cette forme est celle ou la parallélisation doit être la plus
  efficace, et donner les meilleurs gains.
  
@@ -2217,7 +2232,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Exemples de Rateau avec 11 noeuds
+Exemples de Râteau avec 11 nœuds
 \end_layout
 
 \end_inset
@@ -2234,10 +2249,10 @@ Exemples de Rateau avec 11 noeuds
 \noindent
 \align left
 Finalement le losange qui se trouve entre les deux, il s'agit d'un DAG qui
- commence linéairement puis qui va se parralléliser petit a petit pour enfin
- se re-linéariser.
- On s'attend que l'éexecution séquencielle soit plus efficace sur les petits
- losanges, mais que le gain de la parrallélisation soit significatif sur
+ commence linéairement puis qui va se paralléliser petit a petit pour enfin
+ se ré-linéariser.
+ On s'attend que l’exécution séquentielle soit plus efficace sur les petits
+ losanges, mais que le gain de la parallélisation soit significatif sur
  les plus grands.
 \begin_inset Float figure
 wide false
@@ -2260,7 +2275,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Exemples de Losange avec 16 noeuds
+Exemples de Losange avec 16 nœuds
 \end_layout
 
 \end_inset
@@ -2278,11 +2293,11 @@ Exemples de Losange avec 16 noeuds
 \end_layout
 
 \begin_layout Subsection*
-Premiére variable: le nombre de threads
+Première variable: le nombre de threads
 \end_layout
 
 \begin_layout Standard
-Pour cette premiére série de mesures nous allons fixer la taille du buffer
+Pour cette première série de mesures nous allons fixer la taille du buffer
  a 
 \series bold
 128
@@ -2292,7 +2307,7 @@ Pour cette premiére série de mesures nous allons fixer la taille du buffer
 
 \begin_layout Standard
 Nous commençons avec la ligne, pour pouvoir comparer le surcoût de chaque
- methode [Figure 5 
+ méthode [Figure 5 
 \begin_inset CommandInset ref
 LatexCommand vpageref
 reference "fig 5"
@@ -2707,7 +2722,7 @@ Losange avec threads variable
 
 \end_inset
 
-Et avec le Rateau [Figure 7 
+Et avec le Râteau [Figure 7 
 \begin_inset CommandInset ref
 LatexCommand vpageref
 reference "Figure  7"
@@ -2830,7 +2845,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Rateau avec 
+Râteau avec 
 \series bold
 3
 \series default
@@ -2887,7 +2902,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Rateau avec 
+Râteau avec 
 \series bold
 4
 \series default
@@ -2905,7 +2920,7 @@ Rateau avec
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Rateau avec threads variable
+Râteau avec threads variable
 \end_layout
 
 \end_inset
@@ -2919,20 +2934,21 @@ Rateau avec threads variable
 \end_layout
 
 \begin_layout Standard
-Dans un Premier temps on va s'interesser aux dépassements de delais, on
+Dans un Premier temps on va s’intéresser aux dépassements de délais, on
  peu constater dans un premier temps que le nombre de threads optimal sur
  cette machine est de 3 et cela quelque soit la configuration étudiée.
- Cela peut peut cembler contre-intuitif compte tenu qu'il y a 4 coeurs,
- cependant en considérent que l'éxécution sequencielle n'est pas impactée,
- on peut émettre l'hypothése que le cache lui étant partagé, il est un frein
- a l'utilisation des 4 coeurs de la machine.
+ Cela peut peut sembler contre-intuitif compte tenu qu'il y a 4 cœurs, on
+ peut que la présence du thread de mesures impacte les performances de plus
+ car il interrompt les threads du pool, on peut émettre l’hypothèse que
+ le cache lui étant partagé, il est un frein a l'utilisation des 4 cœurs
+ de la machine.
 \end_layout
 
 \begin_layout Standard
 Secondement en observant les temps moyens et les pires temps pour la ligne,
- on peut constater que, hormis des irrégularités des methodes HLFET et EFT,
- les différentes methodes sont trés proches, avec un léger surcoût de la
- parrallélisation explicable par l'overhead necessaire a la gestions des
+ on peut constater que, hormis des irrégularités des méthodes HLFET et EFT,
+ les différentes méthodes sont très proches, avec un léger surcoût de la
+ parallélisation explicable par l'overhead nécessaire a la gestions des
  pool de threads et des locks.
 \end_layout
 
@@ -2941,17 +2957,17 @@ Seconde variable: la taille du buffer
 \end_layout
 
 \begin_layout Standard
-Plus la taille du buffer est petite moins le systéme a de lattence mais
- plus les deadlines sont sérées et plus la machine es mise a contribution.
+Plus la taille du buffer est petite moins le système a de latence mais plus
+ les deadlines sont serrées et plus la machine es mise a contribution.
  On a deux configurations : un petit buffer entre 16 et 256, quand on cherche
  a avoir de la réactivité, par exemple pour des musiciens qui souhaitent
- avoir un retour son, pour de la retransmision en direct, et a l'opposé
+ avoir un retour son, pour de la retransmission en direct, et a l'opposé
  un plus gros buffer a partir de 512 quand on peut se permettre de ménager
  sa machine.
 \end_layout
 
 \begin_layout Subsection*
-Derniére variable: la charge de la machine
+Dernière variable: la charge de la machine
 \end_layout
 
 \begin_layout Subsection*
@@ -2986,24 +3002,13 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Histogramme pour une Ligne a 100 Noeuds
+Histogramme pour une Ligne a 100 nœuds
 \end_layout
 
 \end_inset
 
 
 \end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
 
 \begin_layout Plain Layout
 \align center
@@ -3021,24 +3026,13 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Histogramme pour un losange a 156 Noeuds
+Histogramme pour un losange a 156 nœuds
 \end_layout
 
 \end_inset
 
 
 \end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
 
 \begin_layout Plain Layout
 \align center
@@ -3056,7 +3050,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Histogramme pour un Rateau a 32 Noeuds
+Histogramme pour un Râteau a 101 nœuds
 \end_layout
 
 \end_inset
@@ -3071,8 +3065,8 @@ Histogramme pour un Rateau a 32 Noeuds
 
 \begin_layout Standard
 On peut dans un premier temps constater que sur l'histogramme de la ligne
- que HLFET a un overhead significatif sur les autres methodes.
- Les stabilités sont équivalents pour les quatres méthodes.
+ que HLFET a un overhead significatif sur les autres méthodes.
+ Les stabilités sont proches pour les quatre méthodes.
 \end_layout
 
 \begin_layout Standard
@@ -3083,7 +3077,9 @@ Sur l'histogramme du losange on voit une mauvaise stabilité du vol de tâches,
 \end_layout
 
 \begin_layout Standard
-[Rateau trop petit en ecrire de plus grands]
+Pour le Rateau en revanche on voir que l’exécution séquentielle n'est plus
+ aussi stable, les méthodes parallélises gagnent en stabilité avec ETF et
+ le vol de tache qui sont notablement plus stables.
 \end_layout
 
 \begin_layout Subsection*
