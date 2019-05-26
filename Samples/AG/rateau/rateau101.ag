@@ -1,0 +1,845 @@
+osc1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod2 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc4 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod5 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod6 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc7 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod8 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod9 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc10 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod11 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod12 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc13 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod14 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod15 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc16 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod17 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod18 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc19 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod20 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod21 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc22 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod23 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod24 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc25 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod26 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod27 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc28 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod29 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod30 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc31 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod32 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod33 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc34 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod35 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod36 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc37 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod38 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod39 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc40 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod41 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod42 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc43 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod44 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod45 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc46 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod47 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod48 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc49 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod50 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod51 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc52 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod53 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod54 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc55 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod56 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod57 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc58 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod59 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod60 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc61 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod62 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod63 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc64 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod65 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod66 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc67 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod68 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod69 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc70 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod71 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod72 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc73 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod74 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod75 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc76 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod77 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod78 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc79 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod80 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod81 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc82 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod83 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod84 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc85 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod86 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod87 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc88 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod89 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod90 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc91 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod92 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod93 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc94 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod95 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod96 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+osc97 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod98 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod99 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mix100 =
+{
+    kind: "mix",
+    in: 33,
+    out: 1,
+    volume: 1.0,
+};
+
+s101 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+osc1.1 -> mod2.1;
+mod2.1 -> mod3.1;
+osc4.1 -> mod5.1;
+mod5.1 -> mod6.1;
+osc7.1 -> mod8.1;
+mod8.1 -> mod9.1;
+osc10.1 -> mod11.1;
+mod11.1 -> mod12.1;
+osc13.1 -> mod14.1;
+mod14.1 -> mod15.1;
+osc16.1 -> mod17.1;
+mod17.1 -> mod18.1;
+osc19.1 -> mod20.1;
+mod20.1 -> mod21.1;
+osc22.1 -> mod23.1;
+mod23.1 -> mod24.1;
+osc25.1 -> mod26.1;
+mod26.1 -> mod27.1;
+osc28.1 -> mod29.1;
+mod29.1 -> mod30.1;
+osc31.1 -> mod32.1;
+mod32.1 -> mod33.1;
+osc34.1 -> mod35.1;
+mod35.1 -> mod36.1;
+osc37.1 -> mod38.1;
+mod38.1 -> mod39.1;
+
+osc40.1 -> mod41.1;
+mod41.1 -> mod42.1;
+
+osc43.1 -> mod44.1;
+mod44.1 -> mod45.1;
+
+osc46.1 -> mod47.1;
+mod47.1 -> mod48.1;
+
+osc49.1 -> mod50.1;
+mod50.1 -> mod51.1;
+
+osc52.1 -> mod53.1;
+mod53.1 -> mod54.1;
+
+osc55.1 -> mod56.1;
+mod56.1 -> mod57.1;
+
+osc58.1 -> mod59.1;
+mod59.1 -> mod60.1;
+
+osc61.1 -> mod62.1;
+mod62.1 -> mod63.1;
+
+osc64.1 -> mod65.1;
+mod65.1 -> mod66.1;
+
+osc67.1 -> mod68.1;
+mod68.1 -> mod69.1;
+
+osc70.1 -> mod71.1;
+mod71.1 -> mod72.1;
+
+osc73.1 -> mod74.1;
+mod74.1 -> mod75.1;
+
+osc76.1 -> mod77.1;
+mod77.1 -> mod78.1;
+
+osc79.1 -> mod80.1;
+mod80.1 -> mod81.1;
+
+osc82.1 -> mod83.1;
+mod83.1 -> mod84.1;
+
+osc85.1 -> mod86.1;
+mod86.1 -> mod87.1;
+
+osc88.1 -> mod89.1;
+mod89.1 -> mod90.1;
+
+osc91.1 -> mod92.1;
+mod92.1 -> mod93.1;
+
+osc94.1 -> mod95.1;
+mod95.1 -> mod96.1;
+
+osc97.1 -> mod98.1;
+mod98.1 -> mod99.1;
+
+
+mod3.1 -> mix100.1;
+mod6.1 -> mix100.2;
+mod9.1 -> mix100.3;
+mod12.1 -> mix100.4;
+mod15.1 -> mix100.5;
+mod18.1 -> mix100.6;
+mod21.1 -> mix100.7;
+mod24.1 -> mix100.8;
+mod27.1 -> mix100.9;
+mod30.1 -> mix100.10;
+mod33.1 -> mix100.11;
+mod36.1 -> mix100.12;
+mod39.1 -> mix100.13;
+mod42.1 -> mix100.14;
+mod45.1 -> mix100.15;
+mod48.1 -> mix100.16;
+mod51.1 -> mix100.17;
+mod54.1 -> mix100.18;
+mod57.1 -> mix100.19;
+mod60.1 -> mix100.20;
+mod63.1 -> mix100.21;
+mod66.1 -> mix100.22;
+mod69.1 -> mix100.23;
+mod72.1 -> mix100.24;
+mod75.1 -> mix100.25;
+mod78.1 -> mix100.26;
+mod81.1 -> mix100.27;
+mod84.1 -> mix100.28;
+mod87.1 -> mix100.29;
+mod90.1 -> mix100.30;
+mod93.1 -> mix100.31;
+mod96.1 -> mix100.32;
+mod99.1 -> mix100.33;
+mix100.1 -> s101.1;
