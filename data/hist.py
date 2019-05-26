@@ -6,21 +6,6 @@ from os.path import isfile, join
 import matplotlib.pyplot as plt
 import re
 
-
-def convert(text):
-    return int(text) if text.isdigit() else text
-
-
-def alphanum_key(key):
-    return [convert(c) for c in re.split('([0-9]+)', key)]
-
-
-def sorted_nicely(l):
-    """
-    Sort the given iterable in the way that humans expect
-    """
-    return sorted(l, key=alphanum_key)
-
 def get_scale(data):
     max_count = 0
     max_time = 0.0
@@ -65,6 +50,7 @@ def parse_file(path):
 if len(sys.argv) != 3:
     print("Usage: parse_log.py <AG File> <Number of threads>")
     sys.exit(-1)
+timeout = 30
 
 dag = sys.argv[1]
 
@@ -86,33 +72,33 @@ print("File : " + dag)
 # We run the audio for 60s using the TimeOutExpired exception
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "seq_exec",
-                    dag], timeout=6.0)
+                    dag], timeout=timeout)
 except subprocess.TimeoutExpired:
     pass
 
-# We run the audio for 60s using the TimeOutExpired exception
+# # We run the audio for 60s using the TimeOutExpired exception
+# try:
+#     subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
+#                     dag, nb_threads, "rand"], timeout=60.0)
+# except subprocess.TimeoutExpired:
+#     pass
+
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                    dag, nb_threads, "rand"], timeout=6.0)
+                    dag, nb_threads, "hlfet"], timeout=timeout)
 except subprocess.TimeoutExpired:
     pass
 
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                    dag, nb_threads, "hlfet"], timeout=6.0)
-except subprocess.TimeoutExpired:
-    pass
-
-try:
-    subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                    dag, nb_threads, "etf"], timeout=6.0)
+                    dag, nb_threads, "etf"], timeout=timeout)
 except subprocess.TimeoutExpired:
     pass
 
     # We run the audio for 60s using the TimeOutExpired exception
 try:
     subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_exec",
-                    dag, nb_threads], timeout=6.0)
+                    dag, nb_threads], timeout=timeout)
 except subprocess.TimeoutExpired:
     pass
 
@@ -122,9 +108,9 @@ seq_hist = parse_file("tmp/seq_log.txt")
 # Parse the log for work stealing execution
 dynamic_hist = parse_file("tmp/work_stealing_log.txt")
 
-# Parse the log for rand static scheduling execution
-static_rand_hist = parse_file(
-    "tmp/static_rand_sched_log.txt")
+# # Parse the log for rand static scheduling execution
+# static_rand_hist = parse_file(
+#     "tmp/static_rand_sched_log.txt")
 
 # Parse the log for hlfet static scheduling execution
 static_hlfet_hist = parse_file(
@@ -145,7 +131,7 @@ a = a.ravel()
 
 for idx, ax in enumerate(a):
 
-    ax.hist(data[idx], bins=100, color=color[idx])
+    ax.hist(data[idx], bins=50, color=color[idx])
     ax.set_title(titles[idx])
     ax.set_xlabel(xaxes[idx])
     ax.set_ylabel(yaxes[idx])
@@ -182,16 +168,16 @@ plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
 plt.close()
 
 
-plt.hist(static_rand_hist, bins=100, range=(0, max_x), color='blue')
+# plt.hist(static_rand_hist, bins=100, range=(0, max_x), color='blue')
 
-plt.title('Random static scheduling')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
+# plt.title('Random static scheduling')
+# plt.xlabel('Cycle Time (ms)')
+# plt.ylabel('Count')
+# plt.xlim(0, max_x)
+# plt.ylim(0, max_y)
 
-plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
-plt.close()
+# plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
+# plt.close()
 
 
 plt.hist(static_hlfet_hist, bins=100, range=(0, max_x), color='grey')

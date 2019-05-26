@@ -51,9 +51,13 @@ Les graphiques généres et la représentation des graphes visualisés avec Grap
 
 Tracer l'histogramme:
 
-- python3 ./data/hist.py <fichier .ag>
+1. lancer le service QJackCtl
+2. python3 ./data/hist.py <fichier .ag>
 
 
 Tracer les temps moyens, le nombre de delais dépassés et le pire cycle:
 
-- python3 ./data/parse_log.py <dossier contenant les fichier .ag>
+1. lancer le service QJackCtl
+2. python3 ./data/parse_log.py <dossier contenant les fichier .ag> <nombre de threads> <taille du buffer>
+
+NB :il faut qussi configurer la taille du buffer dans QJackCtl
