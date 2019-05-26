@@ -563,9 +563,9 @@ Premièrement, CPFD va distinguer les nœuds du DAG en trois catégories :
  un chemin menant à un CPN; et les OBN (pour “Out-Branch Node”), qui sont
  simplement les nœuds n’appartenant pas aux deux autres catégories.
  CPFD s’appuie sur une liste appelée “CPN-Dominant Sequence”.
- Elle est construite selon l’algorithme 
+ Elle est construite selon l’algorithme [1] 
 \begin_inset CommandInset ref
-LatexCommand vref
+LatexCommand vpageref
 reference "Algorithme 1"
 plural "false"
 caps "false"
@@ -588,7 +588,7 @@ noprefix "false"
 placement h
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset CommandInset label
@@ -601,7 +601,7 @@ name "Algorithme 1"
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Sequencement des CPN
+Séquencement des CPN
 \end_layout
 
 \end_inset
@@ -615,7 +615,11 @@ Insérer en premier le CPN d’entrée du DAG dans la séquence, mettre
 Position
 \emph default
  à 2.
- Soit nx, le nœud suivant dans le chemin critique
+ Soit 
+\emph on
+n
+\emph default
+X, le nœud suivant dans le chemin critique
 \end_layout
 
 \begin_layout Plain Layout
@@ -647,7 +651,11 @@ Indp
 \series bold
 Si
 \series default
- nx a tous ses parents dans la séquence
+ 
+\emph on
+nX
+\emph default
+ a tous ses parents dans la séquence
 \end_layout
 
 \begin_layout Plain Layout
@@ -667,7 +675,11 @@ Indp
 \end_layout
 
 \begin_layout Plain Layout
-mettre nx à 
+mettre 
+\emph on
+nX
+\emph default
+ à 
 \emph on
 Position
 \emph default
@@ -717,8 +729,15 @@ Indp
 \end_layout
 
 \begin_layout Plain Layout
-Posons ny tel qu’il soit un éventuel parent de nx qui ne soit pas dans la
- séquence et avec le 
+Posons 
+\emph on
+nY
+\emph default
+ tel qu’il soit un éventuel parent de 
+\emph on
+nX
+\emph default
+ qui ne soit pas dans la séquence et avec le 
 \emph on
 b-level
 \emph default
@@ -731,7 +750,11 @@ b-level
 \series bold
 Si
 \series default
- ny a tous ses parents dans la séquence
+ 
+\emph on
+nY
+\emph default
+ a tous ses parents dans la séquence
 \end_layout
 
 \begin_layout Plain Layout
@@ -801,13 +824,24 @@ Indp
 \end_layout
 
 \begin_layout Plain Layout
-inclure récursivement tous les prédécesseurs de ny dans la séquence.
+inclure récursivement tous les prédécesseurs de 
+\emph on
+nY
+\emph default
+ dans la séquence.
 \end_layout
 
 \begin_layout Plain Layout
-Répéter l’étape précédente jusqu’à ce que tous les parents de nx soient
- dans la séquence.
- Insérer nx dans la séquence à 
+Répéter l’étape précédente jusqu’à ce que tous les parents de 
+\emph on
+nX
+\emph default
+ soient dans la séquence.
+ Insérer 
+\emph on
+nX
+\emph default
+ dans la séquence à 
 \emph on
 Position
 \emph default
@@ -924,9 +958,9 @@ Les OBN (pour “Out-Branch Node”), qui sont simplement les nœuds n’apparte
 
 \begin_layout Standard
 À partir de cette séquence, CPFD procède à l’ordonnancement selons l'algorithme
- 
+ [2] 
 \begin_inset CommandInset ref
-LatexCommand vref
+LatexCommand vpageref
 reference "Algorithme 2"
 plural "false"
 caps "false"
@@ -2123,7 +2157,7 @@ Dans cette optique regarder juste le temps moyen uniquement n'est pas pertinent,
 \begin_layout Standard
 La machine utilisée pour faire les mesures est un Ubuntu 18.04 avec le noyau
  linux : 4.15.0-50-generic, un processeur Intel i5-7200U @2.50GHz avec 3072
- KB de cache et 4 cœurs, avec le gouverneur en mode performances.
+ Kb de cache et 4 cœurs, avec le gouverneur en mode performances.
 \end_layout
 
 \begin_layout Standard
@@ -2149,14 +2183,14 @@ L'activité de la machine, les résultats ne serons pas le même avec une machin
 
 \begin_layout Subsubsection*
 \noindent
-Les Configurations de DAGS étudiées
+Les Configurations de DAG étudiées
 \end_layout
 
 \begin_layout Standard
 \noindent
 \align left
 Nous allons concentrer notre analyse sur trois configurations particulières
- de DAGS :
+ de DAG :
 \end_layout
 
 \begin_layout Itemize
@@ -2164,7 +2198,7 @@ Nous allons concentrer notre analyse sur trois configurations particulières
 \align left
 La ligne; chaîne de tâches ou chaqu’une s'exécute l’une après l’autre, dans
  cette configuration la parallélisation est impossible, toute exécution
- est nécessairement séquentielle, ces DAGS vont nous servir de “groupe témoin”
+ est nécessairement séquentielle, ces DAG vont nous servir de “groupe témoin”
  afin de comparer le surcoût de chaque méthode.
  
 \begin_inset Float figure
@@ -2788,7 +2822,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Rateau avec 
+Râteau avec 
 \series bold
 2
 \series default
@@ -4044,19 +4078,64 @@ On peut dans un premier temps noter la fiabilité et la constance de l’exécut
 \end_layout
 
 \begin_layout Standard
-[Idée général de la partie : Critique de notre implémentation, ce qui pourrait
- être fait pour améliorer les résultats.
- Bien pour faire une conclusion “ouverte” du rapport] Pistes pour améliorer
- les performances de l’implémentation [Le code n’a pas été très bien optimisé
- en raison du temps que cela demandait] [Réduction de la quantité de locks
- utilisés.
- Les placer seulement aux endroits nécessaires et cloner le reste des données
- pour chaque thread] [Encore plus loin, remplacer les lock par des “traits
- unsafe” quand c’est possible (voir https://doc.rust-lang.org/nomicon/concurrency.h
-tml )] [Les threads n’ont pas une priorité temps réel, on pourrait se servir
- de https://github.com/padenot/audio_thread_priority ?] Fonctionnalité(s)
- nouvelle(s) [Utiliser MPI pour CPFD ?] [Il y a des choses meilleures que
- MPI ?]
+Premièrement il faut noter que notre implémentation repose sur beaucoup
+ de locks, ce qui peut faire survenir des ralentissements, avec une optimisation
+ minutieuse, que nous n'avons pas pu faire faute de temps, ETF a le potentiel
+ du surpasser l’exécution séquentielle.
+ Par exemple enlevant les locks superflus, ou en allant encore plus loin,
+ remplacer les lock par des “traits unsafe” quand c’est possible 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+literal "false"
+
+\end_inset
+
+.
+ Ou en rendant les threads a priorité temps réel avec 
+\series bold
+audio_thread_priority 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-2"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Deuxième regret, il manque dans l’implémentation de CPFD le re-maping sur
+ des processeurs réels, en effet l'algorithme ordonnance sur un nombre illimité
+ de processeurs 
+\begin_inset Quotes fld
+\end_inset
+
+virtuels
+\begin_inset Quotes frd
+\end_inset
+
+ qui faut ensuite mapper sur des processeurs réels (l’algorithme est dans
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-3"
+literal "false"
+
+\end_inset
+
+), avec MPI il serait possible d'exécuter les DAG sur des clusters par exemple,
+ par contre la latence induite peut le rendre prohibitif pour des petits
+ buffers, a réserver peut-être a des gros buffers pour du post process audio.
+\end_layout
+
+\begin_layout Standard
+Au début nous avions tenté d’écrire un parser Puredata pour pouvoir prendre
+ en compte les formats .pd en plus du format .ag, mais devant le temps demandé
+ pour implémenter la grande variété des nœuds proposée et les lacunes de
+ la documentation, nous avons fini par renoncer, il en subsiste un reliquat
+ de ce parser dans notre code.
 \end_layout
 
 \begin_layout Bibliography
@@ -4108,7 +4187,7 @@ literal "false"
 \series bold
 https://www.graphviz.org/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4123,7 +4202,7 @@ literal "false"
 \series bold
 https://www.rust-lang.org/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4138,7 +4217,7 @@ literal "false"
 \series bold
 https://llvm.org/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4153,7 +4232,7 @@ literal "false"
 \series bold
 http://www.jackaudio.org/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4167,7 +4246,7 @@ key "key-12"
 \series bold
 https://docs.rs/crossbeam/0.7.1/crossbeam/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4181,7 +4260,7 @@ key "key-13"
 \series bold
 https://docs.rs/core_affinity/0.5.9/core_affinity/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4195,7 +4274,7 @@ key "key-14"
 \series bold
 https://criterion.readthedocs.io/en/master/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
 \end_layout
 
 \begin_layout Bibliography
@@ -4209,7 +4288,27 @@ key "key-15"
 \series bold
 https://pest.rs/
 \series default
- , derniere visite le 24/05/2019
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-1"
+
+\end_inset
+
+https://doc.rust-lang.org/nomicon/concurrency.html , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-2"
+
+\end_inset
+
+https://github.com/padenot/audio_thread_priority , dernière visite le 24/05/2019
 \end_layout
 
 \end_body
