@@ -10,6 +10,14 @@ use crate::task_graph::state::TaskState;
 use super::thread_pool::work_stealing::ThreadPool;
 use super::utils::build_dsp_edges;
 
+/// Makes a parallel execution, with a dynamic work stealing scheduling, of
+/// an audio graph with JACK.
+///
+/// # Arguments
+///
+/// * `graph` - The audio graph to be executed
+/// * `nb_threads` - The number of threads used for the execution
+/// * `tx` - The channel used for sending statistical measurements
 pub fn run_work_stealing(
     graph: Arc<RwLock<TaskGraph>>,
     nb_threads: usize,
@@ -49,17 +57,20 @@ pub fn run_work_stealing(
         out_ports.push(out_port);
     }
 
+    // Allocate the audio buffers used by the DSPs of the audio graph
     let dsp_edges = Arc::new(RwLock::new(build_dsp_edges(
         &*graph.read().unwrap(),
         &client,
     )));
 
+    // Create the thread pool with the appropriate number of threads
     let thread_pool = Arc::new(RwLock::new(ThreadPool::create(
         nb_threads,
         graph.clone(),
         dsp_edges.clone(),
     )));
 
+    // The audio callback funtion
     let callback = jack::ClosureProcessHandler::new(clone!(thread_pool => move |_, ps| {
         let start_time = std::time::SystemTime::now();;
         tx.send(MeasureDestination::File(
@@ -68,8 +79,8 @@ pub fn run_work_stealing(
         ))
         .expect("logging error");
 
-        // We must give new buffers for the sinks to write into, every time this callback
-        // function is called by jack
+        // We must give new buffers for the sinks to write into,
+        // every time this callback function is called by JACK
         let exit_nodes = graph.write().unwrap().get_exit_nodes();
         for (i, &node_index) in exit_nodes.iter().enumerate() {
             let buffer = out_ports[i].as_mut_slice(ps);
@@ -85,7 +96,7 @@ pub fn run_work_stealing(
             }
         }
 
-        // We must set the activation counters of each node
+        // We must reset the activation counters of each node
         let nb_nodes = graph.read().unwrap().get_nb_node();
         for node_index in 0..nb_nodes {
             let predecessors = graph.read().unwrap().get_predecessors(node_index);
@@ -100,8 +111,10 @@ pub fn run_work_stealing(
             }
         }
 
+        // Execute the audio graph with the thread pool
         thread_pool.write().unwrap().start();
 
+        // Get the time spent for the execution of the audio graph
         let elapsed_time = start_time.elapsed().unwrap();
         let time_left = ps.cycle_times().unwrap().next_usecs - jack::get_time();
 
@@ -116,11 +129,15 @@ pub fn run_work_stealing(
         ))
         .expect("logging error");
 
+        // JACK will continue to call this function
         jack::Control::Continue
     }));
 
+    // Tell JACK to start calling the callback function
     let _active_client = client.activate_async((), callback)?;
 
+    // Wait for an input from the user in order to not immediately exit
+    // the program
     let mut user_input = String::new();
     let _ignored = std::io::stdin().read_line(&mut user_input);
 
