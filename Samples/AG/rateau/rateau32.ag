@@ -1,0 +1,256 @@
+osc1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod2 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc4 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod5 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod6 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc7 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod8 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod9 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc10 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod11 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod12 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc13 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod14 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod15 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc16 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod17 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod18 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc19 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod20 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod21 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc22 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod23 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod24 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc25 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod26 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod27 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc28 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod29 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod30 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+
+mix31 =
+{
+    kind: "mix",
+    in: 10,
+    out: 1,
+    volume: 1.0,
+};
+
+s32 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+osc1.1 -> mod2.1;
+mod2.1 -> mod3.1;
+osc4.1 -> mod5.1;
+mod5.1 -> mod6.1;
+osc7.1 -> mod8.1;
+mod8.1 -> mod9.1;
+osc10.1 -> mod11.1;
+mod11.1 -> mod12.1;
+osc13.1 -> mod14.1;
+mod14.1 -> mod15.1;
+osc16.1 -> mod17.1;
+mod17.1 -> mod18.1;
+osc19.1 -> mod20.1;
+mod20.1 -> mod21.1;
+osc22.1 -> mod23.1;
+mod23.1 -> mod24.1;
+osc25.1 -> mod26.1;
+mod26.1 -> mod27.1;
+osc28.1 -> mod29.1;
+mod29.1 -> mod30.1;
+mod3.1 -> mix31.1;
+mod6.1 -> mix31.2;
+mod9.1 -> mix31.3;
+mod12.1 -> mix31.4;
+mod15.1 -> mix31.5;
+mod18.1 -> mix31.6;
+mod21.1 -> mix31.7;
+mod24.1 -> mix31.8;
+mod27.1 -> mix31.9;
+mod30.1 -> mix31.10;
+mix31.1 -> s32.1;

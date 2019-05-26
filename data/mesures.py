@@ -214,7 +214,7 @@ plt.plot(x, static_hlfet_misses, 'bx', label='Static HLFET Scheduling')
 plt.plot(x, static_etf_misses, 'rx', label='Static ETF Scheduling')
 plt.legend()
 
-plt.title('Delay Misses:' + sys.argv[1])
+plt.title('Deadlines Missed:' + sys.argv[1])
 plt.ylabel('Count (µs)')
 plt.xlabel('Number of nodes')
 

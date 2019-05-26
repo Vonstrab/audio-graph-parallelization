@@ -1,0 +1,63 @@
+osc1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod2 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc4 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod5 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod6 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mix7 =
+{
+    kind: "mix",
+    in: 2,
+    out: 1,
+    volume: 1.0,
+};
+
+s8 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+osc1.1 -> mod2.1;
+mod2.1 -> mod3.1;
+osc4.1 -> mod5.1;
+mod5.1 -> mod6.1;
+mod3.1 -> mix7.1;
+mod6.1 -> mix7.2;
+mix7.1 -> s8.1;
