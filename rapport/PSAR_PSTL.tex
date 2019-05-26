@@ -53,8 +53,8 @@ logicielle ayant permis leur mise en ½uvre. Nous ferons également
 une comparaison entre les performances de ces ordonnancements. Finalement,
 nous ferons une critique de la réalisation du projet en indiquant
 les aspects de l\textquoteright implémentation qui pourraient être
-améliorés et les fonctionnalitées qui pourraient être développées
-par la suite.
+améliorés et les fonctionnalités qui pourraient être développées par
+la suite.
 
 \subsection*{Présentation des besoins}
 
@@ -88,9 +88,9 @@ fixe à un intervalle régulier (c\textquoteright est ce qui défini
 un cycle audio), donc si nous avons un buffer de 512 échantillons,
 la carte va lire dans ce buffer environ 86 fois par seconde (44 100
 divisé par 512), donc toutes les 11,6 millisecondes\footnote{L'API JACK que nous utilisons utilise deux buffers, le principe est
-le meme, la durée des cycle est doublée}. Si un nouveau buffer n\textquoteright est pas disponible au delà
+le même, la durée des cycle est doublée}. Si un nouveau buffer n\textquoteright est pas disponible au delà
 de cette échéance, alors la carte audio va se mettre à lire des échantillons
-nulls ou bien le même buffer qu\textquoteright au cycle précédent,
+nuls ou bien le même buffer qu\textquoteright au cycle précédent,
 ce qui produit un \textquotedblleft tick\textquotedblright{} désagréable
 à l\textquoteright oreille. La durée d\textquoteright un cycle audio
 constitue donc la contrainte temps réel que doit respecter le traitement
@@ -226,13 +226,15 @@ statique du b-level pour laquelle nous faisons seulement la somme
 des poids des n½uds : le \textquotedblleft static level\textquotedblright{}
 (que nous abrégeons \textquotedblleft SL\textquotedblright ).
 
-\subsection*{L\textquoteright algorithme CP/MISF}
+\subsection*{L\textquoteright algorithme HLFET avec départage CP/MISF}
 
-Le premier algorithme est l\textquoteright algorithme CP/MISF (pour
-\textquotedblleft Critical Path / Most Immediate Successors First\textquotedblright ).
-Pour celui-ci, la priorité d\textquoteright un n½ud est définie par
-son SL. Lorsque plusieurs n½uds ont le même SL, on choisi d\textquoteright abord
-celui ayant le plus grand nombre de successeurs.
+Le premier algorithme est l\textquoteright algorithme HLFET (pour
+\og Highest Level First with Estimated Times\fg ) avec un départage
+des égalités avec CP/MISF (pour \og Critical Path / Most Immediate
+Successors First\fg ). Pour celui-ci, la priorité d\textquoteright un
+n½ud est définie par son SL. Lorsque plusieurs n½uds ont le même SL,
+on choisi d\textquoteright abord celui ayant le plus grand nombre
+de successeurs.
 
 Lorsque l\textquoteright on considère négligeable les coûts de communication
 entre les tâches, cet algorithme est supposé être proche de l\textquoteright ordonnancement
@@ -379,11 +381,11 @@ selons l'algorithme \vref{Algorithme 2}:
 \begin{algorithm}[ph]
 \label{Algorithme 2}
 
-\caption{Ordonnement CPFD}
+\caption{Ordonnancement CPFD}
 
 Soit \emph{candidate} le CPN d\textquoteright entrée.
 
-\textbf{Repeter:}
+\textbf{Répéter:}
 
 \Indp
 
@@ -843,24 +845,24 @@ systèmes nous imposent.
 
 ~
 
-Dans cette optique regerder juste le temps moyen uniquement n'est
-pas pertinent, il faut qussi regarder les pires cas et le nombre de
+Dans cette optique regarder juste le temps moyen uniquement n'est
+pas pertinent, il faut aussi regarder les pires cas et le nombre de
 deadlines dépassées, ce que nous recherchons c'est des algorithmes
 qui sont statistiquement stables et qui dépassent le moins possible
-le temps qui leurs est impartis, ainsi nous tendrons a privililégier
+le temps qui leurs est impartis, ainsi nous tendrons a privilégier
 un algorithme qui est moins bon en moyenne mais plus stable dans les
 résultats.
 
 La machine utilisée pour faire les mesures est un Ubuntu 18.04 avec
 le noyau linux : 4.15.0-50-generic, un processeur Intel i5-7200U @2.50GHz
-avec 3072 KB de cache et 4 coeurs, avec le gouverneur en mode performances.
+avec 3072 KB de cache et 4 c½urs, avec le gouverneur en mode performances.
 
-Les paramètres qui penvent influencer les resultat de l'éxecution
+Les paramètres qui peuvent influencer les résultat de l\textquoteright exécution
 sur un même dag sont:
 \begin{itemize}
 \item Le nombre de threads utilisées
 \item La taille des buffers, qui fait varier le temps d'un cycle ainsi le
-delais. Les valeurs courantes que nous étudirons sont : 1024, 512,
+délais. Les valeurs courantes que nous étudierons sont : 1024, 512,
 256, 128, 64, 32
 \item L'activité de la machine, les résultats ne serons pas le même avec
 une machine au repos, et une autre qui a une charge de travail importante
@@ -870,25 +872,25 @@ comme de la compilation par exemple.
 \subsubsection*{Les Configurations de DAGS étudiées}
 \noindent \begin{flushleft}
 Nous allons concentrer notre analyse sur trois configurations particulières
-de dags :
+de DAGS :
 \par\end{flushleft}
 \begin{itemize}
 \item \begin{flushleft}
 La ligne; chaîne de tâches ou chaqu\textquoteright une s'exécute l\textquoteright une
 après l\textquoteright autre, dans cette configuration la parallélisation
 est impossible, toute exécution est nécessairement séquentielle, ces
-dags vont nous servir de \textquotedblleft groupe témoin\textquotedblright{}
+DAGS vont nous servir de \textquotedblleft groupe témoin\textquotedblright{}
 afin de comparer le surcoût de chaque méthode. 
 \begin{figure}[H]
 \begin{centering}
 \includegraphics[scale=0.25]{dot/ligne5/ligne5-1}
 \par\end{centering}
-\caption{Exemples de Ligne avec 5 noeuds}
+\caption{Exemples de Ligne avec 5 n½uds}
 
 \end{figure}
 \par\end{flushleft}
 \item \begin{flushleft}
-Le râteau; dans cette configuration c\textquoteright est plusieures
+Le Râteau; dans cette configuration c\textquoteright est plusieurs
 lignes qui s\textquoteright unissent au bout, cette forme est celle
 ou la parallélisation doit être la plus efficace, et donner les meilleurs
 gains. 
@@ -896,34 +898,34 @@ gains.
 \begin{centering}
 \includegraphics[scale=0.25]{dot/rateau11/rateau11-1}
 \par\end{centering}
-\caption{Exemples de Rateau avec 11 noeuds}
+\caption{Exemples de Râteau avec 11 n½uds}
 \end{figure}
 \par\end{flushleft}
 \item \begin{flushleft}
 Finalement le losange qui se trouve entre les deux, il s'agit d'un
-DAG qui commence linéairement puis qui va se parralléliser petit a
-petit pour enfin se re-linéariser. On s'attend que l'éexecution séquencielle
-soit plus efficace sur les petits losanges, mais que le gain de la
-parrallélisation soit significatif sur les plus grands.
+DAG qui commence linéairement puis qui va se paralléliser petit a
+petit pour enfin se ré-linéariser. On s'attend que l\textquoteright exécution
+séquentielle soit plus efficace sur les petits losanges, mais que
+le gain de la parallélisation soit significatif sur les plus grands.
 \begin{figure}[H]
 \begin{centering}
 \includegraphics[scale=0.25]{dot/losange16/losange16-1}
 \par\end{centering}
-\caption{Exemples de Losange avec 16 noeuds}
+\caption{Exemples de Losange avec 16 n½uds}
 \end{figure}
 \par\end{flushleft}
 
 \end{itemize}
 {[}Expliquer les mesures faites{]}
 
-\subsection*{Premiére variable: le nombre de threads}
+\subsection*{Première variable: le nombre de threads}
 
-Pour cette premiére série de mesures nous allons fixer la taille du
+Pour cette première série de mesures nous allons fixer la taille du
 buffer a \textbf{128}, et réaliser les mesures sur une machine au
 repos.
 
 Nous commençons avec la ligne, pour pouvoir comparer le surcoût de
-chaque methode {[}Figure 5 \vpageref{fig 5} {]}.
+chaque méthode {[}Figure 5 \vpageref{fig 5} {]}.
 
 \noindent 
 \begin{figure}[H]
@@ -961,7 +963,7 @@ chaque methode {[}Figure 5 \vpageref{fig 5} {]}.
 \par\end{raggedright}
 }\caption{Losange avec threads variable}
 \end{figure}
-Et avec le Rateau {[}Figure 7 \vpageref{Figure  7} {]}.
+Et avec le Râteau {[}Figure 7 \vpageref{Figure  7} {]}.
 
 \noindent 
 \begin{figure}[H]
@@ -971,42 +973,114 @@ Et avec le Rateau {[}Figure 7 \vpageref{Figure  7} {]}.
 \par\end{raggedright}
 }
 \par\end{raggedright}
-\subfloat[Rateau avec \textbf{3} threads]{\noindent \begin{raggedright}
+\subfloat[Râteau avec \textbf{3} threads]{\noindent \begin{raggedright}
 \includegraphics[scale=0.4]{rateau_3_128/average}\includegraphics[scale=0.4]{rateau_3_128/misses}\includegraphics[scale=0.4]{rateau_3_128/worst}
 \par\end{raggedright}
 }
 
-\noindent \subfloat[Rateau avec \textbf{4} threads]{\noindent \begin{raggedright}
+\noindent \subfloat[Râteau avec \textbf{4} threads]{\noindent \begin{raggedright}
 \includegraphics[scale=0.4]{rateau_4_128/average}\includegraphics[scale=0.4]{rateau_4_128/misses}\includegraphics[scale=0.4]{rateau_4_128/worst}
 \par\end{raggedright}
-}\caption{Rateau avec threads variable}
+}\caption{Râteau avec threads variable}
 \end{figure}
 
-Dans un Premier temps on va s'interesser aux dépassements de delais,
-on peu constater dans un premier temps que le nombre de threads optimal
-sur cette machine est de 3 et cela quelque soit la configuration étudiée.
-Cela peut peut cembler contre-intuitif compte tenu qu'il y a 4 coeurs,
-cependant en considérent que l'éxécution sequencielle n'est pas impactée,
-on peut émettre l'hypothése que le cache lui étant partagé, il est
-un frein a l'utilisation des 4 coeurs de la machine.
+Dans un Premier temps on va s\textquoteright intéresser aux dépassements
+de délais, on peu constater dans un premier temps que le nombre de
+threads optimal sur cette machine est de 3 et cela quelque soit la
+configuration étudiée. Cela peut peut sembler contre-intuitif compte
+tenu qu'il y a 4 c½urs, on peut que la présence du thread de mesures
+impacte les performances de plus car il interrompt les threads du
+pool, on peut émettre l\textquoteright hypothèse que le cache lui
+étant partagé, il est un frein a l'utilisation des 4 c½urs de la machine.
 
 Secondement en observant les temps moyens et les pires temps pour
-la ligne, on peut constater que, hormis des irrégularités des methodes
-HLFET et EFT, les différentes methodes sont trés proches, avec un
-léger surcoût de la parrallélisation explicable par l'overhead necessaire
+la ligne, on peut constater que, hormis des irrégularités des méthodes
+HLFET et EFT, les différentes méthodes sont très proches, avec un
+léger surcoût de la parallélisation explicable par l'overhead nécessaire
 a la gestions des pool de threads et des locks.
+
+Pour le Losange on note l'irrégularité de HLFET qui détonne par rapport
+aux trois autres méthodes.
 
 \subsection*{Seconde variable: la taille du buffer}
 
-Plus la taille du buffer est petite moins le systéme a de lattence
-mais plus les deadlines sont sérées et plus la machine es mise a contribution.
-On a deux configurations : un petit buffer entre 16 et 256, quand
-on cherche a avoir de la réactivité, par exemple pour des musiciens
-qui souhaitent avoir un retour son, pour de la retransmision en direct,
-et a l'opposé un plus gros buffer a partir de 512 quand on peut se
-permettre de ménager sa machine.
+Plus la taille du buffer est petite moins le système a de latence
+mais plus les deadlines sont serrées et plus la machine es mise a
+contribution. On a deux configurations : un petit buffer entre 16
+et 256, quand on cherche a avoir de la réactivité, par exemple pour
+des musiciens qui souhaitent avoir un retour son, pour de la retransmission
+en direct, et a l'opposé un plus gros buffer a partir de 512 quand
+on peut se permettre de ménager sa machine.
 
-\subsection*{Derniére variable: la charge de la machine}
+On va fixer le nombre de threads et faire varier la taille du buffer
+de 16, 32, 64,128, 256, et enfin 512.
+
+\begin{figure}[H]
+\subfloat[buffer de 16]{\includegraphics[scale=0.4]{ligne_3_16/misses}}\subfloat[buffer de 32]{\includegraphics[scale=0.4]{ligne_3_32/misses}}\subfloat[buffer de 64]{\includegraphics[scale=0.4]{ligne_3_64/misses}}
+\end{figure}
+\begin{figure}[H]
+\subfloat[buffer de 128]{\includegraphics[scale=0.4]{ligne_3_128/misses}}\subfloat[buffer de 256]{\includegraphics[scale=0.4]{ligne_3_256/misses}}\subfloat[buffer de 512]{\includegraphics[scale=0.4]{ligne_3_512/misses}}
+
+\caption{variations pour la ligne}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[buffer de 16]{\includegraphics[scale=0.4]{\string"losange_3_16 /misses\string".eps}}\subfloat[buffer de 32]{\includegraphics[scale=0.4]{\string"losange_3_32 /misses\string".eps}}\subfloat[buffer de 64]{\includegraphics[scale=0.4]{\string"losange_3_64 /misses\string".eps}}
+\end{figure}
+\begin{figure}[H]
+\subfloat[buffer de 128]{\includegraphics[scale=0.4]{losange_3_128/misses}}\subfloat[buffer de 256]{\includegraphics[scale=0.4]{\string"losange_3_256 /misses\string".eps}}\subfloat[buffer de 512]{\includegraphics[scale=0.4]{\string"losange_3_512 /misses\string".eps}}
+
+\caption{variations pour le losange}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[buffer de 16]{\includegraphics[scale=0.4]{\string"rateau_3_16 /misses\string".eps}}\subfloat[buffer de 32]{\includegraphics[scale=0.4]{\string"rateau_3_32 /misses\string".eps}}\subfloat[buffer de 64]{\includegraphics[scale=0.4]{\string"losange_3_64 /misses\string".eps}}
+\end{figure}
+\begin{figure}[H]
+\subfloat[buffer de 128]{\includegraphics[scale=0.4]{rateau_3_128/misses}}\subfloat[buffer de 256]{\includegraphics[scale=0.4]{\string"rateau_3_256 /misses\string".eps}}\subfloat[buffer de 512]{\includegraphics[scale=0.4]{\string"rateau_3_512 /misses\string".eps}}
+
+\caption{variations pour le râteau}
+\end{figure}
+
+
+\subsection*{Dernière variable: la charge de la machine}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{ligne_3_128/average}\includegraphics[scale=0.4]{ligne_3_128/misses}\includegraphics[scale=0.4]{ligne_3_128/worst}
+
+\caption{ligne au repos}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/average\string".eps}\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/misses\string".eps}\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/worst\string".eps}
+
+\caption{ligne en regardant un film}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{losange_3_128/average}\includegraphics[scale=0.4]{losange_3_128/misses}\includegraphics[scale=0.4]{losange_3_128/worst}
+
+\caption{losange au repos}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{losange_3_128_charge/average}\includegraphics[scale=0.4]{losange_3_128_charge/misses}\includegraphics[scale=0.4]{losange_3_128_charge/worst}
+
+\caption{losange en regardant un film}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{rateau_3_128/average}\includegraphics[scale=0.4]{rateau_3_128/misses}\includegraphics[scale=0.4]{rateau_3_128/worst}
+
+\caption{râteau au repos}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{rateau_3_128_charge/average}\includegraphics[scale=0.4]{rateau_3_128_charge/misses}\includegraphics[scale=0.4]{rateau_3_128_charge/worst}
+
+\caption{râteau en regardant un film}
+\end{figure}
+
 
 \subsection*{La stabilité des Algorithmes}
 
@@ -1018,35 +1092,41 @@ longs et de mieux voir les variations.
 \begin{centering}
 \includegraphics[scale=0.5]{hist/hist_all_ligne}
 \par\end{centering}
-\caption{Histogramme pour une Ligne a 100 Noeuds}
-\end{figure}
+\caption{Histogramme pour une Ligne a 100 n½uds}
 
-\begin{figure}[H]
 \begin{centering}
 \includegraphics[scale=0.5]{hist/hist_all_losange}
 \par\end{centering}
-\caption{Histogramme pour un losange a 156 Noeuds}
-\end{figure}
+\caption{Histogramme pour un losange a 156 n½uds}
 
-\begin{figure}[H]
 \begin{centering}
 \includegraphics[scale=0.5]{hist/hist_all_rateau}
 \par\end{centering}
-\caption{Histogramme pour un Rateau a 32 Noeuds}
+\caption{Histogramme pour un Râteau a 101 n½uds}
 \end{figure}
 
 On peut dans un premier temps constater que sur l'histogramme de la
-ligne que HLFET a un overhead significatif sur les autres methodes.
-Les stabilités sont équivalents pour les quatres méthodes.
+ligne que HLFET a un overhead significatif sur les autres méthodes.
+Les stabilités sont proches pour les quatre méthodes.
 
 Sur l'histogramme du losange on voit une mauvaise stabilité du vol
 de tâches, un peu médiocre de la part de HLFET. Les plus stables sont
 le calcul séquenciel en premier puis en second ETF qui est cependant
 notablement plus rapide.
 
-{[}Rateau trop petit en ecrire de plus grands{]}
+Pour le Rateau en revanche on voir que l\textquoteright exécution
+séquentielle n'est plus aussi stable, les méthodes parallélises gagnent
+en stabilité avec ETF et le vol de tache qui sont notablement plus
+stables.
 
 \subsection*{Conclusions}
+
+On peut dans un premier temps noter la fiabilité et la constance de
+l\textquoteright exécution séquentielle, qui dans les différents cas
+de figure est de loin la méthode la plus fiable et la plus efficace.
+Pour les autre méthodes on voit qu'HLFET est vraiment a la traîne
+au niveau des performances. L'algorithme ETF offre une stabilité,
+visible nottement
 
 \part*{Évolutions possibles}
 
