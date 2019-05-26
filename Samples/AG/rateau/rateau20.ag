@@ -103,10 +103,31 @@ mod15 =
     freq: 55,
 };
 
+osc16 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod17 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod18 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
 mix19 =
 {
     kind: "mix",
-    in: 5,
+    in: 6,
     out: 1,
     volume: 1.0,
 };
@@ -127,9 +148,12 @@ osc10.1 -> mod11.1;
 mod11.1 -> mod12.1;
 osc13.1 -> mod14.1;
 mod14.1 -> mod15.1;
-mod3.1 -> mix16.1;
-mod6.1 -> mix16.2;
-mod9.1 -> mix16.3;
-mod12.1 -> mix16.4;
-mod15.1 -> mix16.5;
-mix16.1 -> s17.1;
+osc16.1 -> mod17.1;
+mod17.1 -> mod18.1;
+mod3.1 -> mix19.1;
+mod6.1 -> mix19.2;
+mod9.1 -> mix19.3;
+mod12.1 -> mix19.4;
+mod15.1 -> mix19.5;
+mod18.1 -> mix19.6;
+mix19.1 -> s20.1;

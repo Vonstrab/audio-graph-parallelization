@@ -79,10 +79,11 @@ impl Schedule {
             }
         }
 
+        println!("Creating tmp directory");
         if !Path::new("./tmp").exists() {
             std::fs::DirBuilder::new()
                 .create("./tmp")
-                .expect("failed to create tmp directory");
+                .expect("failed to create tmp firectory");
         }
 
         let path = format!("tmp/{}.txt", filename);

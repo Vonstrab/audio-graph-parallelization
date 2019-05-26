@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Ivan <delgado.ivan@protonmail.com>"]
 
 [[bin]]
-name = "agp_bin"
-path = "src/main.rs"
+name = "schedule"
+path = "src/schedule.rs"
 
 [[bin]]
 name = "seq_exec"

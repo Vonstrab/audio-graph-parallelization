@@ -106,7 +106,7 @@ mod15 =
 mix19 =
 {
     kind: "mix",
-    in: 5,
+    in: 4,
     out: 1,
     volume: 1.0,
 };
@@ -125,11 +125,8 @@ osc7.1 -> mod8.1;
 mod8.1 -> mod9.1;
 osc10.1 -> mod11.1;
 mod11.1 -> mod12.1;
-osc13.1 -> mod14.1;
-mod14.1 -> mod15.1;
-mod3.1 -> mix16.1;
-mod6.1 -> mix16.2;
-mod9.1 -> mix16.3;
-mod12.1 -> mix16.4;
-mod15.1 -> mix16.5;
-mix16.1 -> s17.1;
+mod3.1 -> mix13.1;
+mod6.1 -> mix13.2;
+mod9.1 -> mix13.3;
+mod12.1 -> mix13.4;
+mix13.1 -> s14.1;

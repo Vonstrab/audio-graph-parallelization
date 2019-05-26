@@ -22,6 +22,13 @@ def sorted_nicely(l):
     return sorted(l, key=alphanum_key)
 
 
+cycle_time = (2 * int(sys.argv[3]) / 44100)
+print(cycle_time)
+
+cycle_time = cycle_time * 1000000
+print(cycle_time)
+
+
 def parse_file(path):
     """
     Function for parsing a file containing measurements
@@ -32,15 +39,16 @@ def parse_file(path):
         next = 0
         nb_times = 0
         nb_next = 0
-        data = []
+        misses = 0
 
         for line in file:
             words = line.strip().split(" ")
             if len(words) == 2 and words[1].endswith("µs"):
                 current_time = int(words[1].rstrip("µs"))
-                data.append(current_time / 1000)
                 if current_time > worst_time:
                     worst_time = current_time
+                if current_time > cycle_time:
+                    misses += 1
                 time += current_time
                 nb_times += 1
             if words[0] == "Time":
@@ -57,55 +65,34 @@ def parse_file(path):
         print("Average time left before the deadline: "
               + str(average_next) + "µs")
 
-    return (data, average_time, worst_time)
+    return (average_time, worst_time, misses)
 
 
-def get_scale(data):
-    max_count = 0
-    max_time = 0.0
-
-    for d in data:
-        for x in d:
-            if x > max_time:
-                max_time = x
-
-    max_time = math.ceil(max_time) + 1
-
-    for d in data:
-        n, bins, patches = plt.hist(d, bins=100, range=(0, max_time))
-
-        for count in n:
-            if count > max_count:
-                max_count = count
-
-        plt.clf()
-
-    return max_time, max_count + 1
-
-
-if len(sys.argv) != 3:
-    print("Usage: parse_log.py <AG Directory> <Number of threads>")
+if len(sys.argv) != 4:
+    print("Usage: parse_log.py <AG Directory> <Number of threads> <buffer size>")
     sys.exit(-1)
 
 dags = [f for f in listdir(sys.argv[1]) if isfile(join(sys.argv[1], f))]
 dags = sorted_nicely(dags)
 
+nb_threads = sys.argv[2]
+
 x = []
 seq = []
-seq_data = []
 seq_wtime = []
-static_rand = []
-static_rand_data = []
-static_rand_wtime = []
+seq_misses = []
+# static_rand = []
+# static_rand_wtime = []
 static_hlfet = []
-static_hlfet_data = []
 static_hlfet_wtime = []
+static_hlfet_misses = []
 static_etf = []
-static_etf_data = []
 static_etf_wtime = []
+static_etf_misses = []
 dynamic = []
-dynamic_data = []
 dynamic_wtime = []
+dynamic_misses = []
+
 
 subprocess.run(["cargo", "build", "--release", "--bin", "seq_exec"])
 subprocess.run(["cargo", "build", "--release", "--bin", "static_sched_exec"])
@@ -114,7 +101,6 @@ subprocess.run(["cargo", "build", "--release", "--bin", "work_stealing_exec"])
 for dag in dags:
 
     file = sys.argv[1].rstrip("/ ") + "/" + dag
-    nb_threads = sys.argv[2]
 
     print("**********************************")
     print("File : " + file)
@@ -126,70 +112,75 @@ for dag in dags:
 
     x.append(nodes)
 
-    # We run the audio for 60s using the TimeOutExpired exception
+    # We run the audio for 2s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "seq_exec",
-                        file], timeout=5.0)
+                        file], timeout=3.0)
     except subprocess.TimeoutExpired:
         pass
 
-    # We run the audio for 60s using the TimeOutExpired exception
-    try:
-        subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, nb_threads, "rand"], timeout=5.0)
-    except subprocess.TimeoutExpired:
-        pass
-
-    try:
-        subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, nb_threads, "hlfet"], timeout=5.0)
-    except subprocess.TimeoutExpired:
-        pass
+    # We run the audio for 2s using the TimeOutExpired exception
+    # try:
+    #     subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
+    #                     file, nb_threads, "rand"], timeout=5.0)
+    # except subprocess.TimeoutExpired:
+    #     pass
 
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
-                        file, nb_threads, "etf"], timeout=5.0)
+                        file, nb_threads, "hlfet"], timeout=3.0)
     except subprocess.TimeoutExpired:
         pass
 
-    # We run the audio for 60s using the TimeOutExpired exception
+    try:
+        subprocess.run(["cargo", "run", "--release", "--bin", "static_sched_exec",
+                        file, nb_threads, "etf"], timeout=3.0)
+    except subprocess.TimeoutExpired:
+        pass
+
+    # We run the audio for 2s using the TimeOutExpired exception
     try:
         subprocess.run(["cargo", "run", "--release", "--bin", "work_stealing_exec",
-                        file, nb_threads], timeout=5.0)
+                        file, nb_threads], timeout=3.0)
     except subprocess.TimeoutExpired:
         pass
 
     # Parse the log for sequential execution
-    seq_data, atime, wtime = parse_file("tmp/seq_log.txt")
+    atime, wtime, misses = parse_file("tmp/seq_log.txt")
     seq.append(atime)
     seq_wtime.append(wtime)
+    seq_misses.append(misses)
 
     # Parse the log for work stealing execution
-    dynamic_data, atime, wtime = parse_file("tmp/work_stealing_log.txt")
+    atime, wtime, misses = parse_file("tmp/work_stealing_log.txt")
     dynamic.append(atime)
     dynamic_wtime.append(wtime)
+    dynamic_misses.append(misses)
 
-    # Parse the log for rand static scheduling execution
-    static_rand_data, atime, wtime = parse_file(
-        "tmp/static_rand_sched_log.txt")
-    static_rand.append(atime)
-    static_rand_wtime.append(wtime)
+    # # Parse the log for rand static scheduling execution
+    # atime, wtime ,misses= parse_file(
+    #     "tmp/static_rand_sched_log.txt")
+    # static_rand.append(atime)
+    # static_rand_wtime.append(wtime)
 
     # Parse the log for hlfet static scheduling execution
-    static_hlfet_data, atime, wtime = parse_file(
+    atime, wtime, misses = parse_file(
         "tmp/static_hlfet_sched_log.txt")
     static_hlfet.append(atime)
     static_hlfet_wtime.append(wtime)
+    static_hlfet_misses.append(misses)
 
     # Parse the log for etf static scheduling execution
-    static_etf_data, atime, wtime = parse_file("tmp/static_etf_sched_log.txt")
+    atime, wtime, misses = parse_file("tmp/static_etf_sched_log.txt")
     static_etf.append(atime)
+
     static_etf_wtime.append(wtime)
+    static_etf_misses.append(misses)
 
 
 plt.plot(x, seq, 'r+', label='Sequential Scheduling')
 plt.plot(x, dynamic, 'b^', label='Work Stealing Scheduling')
-plt.plot(x, static_rand, 'gx', label='Static Rand Scheduling')
+# plt.plot(x, static_rand, 'gx', label='Static Rand Scheduling')
 plt.plot(x, static_hlfet, 'bx', label='Static HLFET Scheduling')
 plt.plot(x, static_etf, 'rx', label='Static ETF Scheduling')
 plt.legend()
@@ -204,7 +195,7 @@ plt.close()
 
 plt.plot(x, seq_wtime, 'r+', label='Sequential Scheduling')
 plt.plot(x, dynamic_wtime, 'b^', label='Work Stealing Scheduling')
-plt.plot(x, static_rand_wtime, 'gx', label='Static Rand Scheduling')
+# plt.plot(x, static_rand_wtime, 'gx', label='Static Rand Scheduling')
 plt.plot(x, static_hlfet_wtime, 'bx', label='Static HLFET Scheduling')
 plt.plot(x, static_etf_wtime, 'rx', label='Static ETF Scheduling')
 plt.legend()
@@ -216,66 +207,16 @@ plt.xlabel('Number of nodes')
 plt.savefig('tmp/worst.png', bbox_inches='tight')
 plt.close()
 
+plt.plot(x, seq_misses, 'r+', label='Sequential Scheduling')
+plt.plot(x, dynamic_misses, 'b^', label='Work Stealing Scheduling')
+# plt.plot(x, static_rand_wtime, 'gx', label='Static Rand Scheduling')
+plt.plot(x, static_hlfet_misses, 'bx', label='Static HLFET Scheduling')
+plt.plot(x, static_etf_misses, 'rx', label='Static ETF Scheduling')
+plt.legend()
 
-max_x, max_y = get_scale(
-    [seq_data, dynamic_data, static_rand_data, static_hlfet_data, static_etf_data])
+plt.title('Deadlines Missed:' + sys.argv[1])
+plt.ylabel('Count (µs)')
+plt.xlabel('Number of nodes')
 
-
-plt.hist(seq_data, bins=100, range=(0, max_x), color='red')
-
-plt.title('Sequential')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_seq.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(dynamic_data, bins=100, range=(0, max_x), color='green')
-
-plt.title('Work Stealing')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_ws.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(static_rand_data, bins=100, range=(0, max_x), color='blue')
-
-plt.title('Random static scheduling')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_rand.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(static_hlfet_data, bins=100, range=(0, max_x), color='grey')
-
-plt.title('HLFET')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_hlfet.png', bbox_inches='tight')
-plt.close()
-
-
-plt.hist(static_etf_data, bins=100, range=(0, max_x), color='black')
-
-plt.title('ETF')
-plt.xlabel('Cycle Time (ms)')
-plt.ylabel('Count')
-plt.xlim(0, max_x)
-plt.ylim(0, max_y)
-
-plt.savefig('tmp/hist_etf.png', bbox_inches='tight')
+plt.savefig('tmp/misses.png', bbox_inches='tight')
 plt.close()
