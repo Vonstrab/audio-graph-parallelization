@@ -616,7 +616,7 @@ Séquencement des CPN
 \begin_layout Plain Layout
 Insérer en premier le CPN d’entrée du DAG dans la séquence, mettre
 \emph on
-Position
+ Position
 \emph default
  à 2.
  Soit
@@ -2331,16 +2331,12 @@ Première variable : le nombre de threads
 \end_layout
 
 \begin_layout Standard
-Pour cette première série de mesures nous allons fixer la taille du buffer
- a
-\series bold
-128
-\series default
-, et réaliser les mesures sur une machine au repos.
+Pour cette première série de mesures, nous allons fixer la taille du buffer
+ à 128, et réaliser les mesures sur une machine au repos.
 \end_layout
 
 \begin_layout Standard
-Nous commençons avec la ligne, pour pouvoir comparer le surcoût de chaque
+Nous commençons avec les lignes, pour pouvoir comparer le surcoût de chaque
  méthode [Figure 5
 \begin_inset CommandInset ref
 LatexCommand vpageref
@@ -2410,7 +2406,7 @@ status open
 \begin_layout Plain Layout
 Ligne avec
 \series bold
-2
+ 2
 \series default
  threads
 \end_layout
@@ -2466,7 +2462,7 @@ status open
 \begin_layout Plain Layout
 Ligne avec
 \series bold
-3
+ 3
 \series default
  threads
 \end_layout
@@ -2521,7 +2517,7 @@ status open
 \begin_layout Plain Layout
 Ligne avec
 \series bold
-4
+ 4
 \series default
  threads
 \end_layout
@@ -2537,7 +2533,7 @@ Ligne avec
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Ligne avec threads variable
+Lignes avec un nombre de threads variable
 \end_layout
 
 \end_inset
@@ -2552,7 +2548,7 @@ Ligne avec threads variable
 
 \begin_layout Standard
 \noindent
-Puis avec le Losange [Figure 6
+Puis avec les losanges [Figure 6
 \begin_inset CommandInset ref
 LatexCommand vpageref
 reference "fig 6"
@@ -2617,7 +2613,7 @@ status open
 \begin_layout Plain Layout
 Losange avec
 \series bold
-2
+ 2
 \series default
  threads
 \end_layout
@@ -2673,7 +2669,7 @@ status open
 \begin_layout Plain Layout
 Losange avec
 \series bold
-3
+ 3
 \series default
  threads
 \end_layout
@@ -2730,7 +2726,7 @@ status open
 \begin_layout Plain Layout
 Losange avec
 \series bold
-4
+ 4
 \series default
  threads
 \end_layout
@@ -2746,7 +2742,7 @@ Losange avec
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Losange avec threads variable
+Losanges avec un nombre de threads variable
 \end_layout
 
 \end_inset
@@ -2756,7 +2752,7 @@ Losange avec threads variable
 
 \end_inset
 
-Et avec le Râteau [Figure 7
+Et avec les râteaux [Figure 7
 \begin_inset CommandInset ref
 LatexCommand vpageref
 reference "Figure  7"
@@ -2825,7 +2821,7 @@ status open
 \begin_layout Plain Layout
 Râteau avec
 \series bold
-2
+ 2
 \series default
  threads
 \end_layout
@@ -2881,7 +2877,7 @@ status open
 \begin_layout Plain Layout
 Râteau avec
 \series bold
-3
+ 3
 \series default
  threads
 \end_layout
@@ -2938,7 +2934,7 @@ status open
 \begin_layout Plain Layout
 Râteau avec
 \series bold
-4
+ 4
 \series default
  threads
 \end_layout
@@ -2954,7 +2950,7 @@ Râteau avec
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Râteau avec threads variable
+Râteaux avec un nombre de threads variable
 \end_layout
 
 \end_inset
@@ -2968,30 +2964,31 @@ Râteau avec threads variable
 \end_layout
 
 \begin_layout Standard
-Dans un Premier temps on va s’intéresser aux dépassements de délais, on
- peu constater dans un premier temps que le nombre de threads optimal sur
- cette machine est de 3 et cela quelque soit la configuration étudiée.
- Cela peut peut sembler contre-intuitif compte tenu qu'il y a 4 cœurs, on
- peut que la présence du thread de mesures impacte les performances de plus
- car il interrompt les threads du pool, on peut émettre l’hypothèse que
- le cache lui étant partagé, il est un frein a l'utilisation des 4 cœurs
- de la machine.
+Dans un premier temps, nous allons nous intéresser aux dépassements d'échéances
+ : nous pouvons constater que le nombre de threads optimal sur cette machine
+ est de 3 et cela quelque soit la configuration étudiée.
+ Cela peut peut sembler contre-intuitif compte tenu du fait qu'il y ait
+ 4 cœurs, nous pouvons constater que la présence du thread de mesures impacte
+ les performances car il interrompt les threads du pool.
+ Nous pouvons également émettre l’hypothèse que le cache étant partagé ainsi
+ que sont bus, il est un frein a l'utilisation simultanée des 4 cœurs de
+ la machine.
 \end_layout
 
 \begin_layout Standard
-Secondement en observant les temps moyens et les pires temps pour la ligne,
- on peut constater que, hormis des irrégularités des méthodes HLFET et EFT,
- les différentes méthodes sont très proches, avec un léger surcoût de la
- parallélisation explicable par l'overhead nécessaire a la gestions des
- pool de threads et des locks.
+Secondement, en observant les temps moyens et les pires temps pour les lignes,
+ nous pouvons constater que, hormis des irrégularités des méthodes HLFET
+ et EFT, les différentes méthodes sont très proches, avec un léger surcoût
+ de la parallélisation explicable par le surcoût engendré par la gestions
+ des pools de threads et des locks.
 \end_layout
 
 \begin_layout Standard
-Pour le Losange on note l'irrégularité de HLFET qui détonne par rapport
+Pour les losanges, on note l'irrégularité de HLFET qui détonne par rapport
  aux trois autres méthodes.
- Dans cette configuration on voit que les 4 cœurs ne font pas perdre tant
- de performances que ça, juste un légère augmentation du nombre de deadlines
- rates.
+ Dans cette configuration nous voyons que les 4 cœurs ne font pas perdre
+ tant de performances que ça, juste un légère augmentation du nombre d'échéances
+ ratées.
 \end_layout
 
 \begin_layout Subsection
@@ -2999,18 +2996,18 @@ Seconde variable : la taille du buffer
 \end_layout
 
 \begin_layout Standard
-Plus la taille du buffer est petite moins le système a de latence mais plus
- les deadlines sont serrées et plus la machine es mise a contribution.
- On a deux configurations : un petit buffer entre 16 et 256, quand on cherche
- a avoir de la réactivité, par exemple pour des musiciens qui souhaitent
- avoir un retour son, pour de la retransmission en direct, et a l'opposé
- un plus gros buffer a partir de 512 quand on peut se permettre de ménager
- sa machine.
+Plus la taille du buffer est petite, moins le système a de latence, mais
+ plus les échéances sont courtes et plus la machine est mise à contribution.
+ Nous avons deux configurations : un petit buffer entre 16 et 256 échantillons,
+ quand on cherche à avoir de la réactivité, par exemple pour des musiciens
+ qui souhaitent avoir un retour son rapide, pour de la retransmission en
+ direct, et a l'opposé un plus gros buffer à partir de 512 échantillons
+ quand on peut se permettre d'avoir de plus longues latences.
 \end_layout
 
 \begin_layout Standard
-On va fixer le nombre de threads et faire varier la taille du buffer de
- 16, 32, 64,128, 256, et enfin 512.
+Nous allons fixer le nombre de threads et faire varier la taille du buffer
+ de 16, 32, 64,128, 256, et enfin 512 échantillons.
 \end_layout
 
 \begin_layout Standard
@@ -3242,7 +3239,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 16
+Buffer de 16 échantillons
 \end_layout
 
 \end_inset
@@ -3270,7 +3267,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 32
+Buffer de 32 échantillons
 \end_layout
 
 \end_inset
@@ -3298,7 +3295,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 64
+Buffer de 64 échantillons
 \end_layout
 
 \end_inset
@@ -3337,7 +3334,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 128
+Buffer de 128 échantillons
 \end_layout
 
 \end_inset
@@ -3365,7 +3362,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 256
+Buffer de 256 échantillons
 \end_layout
 
 \end_inset
@@ -3393,7 +3390,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 512
+Buffer de 512 échantillons
 \end_layout
 
 \end_inset
@@ -3410,7 +3407,7 @@ buffer de 512
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-variations pour le losange
+Variations pour les losanges
 \end_layout
 
 \end_inset
@@ -3447,7 +3444,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 16
+Buffer de 16 échantillons
 \end_layout
 
 \end_inset
@@ -3475,7 +3472,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 32
+Buffer de 32 échantillons
 \end_layout
 
 \end_inset
@@ -3503,7 +3500,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 64
+Buffer de 64 échantillons
 \end_layout
 
 \end_inset
@@ -3542,7 +3539,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 128
+Buffer de 128 échantillons
 \end_layout
 
 \end_inset
@@ -3570,7 +3567,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 256
+Buffer de 256 échantillons
 \end_layout
 
 \end_inset
@@ -3598,7 +3595,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-buffer de 512
+Buffer de 512 échantillons
 \end_layout
 
 \end_inset
@@ -3615,7 +3612,7 @@ buffer de 512
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-variations pour le râteau
+Variations pour les râteaux
 \end_layout
 
 \end_inset
@@ -3633,9 +3630,9 @@ Dernière variable : la charge de la machine
 \end_layout
 
 \begin_layout Standard
-Dans cette série de mesures on va fier le buffer a 128, le nombre de threads
- a 3 et on va comparer l'éxécution entre la machine au repos et la machine
- qui lit une vidéo en haute qualité.
+Dans cette série de mesures, nous allons fixer la taille du buffer à 128
+ échantillons, le nombre de threads est à 3 et nous allons comparer l'éxécution
+ entre la machine au repos et la machine qui lit une vidéo en haute qualité.
 \end_layout
 
 \begin_layout Standard
@@ -3939,22 +3936,24 @@ râteau en regardant une vidéo
 \end_layout
 
 \begin_layout Standard
-Le cas le plus intéressant est celui du Râteau ou on voit que lors de la
- lecture de la vidéo, toutes les méthodes parallèles ont plus de mal a tenir
- les deadlines, contrairement a l’exécution séquentielle qui elle tient
- la ligne avec la surcharge, on analyser cette dichotomie par le fait que
- la lecture d'une vidéo va monopoliser un partie non négligeable des ressources
- de la machine ce qui néglige une partie des gain de la parallélisation.
+Le cas le plus intéressant est celui des râteaux où l'on voit que lors de
+ la lecture de la vidéo, toutes les méthodes parallèles ont plus de mal
+ à tenir les échéances, contrairement a l’exécution séquentielle qui elle
+ tient la ligne avec la surcharge.
+ On peut analyser cette différence par le fait que la lecture d'une vidéo
+ va monopoliser un partie non négligeable des ressources de la machine,
+ ce qui diminue une partie des gains de la parallélisation.
 \end_layout
 
 \begin_layout Subsection
-La stabilité des Algorithmes
+La stabilité des algorithmes
 \end_layout
 
 \begin_layout Standard
-Pour comparer la stabilité des Algorithmes on va faire des histogramme avec
- 3 threads et des buffers de 2048, a fin d'avoir des cycles plus longs et
- de mieux voir les variations.
+Pour comparer la stabilité des algorithmes, nous allons faire des histogrammes
+ montrant la répartition des temps d'exécution avec 3 threads et des buffers
+ de 2048 échantillons, afin d'avoir des cycles plus longs et de mieux voir
+ les variations.
 \end_layout
 
 \begin_layout Standard
@@ -3979,7 +3978,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Histogramme pour une Ligne a 100 nœuds
+Histogramme pour une ligne à 100 nœuds
 \end_layout
 
 \end_inset
@@ -4003,7 +4002,7 @@ Histogramme pour une Ligne a 100 nœuds
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Histogramme pour un losange a 156 nœuds
+Histogramme pour un losange à 156 nœuds
 \end_layout
 
 \end_inset
@@ -4027,7 +4026,7 @@ Histogramme pour un losange a 156 nœuds
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Histogramme pour un Râteau a 101 nœuds
+Histogramme pour un râteau à 101 nœuds
 \end_layout
 
 \end_inset
@@ -4067,7 +4066,7 @@ Conclusions
 On peut dans un premier temps noter la fiabilité et la constance de l’exécution
  séquentielle, qui dans les différents cas de figure est de loin la méthode
  la plus fiable et la plus efficace.
- Pour les autre méthodes on voit qu'HLFET est vraiment a la traîne au niveau
+ Pour les autre méthodes, on voit que HLFET est vraiment en retrait au niveau
  des performances.
  L'algorithme ETF offre une stabilité, visible notamment dans l'histogramme
  du losange et du râteau, cette méthode peut être prometteuse surtout avec
