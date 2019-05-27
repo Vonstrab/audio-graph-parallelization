@@ -66,8 +66,8 @@ fixltx2e
 \shortcut idx
 \color #008000
 \end_index
-\leftmargin 1.5cm
-\rightmargin 1.5cm
+\leftmargin 2.5cm
+\rightmargin 2.5cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -95,6 +95,29 @@ Rapport du PSAR/PSTL: Parallélisation de graphes audio (sujet PSTL)
 
 \begin_layout Author
 Eisha Chen-yen-su, Ivan Delgado
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -163,7 +186,7 @@ s modernes pour paralléliser ces calculs.
 
 \begin_layout Standard
 Nous allons préciser ici les contraintes temps réel que doivent respecter
- les traitements audio en nous inspirant de l’analyse réalisée dans
+ les traitements audio en nous inspirant de l’analyse réalisée dans 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-1"
@@ -244,8 +267,8 @@ Le poids d’un nœud correspond au temps nécessaire à l’exécution d’une 
  Celui d’un arc correspond au coût de communication entre deux tâches.
  Le coût de communication peut être considéré comme négligeable dans le
  cas d’une communication via une mémoire partagée, elle peut être beaucoup
- plus importante et variable dans le cas de passages de messages, il faut
- alors en tenir compte.
+ plus importante et variable dans le cas de passages de messages dans des
+ systèmes répartis, il faut alors en tenir compte.
 \end_layout
 
 \begin_layout Standard
@@ -253,10 +276,6 @@ Le poids d’un nœud correspond au temps nécessaire à l’exécution d’une 
 wide false
 sideways false
 status open
-
-\begin_layout Plain Layout
-
-\end_layout
 
 \begin_layout Plain Layout
 \align center
@@ -567,7 +586,7 @@ Premièrement, CPFD va distinguer les nœuds du DAG en trois catégories :
  un chemin menant à un CPN; et les OBN (pour “Out-Branch Node”), qui sont
  simplement les nœuds n’appartenant pas aux deux autres catégories.
  CPFD s’appuie sur une liste appelée “CPN-Dominant Sequence”.
- Elle est construite selon l’algorithme [1]
+ Elle est construite selon [ l' Algorithme 1
 \begin_inset CommandInset ref
 LatexCommand vpageref
 reference "Algorithme 1"
@@ -577,7 +596,7 @@ noprefix "false"
 
 \end_inset
 
- :
+ ] :
 \end_layout
 
 \begin_layout Standard
@@ -963,8 +982,8 @@ Les OBN (pour “Out-Branch Node”), qui sont simplement les nœuds n’apparte
 \end_layout
 
 \begin_layout Standard
-À partir de cette séquence, CPFD procède à l’ordonnancement selons l'algorithme
- [2]
+À partir de cette séquence, CPFD procède à l’ordonnancement selon [ l'Algorithme
+ 2 
 \begin_inset CommandInset ref
 LatexCommand vpageref
 reference "Algorithme 2"
@@ -974,7 +993,7 @@ noprefix "false"
 
 \end_inset
 
-:
+ ] :
 \end_layout
 
 \begin_layout Standard
@@ -1009,7 +1028,7 @@ Ordonnancement CPFD
 \begin_layout Plain Layout
 Soit
 \emph on
-candidate
+ candidate
 \emph default
  le CPN d’entrée.
 \end_layout
@@ -1039,11 +1058,11 @@ Indp
 \begin_layout Plain Layout
 Soit
 \emph on
-P_SET
+ P_SET
 \emph default
 , l’ensemble des processeurs comportant les parents de
 \emph on
-candidate
+ candidate
 \emph default
 , plus un processeur inutilisé.
 \end_layout
@@ -1054,11 +1073,11 @@ candidate
 Pour chaque
 \series default
 \emph on
-P
+ P 
 \emph default
- dans
+dans
 \emph on
-P_SET
+ P_SET
 \emph default
 , faire :
 \end_layout
@@ -1086,15 +1105,15 @@ Indp
 \series default
 Calculer
 \emph on
-ST
+ ST
 \emph default
  : le temps de départ de
 \emph on
-candidate
+ candidate
 \emph default
  sur
 \emph on
-P
+ P
 \emph default
 .
 \end_layout
@@ -1106,17 +1125,17 @@ P
 \series default
 Soit m, un éventuel parent de
 \emph on
-candidate
+ candidate
 \emph default
  qui n’est pas ordonnancé sur
 \emph on
-P
+ P
 \emph default
  et dont le message pour
 \emph on
-candidate
+ candidate
 \emph default
-a le temps d’arrivée le plus tardif.
+ a le temps d’arrivée le plus tardif.
 \end_layout
 
 \begin_layout Plain Layout
@@ -1126,7 +1145,7 @@ a le temps d’arrivée le plus tardif.
 \series default
  Essayer de dupliquer m sur le créneau d’inactivité de
 \emph on
-P
+ P
 \emph default
  le plus précoce.
 \end_layout
@@ -1154,7 +1173,7 @@ Si
 \series default
  la duplication réussi et que cela diminue
 \emph on
-ST
+ ST
 \end_layout
 
 \begin_layout Plain Layout
@@ -1176,14 +1195,13 @@ Indp
 \begin_layout Plain Layout
 alors mettre à jour
 \emph on
-ST
+ ST
 \emph default
 .
  Faire en sorte qu’un nouveau candidate soit m et retourner à l’étape
 \series bold
-a
+ (a)
 \series default
-.
  .
 \end_layout
 
@@ -1226,14 +1244,14 @@ Indp
 \end_layout
 
 \begin_layout Plain Layout
-si la duplication échoue, alors rendre le contrôle pour examiner un autre
+Si la duplication échoue, alors rendre le contrôle pour examiner un autre
  parent du candidate précédent.
 \end_layout
 
 \begin_layout Plain Layout
 Ordonnancer candidate sur le processeur
 \emph on
-P’
+ P’
 \emph default
  qui lui permet de commencer le plus tôt et faire les duplications requises.
 \end_layout
@@ -1241,7 +1259,7 @@ P’
 \begin_layout Plain Layout
 Soit
 \emph on
-candidate
+ candidate
 \emph default
 , le CPN suivant.
 \end_layout
@@ -1249,17 +1267,17 @@ candidate
 \begin_layout Plain Layout
 Répéter le processus de l’étape
 \series bold
-3
+ 3
 \series default
 .
  à
 \series bold
-6
+ 6
 \series default
 .
  pour chaque OBN avec
 \emph on
-P_SET
+ P_SET
 \emph default
  contenant tous les processeurs utilisés, plus un processeur inutilisé.
  Les OBN sont ordonnancés dans l’ordre topologique.
@@ -1316,9 +1334,13 @@ Jusqu’à ce que
 
 \end_layout
 
+\begin_layout Subsubsection
+Vol de tâche
+\end_layout
+
 \begin_layout Standard
 La toute dernière stratégie d’ordonnancement étudiée est l’ordonnancement
- avec vole de tâches.
+ avec vol de tâches.
  Il s’agit d’un ordonnancement dynamique dans lequel les tâches sont exécutées
  par un pool de threads.
 \end_layout
@@ -1388,9 +1410,9 @@ Nous allons présenter les fonctionnalités réalisées par le logiciel dévelop
  format AudioGraph.
  Il peut créer des fichiers DOT et PDF (avec
 \series bold
-Graphviz
+ Graphviz
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-4"
@@ -1402,22 +1424,43 @@ literal "false"
  Il peut calculer des ordonnancements statiques pour ces graphes avec les
  algorithmes
 \emph on
-HLFET
+ HLFET
 \emph default
 ,
 \emph on
-ETF
+ ETF
 \emph default
 ,
 \emph on
-CPFD
+ CPFD
 \emph default
-ou “random” (on assigne des priorités aléatoires aux nœud lors de l’ordonnanceme
-nt) et éventuellement les afficher.
+ ou “random
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Cet ordonnancement ne servait qu'a vérifier le bien fondé de l'implémentation
+ des autres ordonnancements en les comparants a cet ordonnancement arbitraire
+ témoin, nous n'allons pas dans ce présent document analyser les performances
+ de 
+\begin_inset Quotes fld
+\end_inset
+
+random
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+” (on assigne des priorités aléatoires aux nœud lors de l’ordonnancement)
+ et éventuellement les afficher.
  Il peut exécuter séquentiellement le graphe audio ou en parallèle avec
  des threads
 \series bold
-POSIX
+ POSIX
 \series default
  selon un ordonnancement statique ou un ordonnancement dynamique avec vol
  de tâches.
@@ -1437,9 +1480,9 @@ Nous allons à présent parler des technologies qui sont utilisées par ce
 \begin_layout Standard
 Le logiciel est écrit en
 \series bold
-Rust
+ Rust
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-5"
@@ -1451,9 +1494,9 @@ literal "false"
  C’est un langage de programmation dont le compilateur produit du code rapide
  (le compilateur utilisant
 \series bold
-LLVM
+ LLVM
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-6"
@@ -1479,7 +1522,7 @@ ur fait de nombreuses vérifications pour détecter des problèmes liés à la
 \series bold
 Jack
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-7"
@@ -1496,16 +1539,16 @@ JACK
  les interfaces audio (comme des cartes son).
  À chaque cycle audio, le serveur audio
 \series bold
-JACK
+ JACK
 \series default
  va appeler la fonction de callback audio de notre application.
  C’est dans cette fonction que va être appelée notre routine d’exécution
  du graphe audio.
  Les nœuds de sortie du graphe vont écrire les résultats des traitements
- du graph dans les buffers des ports de sortie de l’application, ce sont
+ du graphe dans les buffers des ports de sortie de l’application, ce sont
  ces buffers qui vont être lus par le serveur
 \series bold
-JACK
+ JACK
 \series default
 .
 \end_layout
@@ -1522,7 +1565,7 @@ JACK
 \series bold
 crossbeam
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-12"
@@ -1540,7 +1583,7 @@ literal "false"
 \begin_layout Itemize
 Les
 \emph on
-channel
+ channel
 \emph default
  qui sont des canaux de messages multi-producteurs et multi-consommateurs.
 \end_layout
@@ -1548,7 +1591,7 @@ channel
 \begin_layout Itemize
 Les
 \emph on
-deque
+ deque
 \emph default
  qui sont une implémentation de files utilisables pour l’ordonnancement
  par vole de tâche.
@@ -1557,19 +1600,19 @@ deque
 \begin_layout Itemize
 Les
 \emph on
-ShardedLock
+ ShardedLock
 \emph default
  qui sont des verrous permettant à une ressource d’être verrouillée pour
  un seul écrivain ou pour plusieurs lecteurs.
  Ce type de verrous existent déjà dans la bibliothèque standard (
 \emph on
-RwLock
+ RwLock
 \emph default
-) mais ceux de
+ ) mais ceux de
 \series bold
-crossbeam
+ crossbeam
 \series default
-sont plus rapide pour acquérir le verrou en lecture mais plus lent pour
+ sont plus rapide pour acquérir le verrou en lecture mais plus lent pour
  l’acquérir en écriture, ce qui est mieux lorsque l’on sait qu’on va plus
  souvent lire une donnée que la modifier.
 \end_layout
@@ -1577,7 +1620,7 @@ sont plus rapide pour acquérir le verrou en lecture mais plus lent pour
 \begin_layout Itemize
 L’utilitaire
 \emph on
-Backoff
+ Backoff
 \emph default
  permet de faire des boucles d’attentes actives mais en réduisant la contention
  sur le processeur, en faisant en sorte que le thread rende la main à l’OS,
@@ -1597,7 +1640,7 @@ Backoff
 \series bold
 core_affinity
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-13"
@@ -1630,10 +1673,10 @@ literal "false"
 \series bold
 criterion
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-14"
+key "key-10"
 literal "false"
 
 \end_inset
@@ -1655,17 +1698,17 @@ literal "false"
 \series bold
 pest
 \series default
-
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-15"
+key "key-11"
 literal "false"
 
 \end_inset
 
- est utilisé pour écrire le parseur de fichiers
+ est utilisé pour écrire le parser de fichiers
 \series bold
-AudioGraph
+ AudioGraph
 \series default
 .
 \end_layout
@@ -1770,7 +1813,7 @@ Les arcs du graphes sont les buffers reliant les traitements : une fonction
  autre lit dans ce même buffer (c’est son entrée).
  Ces buffers viennent de la structure
 \emph on
-DspEdge
+ DspEdge
 \emph default
  qui contient toutes les caractéristiques du signal : les échantillons du
  signal, la fréquence d’échantillonnage et la taille du buffer.
@@ -1792,7 +1835,7 @@ Les DSP implémentés sont les suivants :
 \emph on
 Oscillator
 \emph default
- : un oscillateur produisant une onde sinusoïdale avec une certaine amplitude
+: un oscillateur produisant une onde sinusoïdale avec une certaine amplitude
  et fréquence.
  Il n’a qu’une seule sortie.
 \end_layout
@@ -1812,10 +1855,10 @@ Modulator
 \emph on
 Sink
 \emph default
- : ce DSP est la sortie du graphe audio, il écrit le signal d’entrée dans
+: ce DSP est la sortie du graphe audio, il écrit le signal d’entrée dans
  un buffer audio de
 \series bold
-JACK
+ JACK
 \series default
 .
  Il n’a qu’une seule entrée.
@@ -1862,7 +1905,7 @@ Implémentation des algorithmes d’ordonnancement statique
 Les ordonnancements statiques ont été implémentés avec des fonctions prenant
  en paramètre un graphe de tâche (la structure
 \emph on
-TaskGraph
+ TaskGraph
 \emph default
 ) et retournant un ordonnancement.
  L’ordonnancement est représenté dans la structure Schedule qui contient
@@ -1873,31 +1916,34 @@ Processor
 ).
  Chaque processeur a une liste de fenêtres temporelles (la structure
 \emph on
-TimeSlot
+ TimeSlot
 \emph default
 ) indiquant quand il doit commencer une tâche et quand il doit la finir
- (qui est simplement la date de début plus le WCET), ces fenêtres ne se
- chevauchent évidemment pas, car un même processeur ne peut qu’exécuter
- séquentiellement les tâches.
+ (qui est simplement la date de début plus le 
+\emph on
+WCET
+\emph default
+), ces fenêtres ne se chevauchent évidemment pas, car un même processeur
+ ne peut qu’exécuter séquentiellement les tâches.
 \end_layout
 
 \begin_layout Standard
-Il y a quatres fonctions pour ces ordonnancements :
+Il y a quatre fonctions pour ces ordonnancements :
 \emph on
-random
+ random
 \emph default
  qui réalise une stratégie d’ordonnancement où l’on donne une priorité aléatoire
  aux différents nœuds, et
 \emph on
-hlfet
+ hlfet
 \emph default
 ,
 \emph on
-etf
+ etf
 \emph default
  et
 \emph on
-cpfd
+ cpfd
 \emph default
  qui réalisent les algorithmes du même nom.
 \end_layout
@@ -1927,7 +1973,7 @@ run_static_sched
  décrit dans l’ordonnancement statique et chaque thread va toujours s’exécuter
  sur un même cœur, grâce à
 \series bold
-core_affinity
+ core_affinity
 \series default
 .
  On a alors une bonne correspondance entre ce qui est décrit dans les ordonnance
@@ -1950,7 +1996,7 @@ Chaque thread a donc une liste de tâche (celle de la structure Processor
 \begin_layout Standard
 Chaque tâche est associée à un état (l’énumération
 \emph on
-TaskState
+ TaskState
 \emph default
 ) indiquant si elle est prête à être exécutée (i.e.
  si toutes les tâches parentes ont fini de s’exécuter) ou non.
@@ -1984,7 +2030,7 @@ Quand un thread veut commencer à exécuter une tâche, il doit d’abord vérif
  si celle-ci est prête.
  Si ce n’est pas le cas, il entamer une attente active avec l’utilitaire
 \emph on
-Backoff
+ Backoff
 \emph default
 .
  L’attente active permet d’éviter que les threads ne s’endorment systématiquemen
@@ -2005,7 +2051,11 @@ Implémentation de l’exécution de l’ordonnancement dynamique avec vol de
 
 \begin_layout Standard
 L’exécution parallèle avec l’ordonnancement par vol de tâches est réalisée
- dans la fonction run_work_stealing.
+ dans la fonction 
+\begin_inset Newline newline
+\end_inset
+
+run_work_stealing.
  La fonction va initialement créer un pool de n threads.
  Chaque thread a sa propre file de tâches (de type Worker, venant de crossbeam)
  et il y a une file globale (de type Injector).
@@ -2056,6 +2106,8 @@ Nous voulions faire des mesures sur le temps d’exécution total d’un graphe
  opération est toujours non-bloquante pour les canaux de type unbounded
  (fournis par crossbeam).
  Les mesures ont ainsi un impact limité sur l’exécution des graphes audio.
+ Pourtant il faut être conscient que toute mesure demande des ressources
+ et donc impacte les performances, aussi minime cet impact soit-il.
 \end_layout
 
 \begin_layout Standard
@@ -2174,8 +2226,8 @@ Le nombre de threads utilisés
 
 \begin_layout Itemize
 La taille des buffers, qui fait varier la durée d'un cycle et donc les échéances.
- Les valeurs que nous étudierons seront : 1024, 512, 256, 128, 64 et 32
- échantillons.
+ Les valeurs courantes que nous étudierons seront : 512, 256, 128, 64 et
+ 32 échantillons.
 \end_layout
 
 \begin_layout Itemize
@@ -2285,7 +2337,7 @@ Exemple de râteau avec 11 nœuds
 \noindent
 \align left
 Finalement le losange, qui se trouve entre les deux, commence et termine
- avec un degré de parallélisme null tout en ayant un degré de parallélisme
+ avec un degré de parallélisme nul tout en ayant un degré de parallélisme
  supérieur entre les deux.
  On s'attend à ce que l’exécution séquentielle soit plus efficace sur les
  petits losanges, mais que le gain de la parallélisation soit significatif
@@ -3625,6 +3677,23 @@ Variations pour les râteaux
 
 \end_layout
 
+\begin_layout Standard
+Pour les buffers de 16 les méthodes ETF et HLFET ont du mal a quelques cycles.
+\end_layout
+
+\begin_layout Standard
+Pour les buffers de 32 les méthodes sont stables sauf pour le râteau ou
+ ETF et HLFET
+\emph on
+ 
+\emph default
+ont un peu de mal.
+\end_layout
+
+\begin_layout Standard
+Pour toutes les autres tailles les résultats sont très stables.
+\end_layout
+
 \begin_layout Subsection
 Dernière variable : la charge de la machine
 \end_layout
@@ -3966,8 +4035,8 @@ status open
 \align center
 \begin_inset Graphics
 	filename hist/hist_all_ligne.png
-	lyxscale 50
-	scale 50
+	lyxscale 60
+	scale 60
 
 \end_inset
 
@@ -3990,8 +4059,8 @@ Histogramme pour une ligne à 100 nœuds
 \align center
 \begin_inset Graphics
 	filename hist/hist_all_losange.png
-	lyxscale 50
-	scale 50
+	lyxscale 60
+	scale 60
 
 \end_inset
 
@@ -4014,8 +4083,8 @@ Histogramme pour un losange à 156 nœuds
 \align center
 \begin_inset Graphics
 	filename hist/hist_all_rateau.png
-	lyxscale 50
-	scale 50
+	lyxscale 60
+	scale 60
 
 \end_inset
 
@@ -4041,21 +4110,27 @@ Histogramme pour un râteau à 101 nœuds
 
 \begin_layout Standard
 On peut dans un premier temps constater que sur l'histogramme de la ligne
- que HLFET a un overhead significatif sur les autres méthodes.
- Les stabilités sont proches pour les quatre méthodes.
+ que HLFET a un overhead significatif et une légère stabilité moindre sur
+ les autres méthodes.
+ Les stabilités et les performances sont proches pour les trois autres méthodes.
 \end_layout
 
 \begin_layout Standard
 Sur l'histogramme du losange on voit une mauvaise stabilité du vol de tâches,
- un peu médiocre de la part de HLFET.
- Les plus stables sont le calcul séquenciel en premier puis en second ETF
- qui est cependant notablement plus rapide.
+ qui a un pic au même niveau que l’exécution séquentielle et un autre en
+ retard.
+ l’exécution séquentielle est stable mais souffre d'un retard.Les deux qui
+ sortent du lot sont HLFET et ETF qui sont proches au niveau des performances
+ et de la stabilité.
 \end_layout
 
 \begin_layout Standard
-Pour le Rateau en revanche on voir que l’exécution séquentielle n'est plus
- aussi stable, les méthodes parallélises gagnent en stabilité avec ETF et
- le vol de tache qui sont notablement plus stables.
+Pour le Râteau en revanche on voir que l’exécution séquentielle n'est plus
+ aussi stable et est a la traîne par rapport aux autres méthodes, les méthodes
+ parallélises gagnent en performances et en stabilité avec ETF et le vol
+ de tache qui sont les plus stables.
+ cette configuration parallèle est l'endroit ou ces méthodes brillent le
+ plus.
 \end_layout
 
 \begin_layout Subsection
@@ -4063,14 +4138,23 @@ Conclusions
 \end_layout
 
 \begin_layout Standard
-On peut dans un premier temps noter la fiabilité et la constance de l’exécution
- séquentielle, qui dans les différents cas de figure est de loin la méthode
- la plus fiable et la plus efficace.
- Pour les autre méthodes, on voit que HLFET est vraiment en retrait au niveau
- des performances.
- L'algorithme ETF offre une stabilité, visible notamment dans l'histogramme
- du losange et du râteau, cette méthode peut être prometteuse surtout avec
- des soins supplémentaires apportés à son implémentation.
+On peut dans un premier temps noter qu'HLFET est la moins efficace de toutes
+ ces méthodes, tant au niveau de la performance que de la stabilité, les
+ deux méthodes ETF et vol de taches sont très proches dans leurs résultats,
+ cependant le cas du losange nous permet de les départager, en effet on
+ constate que le vol de tache est bien moins stable dans le cas du losange,
+ ce qui est le cas le plus proche dans la vie réele.
+\end_layout
+
+\begin_layout Standard
+Donc si on compare ETF a l’exécution séquentielle on constate qu'ETF offre
+ un gain de performances non négligeable dans les situations de parallélisme,
+ mais on a constaté qu'ETF dépasse quelques fois la deadline, une optimisation
+ de l'implémentation pourrais palier a ce problème.
+\end_layout
+
+\begin_layout Standard
+ETF est un algorithme simple et efficace,
 \end_layout
 
 \begin_layout Section
@@ -4080,10 +4164,9 @@ On peut dans un premier temps noter la fiabilité et la constance de l’exécut
 \begin_layout Standard
 Premièrement il faut noter que notre implémentation repose sur beaucoup
  de locks, ce qui peut faire survenir des ralentissements, avec une optimisation
- minutieuse, que nous n'avons pas pu faire faute de temps, ETF a le potentiel
- du surpasser l’exécution séquentielle.
- Par exemple enlevant les locks superflus, ou en allant encore plus loin,
- remplacer les lock par des “traits unsafe” quand c’est possible
+ minutieuse, que nous n'avons pas pu faire faute de temps; Par exemple en
+ enlevant les locks superflus, ou en allant encore plus loin, remplaçant
+ les lock par des “traits unsafe” quand c’est possible 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-1"
@@ -4094,7 +4177,7 @@ literal "false"
 .
  Ou en rendant les threads a priorité temps réel avec
 \series bold
-audio_thread_priority
+ audio_thread_priority 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-2"
@@ -4103,6 +4186,10 @@ literal "false"
 \end_inset
 
 .
+ 
+\series default
+ETF a du potentiel et il sera intéressant de regarder ses performances une
+ fois ces optimisations effectuées.
 \end_layout
 
 \begin_layout Standard
@@ -4117,6 +4204,7 @@ virtuels
 \end_inset
 
  qui faut ensuite mapper sur des processeurs réels (l’algorithme est dans
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-3"
@@ -4135,6 +4223,27 @@ Au début nous avions tenté d’écrire un parser Puredata pour pouvoir prendre
  pour implémenter la grande variété des nœuds proposée et les lacunes de
  la documentation, nous avons fini par renoncer, il en subsiste un reliquat
  de ce parser dans notre code.
+\end_layout
+
+\begin_layout Subsection
+Retour sur Rust
+\end_layout
+
+\begin_layout Standard
+Reprendrais-t-on Rust si on devait le refaire ? Si on est dans un optique
+ d'optimiser finement et rapidement notre choix se porterais sur C/C++.
+ Si on ne veut pas avoir a gérer une multitude de bugs de pointeurs ou de
+ la mémoire, surtout en rapport aux threads notre choix se porterais encore
+ sur Rust.
+\end_layout
+
+\begin_layout Standard
+Le compilateur de Rust est difficile à satisfaire mais il offre une sûreté
+ non négligeable, nous n'avons pas eu a aller dénicher des erreurs de segmentati
+on ou des fuites mémoire.
+ Les exigences du compilateur ne nous ont pas permis d'optimiser autant
+ qu'on aurait pu mais sans Rust nous aurions eu beaucoup plus de mal pour
+ que tout ça marche tout court.
 \end_layout
 
 \begin_layout Bibliography
@@ -4237,7 +4346,8 @@ http://www.jackaudio.org/
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-12"
+key "key-8"
+literal "false"
 
 \end_inset
 
@@ -4251,7 +4361,8 @@ https://docs.rs/crossbeam/0.7.1/crossbeam/
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-13"
+key "key-9"
+literal "false"
 
 \end_inset
 
@@ -4265,7 +4376,8 @@ https://docs.rs/core_affinity/0.5.9/core_affinity/
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-14"
+key "key-10"
+literal "false"
 
 \end_inset
 
@@ -4279,7 +4391,8 @@ https://criterion.readthedocs.io/en/master/
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-15"
+key "key-11"
+literal "false"
 
 \end_inset
 
@@ -4293,7 +4406,8 @@ https://pest.rs/
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-1"
+key "key-12"
+literal "false"
 
 \end_inset
 
@@ -4303,7 +4417,8 @@ https://doc.rust-lang.org/nomicon/concurrency.html , dernière visite le 24/05/2
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-2"
+key "key-13"
+literal "false"
 
 \end_inset
 
