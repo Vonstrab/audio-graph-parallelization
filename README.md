@@ -1,63 +1,81 @@
 # Audio Graph parallelization
 
-Parallelisation de Graphes Audio en Rust
+Parallélisation de Graphes Audio en Rust.
 
 ## Dépendances
 
 - [Rust](https://rustup.rs/)
 - [Jack](http://www.jackaudio.org/downloads/)
-    -[interface QJackCtl](http://linuxmao.org/QJackCtl)
+- [Interface QJackCtl](http://linuxmao.org/QJackCtl)
 - [Graphviz](https://www.graphviz.org/download/)
 - [Python 3](https://www.python.org/downloads/)
-    - [matplotlib](https://matplotlib.org/users/installing.html)
+- [matplotlib](https://matplotlib.org/users/installing.html)
 
-## Compilation 
+## Compilation
 
-Dans la racine du projet:
+Dans la racine du projet :
+```
 cargo build --release
+```
 
-## Géneration la Documentation
+## Génération la documentation
 
-Dans la racine du projet:
+Dans la racine du projet :
+```
 cargo doc --open
+```
 
-## Utilisation 
+## Utilisation
 
-### Executables
+### Exécutables
 
-Les fichiers AudioGraph (.ag) se trouvent dans Samples/AG/
+Les fichiers AudioGraph (.ag) se trouvent dans `Samples/AG/`
 
-Pour executer un graphe en sequenciel:
+Pour exécuter un graphe en séquentiel :
 
-1. lancer le service QJackCtl
-2. executer : cargo run --release --bin seq_exec <fichier .ag>
-
-
-Pour executer un graphe en Work Stealing:
-
-1. lancer le service QJackCtl
-2. executer : cargo run --release --bin work_stealing_exec <fichier .ag> <nombre de threads>
+1. Lancer le service `QJackCtl`
+2. Exécuter :
+    ```
+    cargo run --release --bin seq_exec <fichier .ag>
+    ```
 
 
-Pour executer un graphe en Work Stealing:
+Pour exécuter un graphe avec l'ordonnancement par vol de tâches :
 
-1. lancer le service QJackCtl
-2. executer : cargo run --release --bin static_sched_exec <fichier .ag> <nombre de threads> <algorithme d'ordonnancement: rand, etf, hlfet>
-
-### Scripts pythons
-
-Les scripts se trouvent dans le dossier data.
-Les graphiques généres et la représentation des graphes visualisés avec Grapviz au format pdf se trouvent dans le dossier tpm
-
-Tracer l'histogramme:
-
-1. lancer le service QJackCtl
-2. python3 ./data/hist.py <fichier .ag>
+1. Lancer le service `QJackCtl`
+2. Exécuter :
+    ```
+    cargo run --release --bin work_stealing_exec <fichier .ag> <nombre de threads>
+    ```
 
 
-Tracer les temps moyens, le nombre de delais dépassés et le pire cycle:
+Pour exécuter un graphe avec l'ordonnancement statique :
 
-1. lancer le service QJackCtl
-2. python3 ./data/parse_log.py <dossier contenant les fichier .ag> <nombre de threads> <taille du buffer>
+1. Lancer le service `QJackCtl`
+2. Exécuter :
+    ```
+    cargo run --release --bin static_sched_exec <fichier .ag> <nombre de threads> <algorithme d'ordonnancement: rand, etf, hlfet>
+    ```
 
-NB :il faut qussi configurer la taille du buffer dans QJackCtl
+### Scripts Python
+
+Les scripts se trouvent dans le dossier `data`.
+Les graphiques générés et la représentation des graphes, visualisés avec `Graphviz`, au format PDF se trouvent dans le dossier `tmp`.
+
+Tracer l'histogramme :
+
+1. Lancer le service `QJackCtl`
+2. Exécuter :
+    ```
+    python3 ./data/hist.py <fichier .ag>
+    ```
+
+Tracer les temps moyens, le nombre d'échéances dépassées et le pire cycle:
+
+1. Lancer le service `QJackCtl`
+2. Exécuter :
+    ```
+    python3 ./data/parse_log.py <dossier contenant les fichier .ag> <nombre de threads> <taille du buffer>
+    ```
+
+NB : il faut aussi configurer la taille du buffer dans les options de `QJackCtl`.
