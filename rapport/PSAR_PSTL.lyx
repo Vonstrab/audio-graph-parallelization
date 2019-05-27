@@ -2238,7 +2238,7 @@ on par exemple.
 
 \begin_layout Subsection
 \noindent
-Les configurations des graphe audio étudiés
+Les configurations des graphes audio étudiés
 \end_layout
 
 \begin_layout Standard
@@ -4138,23 +4138,24 @@ Conclusions
 \end_layout
 
 \begin_layout Standard
-On peut dans un premier temps noter qu'HLFET est la moins efficace de toutes
- ces méthodes, tant au niveau de la performance que de la stabilité, les
- deux méthodes ETF et vol de taches sont très proches dans leurs résultats,
- cependant le cas du losange nous permet de les départager, en effet on
- constate que le vol de tache est bien moins stable dans le cas du losange,
- ce qui est le cas le plus proche dans la vie réele.
+Nous pouvons dans un premier temps noter que HLFET est la moins efficace
+ de toutes ces méthodes, tant au niveau de la performance que de la stabilité,
+ les deux méthodes ETF et le vol de tâches sont très proches dans leurs
+ résultats.
+ Cependant, le cas des losanges nous permet de les départager.
+ En effet, nous constatons que le vol de tâche est bien moins stable dans
+ le cas des losanges, ce qui est le cas le plus proche dans la vie réelle.
 \end_layout
 
 \begin_layout Standard
-Donc si on compare ETF a l’exécution séquentielle on constate qu'ETF offre
- un gain de performances non négligeable dans les situations de parallélisme,
- mais on a constaté qu'ETF dépasse quelques fois la deadline, une optimisation
- de l'implémentation pourrais palier a ce problème.
+Donc si nous comparons ETF à l’exécution séquentielle, nous constatons que
+ ETF offre un gain de performances non négligeable dans les situations de
+ parallélisme, mais nous avons constaté que ETF dépasse quelques fois les
+ échéances, une optimisation de l'implémentation pourrait palier à ce problème.
 \end_layout
 
 \begin_layout Standard
-ETF est un algorithme simple et efficace,
+ETF est un algorithme simple et efficace.
 \end_layout
 
 \begin_layout Section
@@ -4162,11 +4163,20 @@ ETF est un algorithme simple et efficace,
 \end_layout
 
 \begin_layout Standard
-Premièrement il faut noter que notre implémentation repose sur beaucoup
+Premièrement, il faut noter que notre implémentation repose sur beaucoup
  de locks, ce qui peut faire survenir des ralentissements, avec une optimisation
- minutieuse, que nous n'avons pas pu faire faute de temps; Par exemple en
- enlevant les locks superflus, ou en allant encore plus loin, remplaçant
- les lock par des “traits unsafe” quand c’est possible 
+ minutieuse, que nous n'avons pas pu faire, faute de temps.
+ Par exemple, nous aurions pu enlever des locks qui n'étaient pas réellement
+ utiles, ou nous aurions pu aller plus loin en implémentant certaines structures
+ avec des 
+\begin_inset Quotes fld
+\end_inset
+
+traits unsafe
+\begin_inset Quotes frd
+\end_inset
+
+ pour éviter l'utilisation de locks 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-1"
@@ -4175,7 +4185,7 @@ literal "false"
 \end_inset
 
 .
- Ou en rendant les threads a priorité temps réel avec
+ Nous aurions pu aussi rendre les threads à priorité temps réel avec
 \series bold
  audio_thread_priority 
 \begin_inset CommandInset citation
@@ -4188,14 +4198,14 @@ literal "false"
 .
  
 \series default
-ETF a du potentiel et il sera intéressant de regarder ses performances une
- fois ces optimisations effectuées.
+ETF a du potentiel et il serait intéressant de regarder ses performances
+ une fois de telles optimisations effectuées.
 \end_layout
 
 \begin_layout Standard
-Deuxième regret, il manque dans l’implémentation de CPFD le re-maping sur
+Deuxième regret, il manque dans l’implémentation de CPFD le re-mapping sur
  des processeurs réels, en effet l'algorithme ordonnance sur un nombre illimité
- de processeurs
+ de processeurs 
 \begin_inset Quotes fld
 \end_inset
 
@@ -4203,7 +4213,7 @@ virtuels
 \begin_inset Quotes frd
 \end_inset
 
- qui faut ensuite mapper sur des processeurs réels (l’algorithme est dans
+ qu'il faut ensuite mapper sur des processeurs réels (l’algorithme est dans
  
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -4214,15 +4224,15 @@ literal "false"
 
 ), avec MPI il serait possible d'exécuter les DAG sur des clusters par exemple,
  par contre la latence induite peut le rendre prohibitif pour des petits
- buffers, a réserver peut-être a des gros buffers pour du post process audio.
+ buffers, à réserver peut-être à des gros buffers pour du post process audio.
 \end_layout
 
 \begin_layout Standard
-Au début nous avions tenté d’écrire un parser Puredata pour pouvoir prendre
- en compte les formats .pd en plus du format .ag, mais devant le temps demandé
- pour implémenter la grande variété des nœuds proposée et les lacunes de
- la documentation, nous avons fini par renoncer, il en subsiste un reliquat
- de ce parser dans notre code.
+Au début, nous avions tenté d’écrire un parseur Puredata pour pouvoir prendre
+ en charge les formats .pd en plus du format .ag.
+ Mais devant le temps demandé pour implémenter, la grande variété des nœuds
+ proposés et les lacunes de la documentation, nous avons fini par renoncer,
+ il subsiste un reliquat du parseur dans notre code.
 \end_layout
 
 \begin_layout Subsection
@@ -4230,20 +4240,22 @@ Retour sur Rust
 \end_layout
 
 \begin_layout Standard
-Reprendrais-t-on Rust si on devait le refaire ? Si on est dans un optique
- d'optimiser finement et rapidement notre choix se porterais sur C/C++.
- Si on ne veut pas avoir a gérer une multitude de bugs de pointeurs ou de
- la mémoire, surtout en rapport aux threads notre choix se porterais encore
- sur Rust.
+Reprendrions-nous Rust si nous devions le faire à nouveau le projet ? Si
+ nous sommes dans un optique d'optimisation fine et rapide, notre choix
+ se porterait sur C/C++.
+ Si nous ne voulons pas à avoir à gérer une multitude de bugs liés aux pointeurs
+ et à la mémoire, surtout par rapport aux threads, notre choix se porterait
+ encore sur Rust.
 \end_layout
 
 \begin_layout Standard
 Le compilateur de Rust est difficile à satisfaire mais il offre une sûreté
- non négligeable, nous n'avons pas eu a aller dénicher des erreurs de segmentati
+ non négligeable, nous n'avons pas eu à aller dénicher des erreurs de segmentati
 on ou des fuites mémoire.
  Les exigences du compilateur ne nous ont pas permis d'optimiser autant
- qu'on aurait pu mais sans Rust nous aurions eu beaucoup plus de mal pour
- que tout ça marche tout court.
+ qu'on aurait pu.
+ Mais sans Rust, nous aurions eu beaucoup plus de mal pour que tout cela
+ fonction au moins correctement.
 \end_layout
 
 \begin_layout Bibliography
