@@ -98,6 +98,16 @@ Eisha Chen-yen-su, Ivan Delgado
 \end_layout
 
 \begin_layout Standard
+\begin_inset VSpace 25pheight%
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Nous souhaitons remercier nos encadrants Jean-Louis Giavitto et Pierre Donat-Bou
+illud pour leurs conseils et leur aide.
 \begin_inset Newpage newpage
 \end_inset
 
@@ -167,8 +177,8 @@ Les systèmes interactifs musicaux (abrégé SIM) permettent de jouer et de
  avant la fin du cycle), sans quoi, il y a une dégradation de la qualité
  du signal audio.
  Or la complexification de ces traitements font que cette synthèse peut
- nécessiter de plus en plus de calculs mais tout en devant être sur les
- mêmes durées, il devient donc difficile de ne pas avoir de dégradations
+ nécessiter de plus en plus de calculs, mais tout en devant être sur les
+ mêmes durées; il devient donc difficile de ne pas avoir de dégradations
  dans ces conditions.
 \end_layout
 
@@ -200,7 +210,7 @@ literal "false"
 \begin_layout Standard
 Un signal audio est caractérisé par sa fréquence d’échantillonnage indiquant
  le nombre de valeurs (chaque valeur étant un nombre à virgule flottante
- ou un entier) qu’il doit prendre à chaque secondes, le plus souvent elle
+ ou un entier) qu’il doit prendre à chaque seconde, le plus souvent elle
  est de 44,1 kHz.
  La carte son d’un ordinateur va lire ces échantillons dans un buffer audio
  de taille fixe à un intervalle régulier (c’est ce qui défini un cycle audio),
@@ -212,7 +222,7 @@ status open
 
 \begin_layout Plain Layout
 L'API JACK que nous utilisons utilise deux buffers, le principe est le même,
- la durée des cycle est doublée
+ la durée des cycles est doublée
 \end_layout
 
 \end_inset
@@ -268,7 +278,7 @@ Le poids d’un nœud correspond au temps nécessaire à l’exécution d’une 
  Le coût de communication peut être considéré comme négligeable dans le
  cas d’une communication via une mémoire partagée, elle peut être beaucoup
  plus importante et variable dans le cas de passages de messages dans des
- systèmes répartis, il faut alors en tenir compte.
+ systèmes répartis: il faut alors en tenir compte.
 \end_layout
 
 \begin_layout Standard
@@ -324,7 +334,7 @@ Le chemin critique d’un graphe de tâches correspond au plus long chemin
 
 \begin_layout Standard
 Donc paralléliser un graphe de tâches revient à faire un ordonnancement
- périodique de ses tâches entre les différents processeurs disponibles,
+ périodique de ces tâches entre les différents processeurs disponibles,
  tout en respectant les dépendances entre ces dernières.
 \end_layout
 
@@ -336,7 +346,7 @@ Donc paralléliser un graphe de tâches revient à faire un ordonnancement
 \end_layout
 
 \begin_layout Standard
-La parallélisation des graphes audio est déjà quelque chose de connue, cependant
+La parallélisation des graphes audio est déjà quelque chose de connu, cependant
  elle n’est pas supportée par tous les SIM ou alors elle exige l’utilisation
  d’instructions explicites.
  Notre objectif était donc d’étudier les performances d’algorithmes d’ordonnance
@@ -376,7 +386,7 @@ Taxonomie de l’ordonnancement
 Tout d’abord, il y a deux types d’ordonnancements de DAG : l’ordonnancement
  statique, qui définit quelles tâches vont s’exécuter sur quels processeurs
  à un instant donné, avant son exécution (comme au moment de la compilation
- par exemple) et qui sera toujours le même; l’ordonnancement dynamique qui
+ par exemple) et qui sera toujours le même; l’ordonnancement dynamique qui,
  quand à lui est déterminé au fur et à mesure de l’exécution du graphe et
  qui par conséquent, peut varier en fonction d’éventuels aléas des différentes
  exécutions.
@@ -440,7 +450,7 @@ Le principe de l’ordonnancement à liste
 
 \begin_layout Standard
 Nous allons définir le principe général derrière les algorithmes d’ordonnancemen
-t statiques.
+t statique.
 \end_layout
 
 \begin_layout Standard
@@ -453,9 +463,8 @@ t statiques.
 \begin_layout Standard
 Ces algorithmes construisent d’abord une liste des tâches ordonnées par
  ordre décroissant de priorité.
- À chaque étape, il retire la tâche la plus prioritaire de la liste, puis
- l’ordonnance sur le processeur permettant à la tâche de commencer le plus
- tôt possible.
+ À chaque étape, il retire la tâche prioritaire de la liste, puis l’ordonnance
+ sur le processeur permettant à la tâche de commencer le plus tôt possible.
  Il se termine lorsque toutes les tâches ont été assignées à l’un des processeur
 s.
  Certains algorithmes calculent les priorités des tâches une seule fois
@@ -548,11 +557,11 @@ Le dernier algorithme statique est l’algorithme CPFD (pour “Critical Path
  s’exécute juste après A sur le même processeur, alors le résultat de A
  est déjà disponible (sur ce processeur) pour que B puisse s’exécuter immédiatem
 ent après.
- Il n’y a donc pas besoin d’envoyer de messages pour communiquer le résultat
+ Il n’y a donc pas besoin d’envoyer de message pour communiquer le résultat
  de A à B (ce qui peut être significativement long).
  Cela peut être particulièrement utile dans un système réparti : faire en
  sorte que deux tâches directement dépendantes s’exécutent sur un même site
- permet d'éviter des envoies de messages et peut donc faire gagner du temps.
+ permet d'éviter des envois de messages et peut donc faire gagner du temps.
 \end_layout
 
 \begin_layout Standard
@@ -1358,7 +1367,7 @@ Chaque thread a une file d’attente.
 \end_layout
 
 \begin_layout Standard
-À chaque fois qu’un thread fini une tâche, il va ajouter, au début de sa
+À chaque fois qu’un thread finit une tâche, il va ajouter, au début de sa
  file, la (ou les) tâche(s) nouvellement prête(s) (i.e.
  qui en dépendait et dont leurs autres dépendances ont également été satisfaites
 ).
@@ -1530,9 +1539,9 @@ literal "false"
 
 \end_inset
 
- est utilisé pour la fonction de callback audio.
+ est utilisé pour la fonction de callback audio
 \series bold
-JACK
+ JACK
 \series default
  fait référence à une API et aussi à l’implémentation d’une infrastructure
  permettant à des applications audio de communiquer entre elles et avec
@@ -1648,7 +1657,7 @@ literal "false"
 
 \end_inset
 
- permet de faire en sorte qu’un thread s’exécute toujours le même processeur.
+ permet de faire en sorte qu’un thread s’exécute toujours sur le même processeur.
  Ceci est extrêmement important pour la performance de l’exécution des DAG,
  car les algorithmes d’ordonnancement s'appuient sur la localité des données
  : lorsque deux tâches s’exécutent successivement et que l’une utilise le
@@ -1792,7 +1801,7 @@ Les DSP et fichiers AudioGraph supportés
 \begin_layout Standard
 Nous allons détailler ici la manière dont a été implémenté le traitement
  du signal.
- Nous nous sommes efforcé de garder un séparation entre la représentation
+ Nous nous sommes efforcées de garder une séparation entre la représentation
  du DAG contenant les informations utiles à l’ordonnancement (le graphe
  de tâches) et le graphe audio sous-jacent où est effectué le traitement
  du signal.
@@ -1893,8 +1902,8 @@ L’exécution séquentielle du graphe audio est réalisée dans la fonction
 .
  Cette fonction va initialement faire une liste des tâches en effectuant
  un tri topologique du DAG.
- Puis, à chaque cycle audio, va exécuter le DAG en exécutant séquentiellement
- les tâches dans l’ordre de cette liste.
+ Puis, à chaque cycle audio, elle va exécuter le DAG en exécutant séquentielleme
+nt les tâches dans l’ordre de cette liste.
 \end_layout
 
 \begin_layout Subsection
@@ -1903,7 +1912,7 @@ Implémentation des algorithmes d’ordonnancement statique
 
 \begin_layout Standard
 Les ordonnancements statiques ont été implémentés avec des fonctions prenant
- en paramètre un graphe de tâche (la structure
+ comme paramètre un graphe de tâche (la structure
 \emph on
  TaskGraph
 \emph default
@@ -1911,7 +1920,7 @@ Les ordonnancements statiques ont été implémentés avec des fonctions prenant
  L’ordonnancement est représenté dans la structure Schedule qui contient
  la liste des processeurs participant à l’exécution des tâches (la structure
 \emph on
-Processor
+ Processor
 \emph default
 ).
  Chaque processeur a une liste de fenêtres temporelles (la structure
@@ -1958,11 +1967,7 @@ Il y a quatre fonctions pour ces ordonnancements :
 \begin_layout Standard
 L’exécution des ordonnancements statiques est réalisée dans la fonction
 \emph on
-
-\begin_inset Newline newline
-\end_inset
-
-run_static_sched
+ run_static_sched
 \emph default
 .
  Cette fonction va initialement calculer l’ordonnancement statique sur n
@@ -1982,12 +1987,12 @@ ments statique et ce qui sera réellement effectué lors des exécutions du
 \end_layout
 
 \begin_layout Standard
-Chaque thread a donc une liste de tâche (celle de la structure Processor
+Chaque thread a donc une liste de tâches (celle de la structure Processor
  qui leur a été attribuée) et va l’exécuter une à une en respectant l’ordre.
  Cependant, cette implémentation ne tient pas compte des fenêtres temporelles
  de la liste de tâches mais va essayer d’exécuter les tâches dès que possible
  (car le plus souvent, le calcul d’une tâche prendra moins de temps que
- le WCET), mais il y a un mécanisme de synchronisation pour que les dépendances
+ le WCET), et il y a un mécanisme de synchronisation pour que les dépendances
  entre les tâches soient quand même respectées.
 \change_inserted 2089228819 1558094108
 
@@ -2014,8 +2019,8 @@ Chaque tâche est associée à un état (l’énumération
 \begin_layout Standard
 Quand un thread finit d’exécuter une tâche, il change son état pour indiquer
  qu’elle est finie et va décrémenter les compteurs d’activation des tâches
- dépendantes et si le compteur d’activation d’une tâche atteint 0, elle
- devient prête.
+ dépendantes.
+ Donc si le compteur d’activation d’une tâche atteint 0, elle devient prête.
 \end_layout
 
 \begin_layout Standard
@@ -2060,7 +2065,7 @@ run_work_stealing.
  Chaque thread a sa propre file de tâches (de type Worker, venant de crossbeam)
  et il y a une file globale (de type Injector).
  Les threads vont initialement chercher les tâches dans la file globale.
- Puis, à chaque fin de tâche, ils vont décrémenter les compteurs d’activations
+ Puis, à chaque fin de tâche, ils vont décrémenter les compteurs d’activation
  des tâches dépendantes (cela marche comme pour l’exécution des ordonnancements
  statiques), ajouter au début de leur file les nouvelles tâches prêtes et
  finalement prendre la prochaine tâche, au début de leur file ou en volant
@@ -2073,11 +2078,11 @@ Mécanisme de contrôle des pools de threads
 
 \begin_layout Standard
 Pour les deux exécutions parallèles, lorsque le programme doit commencer
- l’exécution d’un graphe, il appel une méthode du thread de pool qui envoie
+ l’exécution d’un graphe, il appelle une méthode du thread de pool qui envoie
  un message à chaque thread pour leur indiquer de commencer les calculs.
  Chaque thread dispose d’un canal de messages sur lequel il attend un message
  avant de commencer à exécuter le graphe.
- À chaque fois qu’un thread fini toutes les tâches à exécuter, il va attendre
+ À chaque fois qu’un thread finit toutes les tâches à exécuter, il va attendre
  sur son canal le prochain message lui indiquant que le graphe doit à nouveau
  être exécuté.
 \end_layout
@@ -2107,7 +2112,7 @@ Nous voulions faire des mesures sur le temps d’exécution total d’un graphe
  (fournis par crossbeam).
  Les mesures ont ainsi un impact limité sur l’exécution des graphes audio.
  Pourtant il faut être conscient que toute mesure demande des ressources
- et donc impacte les performances, aussi minime cet impact soit-il.
+ et donc impacte les performances, aussi minime que cet impact puisse être.
 \end_layout
 
 \begin_layout Standard
@@ -2143,7 +2148,7 @@ Les caractéristiques des systèmes exécutant ces graphes
 \end_layout
 
 \begin_layout Standard
-L’architecture des machines, qui vont exécuter ces DAG, considérées dans
+L’architecture des machines, qui vont exécuter ces DAG, considérée dans
  le cadre de ce projet correspond aux machines utilisées dans la vie courante
  (i.e.
  ordinateurs de bureau et portables).
@@ -2173,8 +2178,7 @@ De plus, les systèmes sur lesquels fonctionnent la plupart des SIM, ne sont
 Ne pouvant pas avoir un contrôle total sur l’ordonnancement des threads/processu
 s constituant les SIM (parfois, il n’est même pas possible d’avoir une priorité
  temps réel), il se peut que parfois le SIM ne puisse pas avoir assez de
- temps processeur à un certain moment pour respecter la contrainte temps
- réel.
+ temps processeur à un moment donné pour respecter la contrainte temps réel.
  Il peut aussi y avoir une perte de performance par rapport à la gestion
  des caches des processeurs : par exemple, s’il y a une tâche B dépendant
  du résultat d’une tâche A, si A s’exécute sur un processeur et que B s’exécute
@@ -2201,8 +2205,8 @@ s constituant les SIM (parfois, il n’est même pas possible d’avoir une prio
 
 \begin_layout Standard
 Dans cette optique, observer uniquement le temps moyen n'est pas pertinent,
- il faut aussi tenir compte des pires cas et du nombre d'échéances dépassées,
- nous recherchons des algorithmes qui sont statistiquement stables et qui
+ il faut aussi tenir compte des pires cas et du nombre d'échéances dépassées.
+ Nous recherchons des algorithmes qui sont statistiquement stables et qui
  dépassent le moins souvent le temps qui leurs est imparti, ainsi tendrons-nous
  à privilégier un algorithme qui est moins bon en moyenne mais dépassant
  moins souvent les échéances.
@@ -2231,9 +2235,9 @@ La taille des buffers, qui fait varier la durée d'un cycle et donc les échéan
 \end_layout
 
 \begin_layout Itemize
-L'activité de la machine, les résultats ne seront pas les mêmes si elle
+L'activité de la machine; les résultats ne seront pas les mêmes si elle
  est au repos ou si elle a une charge de travail importante, comme une compilati
-on par exemple.
+on par exemple, ou la lecture d'une vidéo.
 \end_layout
 
 \begin_layout Subsection
@@ -2341,7 +2345,7 @@ Finalement le losange, qui se trouve entre les deux, commence et termine
  supérieur entre les deux.
  On s'attend à ce que l’exécution séquentielle soit plus efficace sur les
  petits losanges, mais que le gain de la parallélisation soit significatif
- sur ceux étant plus grands.
+ sur ceux plus grands.
  Cette configuration se veut plus proche des cas rencontrés dans la vie
  réelle.
 \begin_inset Float figure
@@ -3019,19 +3023,19 @@ Râteaux avec un nombre de threads variable
 Dans un premier temps, nous allons nous intéresser aux dépassements d'échéances
  : nous pouvons constater que le nombre de threads optimal sur cette machine
  est de 3 et cela quelque soit la configuration étudiée.
- Cela peut peut sembler contre-intuitif compte tenu du fait qu'il y ait
- 4 cœurs, nous pouvons constater que la présence du thread de mesures impacte
- les performances car il interrompt les threads du pool.
+ Cela peut sembler contre-intuitif compte tenu du fait qu'il y ait 4 cœurs,
+ nous pouvons constater que la présence du thread de mesures impacte les
+ performances car il interrompt les threads du pool.
  Nous pouvons également émettre l’hypothèse que le cache étant partagé ainsi
  que sont bus, il est un frein a l'utilisation simultanée des 4 cœurs de
  la machine.
 \end_layout
 
 \begin_layout Standard
-Secondement, en observant les temps moyens et les pires temps pour les lignes,
+Ensuite, en observant les temps moyens et les pires temps pour les lignes,
  nous pouvons constater que, hormis des irrégularités des méthodes HLFET
  et EFT, les différentes méthodes sont très proches, avec un léger surcoût
- de la parallélisation explicable par le surcoût engendré par la gestions
+ de la parallélisation explicable par le surcoût engendré par la gestion
  des pools de threads et des locks.
 \end_layout
 
@@ -3039,7 +3043,7 @@ Secondement, en observant les temps moyens et les pires temps pour les lignes,
 Pour les losanges, on note l'irrégularité de HLFET qui détonne par rapport
  aux trois autres méthodes.
  Dans cette configuration nous voyons que les 4 cœurs ne font pas perdre
- tant de performances que ça, juste un légère augmentation du nombre d'échéances
+ tant de performance que ça, juste un légère augmentation du nombre d'échéances
  ratées.
 \end_layout
 
@@ -3271,7 +3275,7 @@ variations pour la ligne
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Float figure
@@ -3701,7 +3705,7 @@ Dernière variable : la charge de la machine
 \begin_layout Standard
 Dans cette série de mesures, nous allons fixer la taille du buffer à 128
  échantillons, le nombre de threads est à 3 et nous allons comparer l'éxécution
- entre la machine au repos et la machine qui lit une vidéo en haute qualité.
+ entre la machine au repos et la machine qui lit une vidéo en haute résolution.
 \end_layout
 
 \begin_layout Standard
@@ -4007,11 +4011,11 @@ râteau en regardant une vidéo
 \begin_layout Standard
 Le cas le plus intéressant est celui des râteaux où l'on voit que lors de
  la lecture de la vidéo, toutes les méthodes parallèles ont plus de mal
- à tenir les échéances, contrairement a l’exécution séquentielle qui elle
+ à tenir les échéances, contrairement à l’exécution séquentielle qui elle
  tient la ligne avec la surcharge.
- On peut analyser cette différence par le fait que la lecture d'une vidéo
- va monopoliser un partie non négligeable des ressources de la machine,
- ce qui diminue une partie des gains de la parallélisation.
+ On peut analyser cette différence par en réfléchissant au fait que la lecture
+ d'une vidéo va monopoliser une partie non négligeable des ressources de
+ la machine, ce qui diminue une partie des gains de la parallélisation.
 \end_layout
 
 \begin_layout Subsection
@@ -4109,9 +4113,9 @@ Histogramme pour un râteau à 101 nœuds
 \end_layout
 
 \begin_layout Standard
-On peut dans un premier temps constater que sur l'histogramme de la ligne
- que HLFET a un overhead significatif et une légère stabilité moindre sur
- les autres méthodes.
+On peut dans un premier temps constater que sur l'histogramme de la ligne,
+ HLFET a un overhead significatif et une légère stabilité moindre sur les
+ autres méthodes.
  Les stabilités et les performances sont proches pour les trois autres méthodes.
 \end_layout
 
@@ -4119,9 +4123,9 @@ On peut dans un premier temps constater que sur l'histogramme de la ligne
 Sur l'histogramme du losange on voit une mauvaise stabilité du vol de tâches,
  qui a un pic au même niveau que l’exécution séquentielle et un autre en
  retard.
- l’exécution séquentielle est stable mais souffre d'un retard.Les deux qui
- sortent du lot sont HLFET et ETF qui sont proches au niveau des performances
- et de la stabilité.
+ L’exécution séquentielle est stable mais souffre d'un retard.
+ Les deux qui sortent du lot sont HLFET et ETF qui sont proches au niveau
+ des performances et de la stabilité.
 \end_layout
 
 \begin_layout Standard
@@ -4129,7 +4133,7 @@ Pour le Râteau en revanche on voir que l’exécution séquentielle n'est plus
  aussi stable et est a la traîne par rapport aux autres méthodes, les méthodes
  parallélises gagnent en performances et en stabilité avec ETF et le vol
  de tache qui sont les plus stables.
- cette configuration parallèle est l'endroit ou ces méthodes brillent le
+ Cette configuration parallèle est l'endroit ou ces méthodes brillent le
  plus.
 \end_layout
 
@@ -4150,12 +4154,12 @@ Nous pouvons dans un premier temps noter que HLFET est la moins efficace
 \begin_layout Standard
 Donc si nous comparons ETF à l’exécution séquentielle, nous constatons que
  ETF offre un gain de performances non négligeable dans les situations de
- parallélisme, mais nous avons constaté que ETF dépasse quelques fois les
+ parallélisme, mais nous avons constaté que ETF dépasse quelque fois les
  échéances, une optimisation de l'implémentation pourrait palier à ce problème.
 \end_layout
 
 \begin_layout Standard
-ETF est un algorithme simple et efficace.
+
 \end_layout
 
 \begin_layout Section
@@ -4240,8 +4244,11 @@ Retour sur Rust
 \end_layout
 
 \begin_layout Standard
-Reprendrions-nous Rust si nous devions le faire à nouveau le projet ? Si
- nous sommes dans un optique d'optimisation fine et rapide, notre choix
+Reprendrions-nous Rust si nous devions le faire à nouveau le projet ?
+\end_layout
+
+\begin_layout Standard
+Si nous sommes dans une optique d'optimisation fine et rapide, notre choix
  se porterait sur C/C++.
  Si nous ne voulons pas à avoir à gérer une multitude de bugs liés aux pointeurs
  et à la mémoire, surtout par rapport aux threads, notre choix se porterait
