@@ -1,0 +1,1266 @@
+%% LyX 2.3.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\RequirePackage{fixltx2e}
+\documentclass[french]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,lmargin=2.5cm,rmargin=2.5cm}
+\usepackage{babel}
+\makeatletter
+\addto\extrasfrench{%
+   \providecommand{\og}{\leavevmode\flqq~}%
+   \providecommand{\fg}{\ifdim\lastskip>\z@\unskip\fi~\frqq}%
+}
+
+\makeatother
+\usepackage{varioref}
+\usepackage{float}
+\usepackage{algorithm2e}
+\usepackage{graphicx}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\LinesNumbered
+\usepackage{adjustbox}
+
+\@ifundefined{showcaptionsetup}{}{%
+ \PassOptionsToPackage{caption=false}{subfig}}
+\usepackage{subfig}
+\makeatother
+
+\begin{document}
+\title{Rapport du PSAR/PSTL: Parallélisation de graphes audio (sujet PSTL)}
+\author{Eisha Chen-yen-su, Ivan Delgado}
+
+\maketitle
+\newpage{}
+
+\tableofcontents{}
+
+\newpage{}
+
+\section{Introduction}
+
+Le présent document porte sur un projet STL, il a donc été réalisé
+dans le cadre de ce dernier mais également dans celui du projet SAR
+car l\textquoteright un des membres du binôme est en SAR. Il comportera
+donc des éléments provenant du cahier des charges qui a été rendu
+pour le PSAR, mais comme ce dernier n\textquoteright était pas exigé
+pour le PSTL, il nous a semblé judicieux de faire cela pour qu\textquoteright il
+ne manque aucun éléments de contexte.
+
+~
+
+Dans ce rapport, nous aborderons en premier lieu les graphes audio,
+ainsi que ce qui les caractérisent. Nous présenterons ensuite les
+algorithmes d\textquoteright ordonnancement ainsi que l\textquoteright architecture
+logicielle ayant permis leur mise en ½uvre. Nous ferons également
+une comparaison entre les performances de ces ordonnancements. Finalement,
+nous ferons une critique de la réalisation du projet en indiquant
+les aspects de l\textquoteright implémentation qui pourraient être
+améliorés et les fonctionnalités qui pourraient être développées par
+la suite.
+
+\section{Les graphes audio}
+
+Les systèmes interactifs musicaux (abrégé SIM) permettent de jouer
+et de composer de la musique en temps réel. Ces derniers permettent
+la synthèse de signaux audio, qui est le résultat d\textquoteright un
+ensemble de traitements sur ces signaux. Ces traitements doivent se
+faire en temps réel : à chaque cycle audio, tous les calculs doivent
+se faire dans un temps imparti (i.e. avant la fin du cycle), sans
+quoi, il y a une dégradation de la qualité du signal audio. Or la
+complexification de ces traitements font que cette synthèse peut nécessiter
+de plus en plus de calculs mais tout en devant être sur les mêmes
+durées, il devient donc difficile de ne pas avoir de dégradations
+dans ces conditions.
+
+Une solution consiste à tirer profit de l\textquoteright architecture
+multi-c½ur des processeurs modernes pour paralléliser ces calculs.
+
+~
+
+Nous allons préciser ici les contraintes temps réel que doivent respecter
+les traitements audio en nous inspirant de l\textquoteright analyse
+réalisée dans \cite{key-1}.
+
+Un signal audio est caractérisé par sa fréquence d\textquoteright échantillonnage
+indiquant le nombre de valeurs (chaque valeur étant un nombre à virgule
+flottante ou un entier) qu\textquoteright il doit prendre à chaque
+secondes, le plus souvent elle est de 44,1 kHz. La carte son d\textquoteright un
+ordinateur va lire ces échantillons dans un buffer audio de taille
+fixe à un intervalle régulier (c\textquoteright est ce qui défini
+un cycle audio), donc si nous avons un buffer de 512 échantillons,
+la carte va lire dans ce buffer environ 86 fois par seconde (44 100
+divisé par 512), donc toutes les 11,6 millisecondes\footnote{L'API JACK que nous utilisons utilise deux buffers, le principe est
+le même, la durée des cycle est doublée}. Si un nouveau buffer n\textquoteright est pas disponible au delà
+de cette échéance, alors la carte audio va se mettre à lire des échantillons
+nuls ou bien le même buffer qu\textquoteright au cycle précédent,
+ce qui produit un \textquotedblleft tick\textquotedblright{} désagréable
+à l\textquoteright oreille. La durée d\textquoteright un cycle audio
+constitue donc la contrainte temps réel que doit respecter le traitement
+audio : le temps de calcul des traitements audio, pour chaque buffer,
+doit impérativement être inférieur à la durée d\textquoteright un
+cycle.
+
+~
+
+Ces traitements audio peuvent êtres représentés par un graphe audio
+(ou DAG, pour \textquotedblleft Directed Acyclic Graph\textquotedblright ).
+Les n½uds d\textquoteright entrées d\textquoteright un tel graphe
+sont les sources des signaux audio et les n½uds de sorties, les sorties
+audio du système. Les autres n½uds du graphe sont des traitements
+altérant les signaux audio passant par ces derniers. Ainsi chaque
+signal va-t-il suivre un chemin audio en passant d\textquoteright un
+n½ud à un autre jusqu\textquoteright à arriver à l\textquoteright une
+des sorties.
+
+~
+
+Un graphe audio peut être vu comme un graphe de tâches dont chaque
+n½ud représente un traitement audio (en anglais, \textquotedblleft DSP\textquotedblright{}
+pour \textquotedblleft Digital Signal Processor\textquotedblright )
+et les arcs représentent les buffers ou canaux permettant à deux DSP
+de communiquer entre eux. De plus, il est évident qu\textquoteright un
+arc représentant une communication d\textquoteright un n½ud A vers
+B induit que la tâche B dépend de la tâche A qui doit s\textquoteright exécuter
+avant.
+
+Le poids d\textquoteright un n½ud correspond au temps nécessaire à
+l\textquoteright exécution d\textquoteright une tâche. Celui d\textquoteright un
+arc correspond au coût de communication entre deux tâches. Le coût
+de communication peut être considéré comme négligeable dans le cas
+d\textquoteright une communication via une mémoire partagée, elle
+peut être beaucoup plus importante et variable dans le cas de passages
+de messages dans des systèmes répartis, il faut alors en tenir compte.
+
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=0.25]{dot/seq_test/seq_test-1}\caption{Exemple de DAG}
+\par\end{centering}
+\end{figure}
+
+~
+
+Le chemin critique d\textquoteright un graphe de tâches correspond
+au plus long chemin (par rapport à la somme totale des poids des n½uds
+et des arcs le constituant) entre un n½ud d\textquoteright entrée
+et un n½ud de sortie du DAG. Et la longueur de ce chemin est le temps
+minimum (possible) d\textquoteright exécution parallèle de ce graphe.
+
+Donc paralléliser un graphe de tâches revient à faire un ordonnancement
+périodique de ses tâches entre les différents processeurs disponibles,
+tout en respectant les dépendances entre ces dernières.
+
+~
+
+La parallélisation des graphes audio est déjà quelque chose de connue,
+cependant elle n\textquoteright est pas supportée par tous les SIM
+ou alors elle exige l\textquoteright utilisation d\textquoteright instructions
+explicites. Notre objectif était donc d\textquoteright étudier les
+performances d\textquoteright algorithmes d\textquoteright ordonnancement
+de graphes de tâches vis-à-vis des contraintes temps réel du domaine
+audio, pour permettre la parallélisation automatique de l\textquoteright exécution
+de graphes audio.
+
+\section{Algorithmes d\textquoteright ordonnancement}
+
+Nous allons à présent parler des différents algorithmes et stratégies
+utilisées pour étudier les possibilités de parallélisation automatique
+de graphes audio. Nous avons vu qu\textquoteright il s\textquoteright agissait
+d\textquoteright un problème d\textquoteright ordonnancement de graphes
+de tâches.
+
+~
+
+\subsection{Taxonomie de l\textquoteright ordonnancement\ }
+
+Tout d\textquoteright abord, il y a deux types d\textquoteright ordonnancements
+de DAG : l\textquoteright ordonnancement statique, qui définit quelles
+tâches vont s\textquoteright exécuter sur quels processeurs à un instant
+donné, avant son exécution (comme au moment de la compilation par
+exemple) et qui sera toujours le même; l\textquoteright ordonnancement
+dynamique qui quand à lui est déterminé au fur et à mesure de l\textquoteright exécution
+du graphe et qui par conséquent, peut varier en fonction d\textquoteright éventuels
+aléas des différentes exécutions.
+
+Les algorithmes d\textquoteright ordonnancement statique sont tirés
+de\cite{key-1} et la stratégie d\textquoteright ordonnancement dynamique
+est tirée de\cite{key-2} et\cite{key-3}.
+
+~
+
+Nous pouvons dégager certaines caractéristiques des DAG dans les cas
+étudiés : il n\textquoteright y a pas de tâches parallèles (i.e. une
+tâche n\textquoteright est exécutée que sur un seul processeur), le
+coût de calcul des tâches est arbitraire et les coûts de communication
+entre les tâches seront considérés comme négligeables.
+
+Ces DAG seront exécutés sur des systèmes multiprocesseurs à mémoire
+partagée et les processeurs ont tous la même vitesse de traitement.
+
+\subsection{Les algorithmes d\textquoteright ordonnancement statique}
+
+\subsubsection{Le principe de l\textquoteright ordonnancement à liste}
+
+Nous allons définir le principe général derrière les algorithmes d\textquoteright ordonnancement
+statiques.
+
+~
+
+Ces algorithmes construisent d\textquoteright abord une liste des
+tâches ordonnées par ordre décroissant de priorité. À chaque étape,
+il retire la tâche la plus prioritaire de la liste, puis l\textquoteright ordonnance
+sur le processeur permettant à la tâche de commencer le plus tôt possible.
+Il se termine lorsque toutes les tâches ont été assignées à l\textquoteright un
+des processeurs. Certains algorithmes calculent les priorités des
+tâches une seule fois au début, d\textquoteright autres les évaluent
+à chaque itération.
+
+Deux attributs sont fréquemment utilisés pour déterminer la priorité
+d\textquoteright une tâche : le t-level (\textquotedblleft top level\textquotedblright )
+et le b-level (\textquotedblleft bottom level\textquotedblright ).
+Le t-level d\textquoteright un n½ud n correspond à la longueur (i.e.
+la somme des poids des n½uds et des arcs) maximale d\textquoteright un
+chemin allant de l\textquoteright un des n½uds d\textquoteright entrée
+du DAG vers n (en excluant son propre poids). Le b-level d\textquoteright un
+n½ud n est quand à lui la longueur maximale d\textquoteright un chemin
+allant de n vers un n½ud de sortie du graphe. Il y a aussi une variante
+statique du b-level pour laquelle nous faisons seulement la somme
+des poids des n½uds : le \textquotedblleft static level\textquotedblright{}
+(que nous abrégeons \textquotedblleft SL\textquotedblright ).
+
+\subsubsection{L\textquoteright algorithme HLFET avec départage CP/MISF}
+
+Le premier algorithme est l\textquoteright algorithme HLFET (pour\og Highest
+Level First with Estimated Times\fg ) avec un départage des égalités
+avec CP/MISF (pour\og Critical Path / Most Immediate Successors First\fg ).
+Pour celui-ci, la priorité d\textquoteright un n½ud est définie par
+son SL. Lorsque plusieurs n½uds ont le même SL, on choisi d\textquoteright abord
+celui ayant le plus grand nombre de successeurs.
+
+Lorsque l\textquoteright on considère négligeable les coûts de communication
+entre les tâches, cet algorithme est supposé être proche de l\textquoteright ordonnancement
+optimal, comme il privilégie les n½uds appartenant au chemin critique.
+De plus, il est très simple à mettre en place. C\textquoteright est
+pour ces raisons que nous avons choisi cet algorithme en premier.
+
+\subsubsection{L\textquoteright algorithme ETF}
+
+Le second algorithme statique est l\textquoteright algorithme ETF
+(pour \textquotedblleft Earliest Time First\textquotedblright ). À
+chaque itération, il faut calculer pour chaque n½ud prêt (i.e. dont
+tous les parents ont déjà été ordonnancés), et sur chaque processeur,
+l\textquoteright instant le plus tôt auquel il pourra s\textquoteright exécuter.
+Puis on ordonnance le n½ud pouvant s\textquoteright exécuter au plus
+tôt sur le processeur le permettant. Les égalités sont résolues en
+choisissant d\textquoteright abord le n½ud ayant le SL le plus élevé.
+
+Cet algorithme est également simple à implémenter. De plus, il privilégie
+au mieux les temps de démarrage les plus précoces ainsi que les n½uds
+du chemin critique. Il est aussi possible de borner la qualité du
+résultat par rapport à l\textquoteright ordonnancement optimal.
+
+\subsubsection{L\textquoteright algorithme CPFD}
+
+Le dernier algorithme statique est l\textquoteright algorithme CPFD
+(pour \textquotedblleft Critical Path Fast Duplication\textquotedblright ).
+Il est différent des autres vus précédemment, car il va ordonnancer
+les tâches via un procédé plus complexe qu\textquoteright avec une
+liste ordonnée. CPFD s\textquoteright autorise à dupliquer des tâches
+lorsque cela permet d\textquoteright éviter les coûts de communication
+d\textquoteright une tâche A vers une tâche B : si une tâche B s\textquoteright exécute
+juste après A sur le même processeur, alors le résultat de A est déjà
+disponible (sur ce processeur) pour que B puisse s\textquoteright exécuter
+immédiatement après. Il n\textquoteright y a donc pas besoin d\textquoteright envoyer
+de messages pour communiquer le résultat de A à B (ce qui peut être
+significativement long). Cela peut être particulièrement utile dans
+un système réparti : faire en sorte que deux tâches directement dépendantes
+s\textquoteright exécutent sur un même site permet d'éviter des envoies
+de messages et peut donc faire gagner du temps.
+
+Dans le cadre du domaine audio, cela peut être mis en application
+lors d\textquoteright une collaboration en temps réel entre plusieurs
+musiciens étant sur plusieurs machines différentes ou éloignés géographiquement.
+
+CPFD permet donc de prioriser les n½uds du chemin critique et peut
+faire plus de réductions de coûts de communication via la duplication
+de tâche, il semble donc bien adapté pour s\textquoteright assurer
+de respecter au mieux une contrainte temps réel sur un système réparti.
+
+Ce qui va suivre est la description de l\textquoteright algorithme.
+
+~
+
+Premièrement, CPFD va distinguer les n½uds du DAG en trois catégories
+: les CPN (pour \textquotedblleft Critical Path Node\textquotedblright ),
+qui sont les n½uds appartenant à un chemin critique; les IBN (pour
+\textquotedblleft In-Branch Nodes\textquotedblright ), qui sont les
+n½uds possédant un chemin menant à un CPN; et les OBN (pour \textquotedblleft Out-Branch
+Node\textquotedblright ), qui sont simplement les n½uds n\textquoteright appartenant
+pas aux deux autres catégories. CPFD s\textquoteright appuie sur une
+liste appelée \textquotedblleft CPN-Dominant Sequence\textquotedblright .
+Elle est construite selon {[} l' Algorithme 1\vpageref{Algorithme 1}
+{]} :
+
+~
+
+\begin{algorithm}[h]
+\label{Algorithme 1}\caption{Séquencement des CPN}
+
+Insérer en premier le CPN d\textquoteright entrée du DAG dans la séquence,
+mettre\emph{ Position} à 2. Soit\emph{ n}X, le n½ud suivant dans le
+chemin critique
+
+\textbf{Répéter} :
+
+\Indp
+
+\textbf{Si}\emph{ nX} a tous ses parents dans la séquence
+
+\Indp
+
+mettre\emph{ nX} à\emph{ Position} dans la séquence et incrémenter\emph{
+Position}.
+
+\Indm
+
+\textbf{Sinon}
+
+\Indp
+
+Posons\emph{ nY} tel qu\textquoteright il soit un éventuel parent
+de\emph{ nX} qui ne soit pas dans la séquence et avec le\emph{ b-level}
+le plus élevé (si plusieurs n½uds correspondent à cela, on choisi
+d\textquoteright abord celui ayant le\emph{ t-level} minimal).
+
+\textbf{Si}\emph{ nY} a tous ses parents dans la séquence
+
+\Indp
+
+alors l\textquoteright insérer à\emph{ Position} et incrémenter\emph{
+Position}.
+
+\Indm
+
+\textbf{Sinon}
+
+\Indp
+
+inclure récursivement tous les prédécesseurs de\emph{ nY} dans la
+séquence.
+
+Répéter l\textquoteright étape précédente jusqu\textquoteright à ce
+que tous les parents de\emph{ nX} soient dans la séquence. Insérer\emph{
+nX} dans la séquence à\emph{ Position}.
+
+\Indm
+
+\textbf{Fin si}.
+
+\Indm
+
+\textbf{Fin si}.
+
+\Indm
+
+\textbf{Jusqu\textquoteright à ce que} tous les CPN soient dans la
+séquence.
+
+Ajouter à la fin de la séquence, tous les OBN par ordre décroissant
+de\emph{b-level}.
+\end{algorithm}
+
+Premièrement, CPFD va distinguer les n½uds du DAG en trois catégories~:
+\begin{itemize}
+\item Les CPN (pour \textquotedblleft Critical Path Node\textquotedblright ),
+qui sont les n½uds appartenant à un chemin critique.
+\item Les IBN (pour \textquotedblleft In-Branch Nodes\textquotedblright ),
+qui sont les n½uds possédant un chemin menant à un CPN.
+\item Les OBN (pour \textquotedblleft Out-Branch Node\textquotedblright ),
+qui sont simplement les n½uds n\textquoteright appartenant pas aux
+deux autres catégories.
+\end{itemize}
+À partir de cette séquence, CPFD procède à l\textquoteright ordonnancement
+selon {[} l'Algorithme 2 \vpageref{Algorithme 2} {]} :
+
+\begin{algorithm}[ph]
+\label{Algorithme 2}
+
+\caption{Ordonnancement CPFD}
+
+Soit\emph{ candidate} le CPN d\textquoteright entrée.
+
+\textbf{Répéter:}
+
+\Indp
+
+Soit\emph{ P\_SET}, l\textquoteright ensemble des processeurs comportant
+les parents de\emph{ candidate}, plus un processeur inutilisé.
+
+\textbf{Pour chaque}\emph{ P }dans\emph{ P\_SET}, faire :
+
+\Indp
+
+\textbf{(a)}Calculer\emph{ ST} : le temps de départ de\emph{ candidate}
+sur\emph{ P}.
+
+\textbf{(b)}Soit m, un éventuel parent de\emph{ candidate} qui n\textquoteright est
+pas ordonnancé sur\emph{ P} et dont le message pour\emph{ candidate}
+a le temps d\textquoteright arrivée le plus tardif.
+
+\textbf{(c)} Essayer de dupliquer m sur le créneau d\textquoteright inactivité
+de\emph{ P} le plus précoce.
+
+\Indp
+
+\textbf{Si} la duplication réussi et que cela diminue\emph{ ST}
+
+\Indp
+
+alors mettre à jour\emph{ ST}. Faire en sorte qu\textquoteright un
+nouveau candidate soit m et retourner à l\textquoteright étape\textbf{
+(a)} .
+
+\Indm
+
+\textbf{Sinon}
+
+\Indp
+
+Si la duplication échoue, alors rendre le contrôle pour examiner un
+autre parent du candidate précédent.
+
+Ordonnancer candidate sur le processeur\emph{ P\textquoteright{}}
+qui lui permet de commencer le plus tôt et faire les duplications
+requises.
+
+Soit\emph{ candidate}, le CPN suivant.
+
+Répéter le processus de l\textquoteright étape\textbf{ 3}. à\textbf{
+6}. pour chaque OBN avec\emph{ P\_SET} contenant tous les processeurs
+utilisés, plus un processeur inutilisé. Les OBN sont ordonnancés dans
+l\textquoteright ordre topologique.
+
+\Indm
+
+\textbf{Fin si}
+
+\Indm
+
+\textbf{Jusqu\textquoteright à ce que} tous les CPN soient ordonnancés.
+\end{algorithm}
+
+
+\subsubsection{Vol de tâche}
+
+La toute dernière stratégie d\textquoteright ordonnancement étudiée
+est l\textquoteright ordonnancement avec vol de tâches. Il s\textquoteright agit
+d\textquoteright un ordonnancement dynamique dans lequel les tâches
+sont exécutées par un pool de threads.
+
+Chaque thread a une file d\textquoteright attente. Au début de l\textquoteright exécution
+du DAG, les tâches prêtes (i.e. celles correspondant aux n½uds d\textquoteright entrée
+du DAG) sont réparties parmi les files d\textquoteright attentes de
+chacun des threads en étant insérées au début de ces files. Pour avoir
+la prochaine tâche à exécuter, un thread en prend une au début de
+sa file (ordre LIFO). Si sa file est vide, il va \textquotedblleft voler\textquotedblright{}
+une tâche à la fin (ordre FIFO) de la file d\textquoteright attente
+d\textquoteright un autre thread.
+
+À chaque fois qu\textquoteright un thread fini une tâche, il va ajouter,
+au début de sa file, la (ou les) tâche(s) nouvellement prête(s) (i.e.
+qui en dépendait et dont leurs autres dépendances ont également été
+satisfaites).
+
+Cette stratégie a pour premier avantage d\textquoteright utiliser
+des files d\textquoteright attentes qui peuvent êtres \textquotedblleft lock-free\textquotedblright ,
+donc il y a peu de contentions sur ces dernières et il n\textquoteright y
+a pas de surcoûts causés par des synchronisations. Comme un thread
+va toujours tenter de suivre un chemin de calcul du DAG (car il va
+essayer d\textquoteright exécuter immédiatement, après une tâche,
+ses successeurs), il y a augmentation de la localité des données et
+on a alors une plus grande probabilité pour que les données, sur lesquelles
+travaille un thread, restent dans les caches du processeur. De plus,
+lorsqu\textquoteright un thread vole une tâche dans une file F, cette
+tâche sera celle avec le\emph{t-level} le plus petit de la file F,
+donc avec une priorité plus élevée que les autres.
+
+\section{Architecture logicielle}
+
+Dans cette partie, nous ne parlerons pas de façon détaillée de l\textquoteright implémentation
+: en effet, cette dernière est déjà amplement commentée et documentée
+dans le code source du projet. De même, la documentation utilisateur
+est contenue dans le README du projet {[} Dépôt : https://gitlab.com/Vonstrab/audio-graph-parallelization
+{]}.
+
+Nous nous concentrerons ici sur la présentation de l\textquoteright architecture
+globale ainsi que sur les points importants de l\textquoteright implémentation.
+
+\subsection{Les fonctionnalités réalisées}
+
+Nous allons présenter les fonctionnalités réalisées par le logiciel
+développé durant le projet. Le logiciel peut lire certains graphes
+audio écrits dans des fichiers au format AudioGraph. Il peut créer
+des fichiers DOT et PDF (avec\textbf{ Graphviz} \cite{key-4}) représentant
+le graphe. Il peut calculer des ordonnancements statiques pour ces
+graphes avec les algorithmes\emph{ HLFET},\emph{ ETF},\emph{ CPFD}
+ou \textquotedblleft random\footnote{Cet ordonnancement ne servait qu'a vérifier le bien fondé de l'implémentation
+des autres ordonnancements en les comparants a cet ordonnancement
+arbitraire témoin, nous n'allons pas dans ce présent document analyser
+les performances de \og random\fg}\textquotedblright{} (on assigne des priorités aléatoires aux n½ud
+lors de l\textquoteright ordonnancement) et éventuellement les afficher.
+Il peut exécuter séquentiellement le graphe audio ou en parallèle
+avec des threads\textbf{ POSIX} selon un ordonnancement statique ou
+un ordonnancement dynamique avec vol de tâches. Pour finir, il est
+également possible de faire des mesures sur les temps des exécutions
+d'un graphe audio.
+
+\subsection{Les technologies utilisées}
+
+Nous allons à présent parler des technologies qui sont utilisées par
+ce projet.
+
+Le logiciel est écrit en\textbf{ Rust} \cite{key-5}. C\textquoteright est
+un langage de programmation dont le compilateur produit du code rapide
+(le compilateur utilisant\textbf{ LLVM} \cite{key-6}comme backend),
+il est orienté vers la programmation concurrente et le compilateur
+fait de nombreuses vérifications pour détecter des problèmes liés
+à la mémoire (comme par exemple le déréférencement de pointeurs non
+valides ou les data races).
+
+~
+
+\textbf{Jack} \cite{key-7} est utilisé pour la fonction de callback
+audio.\textbf{JACK} fait référence à une API et aussi à l\textquoteright implémentation
+d\textquoteright une infrastructure permettant à des applications
+audio de communiquer entre elles et avec les interfaces audio (comme
+des cartes son). À chaque cycle audio, le serveur audio\textbf{ JACK}
+va appeler la fonction de callback audio de notre application. C\textquoteright est
+dans cette fonction que va être appelée notre routine d\textquoteright exécution
+du graphe audio. Les n½uds de sortie du graphe vont écrire les résultats
+des traitements du graphe dans les buffers des ports de sortie de
+l\textquoteright application, ce sont ces buffers qui vont être lus
+par le serveur\textbf{ JACK}.
+
+~
+
+\textbf{crossbeam} \cite{key-12} est utilisé pour diverses mécanismes
+de synchronisation tels que~:
+\begin{itemize}
+\item Les\emph{ channel} qui sont des canaux de messages multi-producteurs
+et multi-consommateurs.
+\item Les\emph{ deque} qui sont une implémentation de files utilisables
+pour l\textquoteright ordonnancement par vole de tâche.
+\item Les\emph{ ShardedLock} qui sont des verrous permettant à une ressource
+d\textquoteright être verrouillée pour un seul écrivain ou pour plusieurs
+lecteurs. Ce type de verrous existent déjà dans la bibliothèque standard
+(\emph{ RwLock} ) mais ceux de\textbf{ crossbeam} sont plus rapide
+pour acquérir le verrou en lecture mais plus lent pour l\textquoteright acquérir
+en écriture, ce qui est mieux lorsque l\textquoteright on sait qu\textquoteright on
+va plus souvent lire une donnée que la modifier.
+\item L\textquoteright utilitaire\emph{ Backoff} permet de faire des boucles
+d\textquoteright attentes actives mais en réduisant la contention
+sur le processeur, en faisant en sorte que le thread rende la main
+à l\textquoteright OS, au bout d\textquoteright un certain temps,
+pour des durées qui croissent exponentiellement à chaque fois.
+\end{itemize}
+~
+
+\textbf{core\_affinity} \cite{key-13} permet de faire en sorte qu\textquoteright un
+thread s\textquoteright exécute toujours le même processeur. Ceci
+est extrêmement important pour la performance de l\textquoteright exécution
+des DAG, car les algorithmes d\textquoteright ordonnancement s'appuient
+sur la localité des données : lorsque deux tâches s\textquoteright exécutent
+successivement et que l\textquoteright une utilise le résultat de
+l\textquoteright autre (i.e. il y a une relation de dépendance entre
+ces tâches dans le DAG), il est beaucoup plus avantageux qu\textquoteright elles
+s\textquoteright exécutent sur le même c½ur car la seconde tâche peut
+plus rapidement accéder aux données qui ont été écrites par la première
+et qui sont encore dans le cache du c½ur, au lieu d\textquoteright avoir
+à les chercher dans la RAM, ce qui est systématiquement le cas si
+les tâches s\textquoteright exécutent sur des c½urs différents.
+
+~
+
+\textbf{criterion} \cite{key-10} permet de faire des benchmarks pour
+estimer les WCET (Worst Case Execution Time) des n½uds du DAG, qui
+seront utilisés comme coût de calcul des n½uds par les algorithmes
+d\textquoteright ordonnancement statiques.
+
+~
+
+\textbf{pest} \cite{key-11} est utilisé pour écrire le parser de
+fichiers\textbf{ AudioGraph}.
+
+\subsection{Présentation des modules Rust}
+
+\textbf{Rust} permet de simplement structurer le code d\textquoteright un
+logiciel en modules.
+
+Voici la liste des modules du projet :
+\begin{itemize}
+\item \emph{dsp} : contient l\textquoteright implémentation des traitements
+audio ainsi que des buffers permettant de communiquer entre les tâches.
+\item \emph{execution} : implémente les exécutions des DAG. Il y a l\textquoteright exécution
+séquentielle mais aussi l\textquoteright exécution parallèle des ordonnancements
+statiques et l\textquoteright exécution parallèle avec ordonnancement
+par vol de tâches.
+\item \emph{measure} : contient les fonctions permettant d\textquoteright effectuer
+les mesures temporelles sur les différentes exécutions.
+\item \emph{parser} : contient le parser pour extraire les graphes audio
+décrits dans des fichiers AudioGraph.
+\item \emph{static\_scheduling} : contient l\textquoteright implémentation
+des algorithmes d\textquoteright ordonnancement statique.
+\item \emph{task\_graph} : implémente la représentation d\textquoteright un
+DAG avec diverses informations utilisées par les algorithmes d\textquoteright ordonnancement
+statique ou l\textquoteright exécution parallèle avec ordonnancement
+par vol de tâches.
+\end{itemize}
+
+\subsection{Les DSP et fichiers AudioGraph supportés}
+
+Nous allons détailler ici la manière dont a été implémenté le traitement
+du signal. Nous nous sommes efforcé de garder un séparation entre
+la représentation du DAG contenant les informations utiles à l\textquoteright ordonnancement
+(le graphe de tâches) et le graphe audio sous-jacent où est effectué
+le traitement du signal.
+
+Les n½uds de ce graphe audio sont des fonctions prenant un (ou plusieurs)
+signal en entrée, sous forme d\textquoteright un (ou plusieurs) tableau
+de flottants (qui sont les échantillons audio), et écrivant le résultat
+du traitement dans un (ou plusieurs) autre tableau de flottants. Les
+n½uds d\textquoteright entrée du graphe ne prennent pas de signal
+en entrée mais en fournissent un en sortie, les n½uds de sortie ont
+seulement une entrée.
+
+Les arcs du graphes sont les buffers reliant les traitements : une
+fonction de traitement écrit son résultat dans ce buffer (c\textquoteright est
+sa sortie) et une autre lit dans ce même buffer (c\textquoteright est
+son entrée). Ces buffers viennent de la structure\emph{ DspEdge} qui
+contient toutes les caractéristiques du signal : les échantillons
+du signal, la fréquence d\textquoteright échantillonnage et la taille
+du buffer.
+
+~
+
+Les DSP implémentés sont les suivants :
+\begin{itemize}
+\item \emph{Oscillator}: un oscillateur produisant une onde sinusoïdale
+avec une certaine amplitude et fréquence. Il n\textquoteright a qu\textquoteright une
+seule sortie.
+\item \emph{Modulator}: applique une modulation au signal d\textquoteright entrée
+qui peut s\textquoteright apparenter à de la modulation d\textquoteright amplitude
+(AM). Il a exactement une entrée et une sortie.
+\item \emph{Sink}: ce DSP est la sortie du graphe audio, il écrit le signal
+d\textquoteright entrée dans un buffer audio de\textbf{ JACK}. Il
+n\textquoteright a qu\textquoteright une seule entrée.
+\item \emph{InputOutputAdaptator}: il s\textquoteright agit d\textquoteright un
+mixeur, il peut avoir plusieurs entrées et sorties. Il mixe les signaux
+en entrée et écrit le même résultat tous ses buffers de sortie.
+\end{itemize}
+Lorsque le programme lit un fichier AudioGraph, il va reconnaître
+les n½uds déclarés comme les DSP implémentés. Si le parser trouve
+un n½ud dont le type est inconnu, il va lui assigner un DSP par défaut
+en fonction du nombre de ses entrées et sorties.
+
+\subsection{Implémentation de l\textquoteright exécution séquentielle}
+
+L\textquoteright exécution séquentielle du graphe audio est réalisée
+dans la fonction\emph{ run\_seq}. Cette fonction va initialement faire
+une liste des tâches en effectuant un tri topologique du DAG. Puis,
+à chaque cycle audio, va exécuter le DAG en exécutant séquentiellement
+les tâches dans l\textquoteright ordre de cette liste.
+
+\subsection{Implémentation des algorithmes d\textquoteright ordonnancement statique}
+
+Les ordonnancements statiques ont été implémentés avec des fonctions
+prenant en paramètre un graphe de tâche (la structure\emph{ TaskGraph})
+et retournant un ordonnancement. L\textquoteright ordonnancement est
+représenté dans la structure Schedule qui contient la liste des processeurs
+participant à l\textquoteright exécution des tâches (la structure\emph{Processor}).
+Chaque processeur a une liste de fenêtres temporelles (la structure\emph{
+TimeSlot}) indiquant quand il doit commencer une tâche et quand il
+doit la finir (qui est simplement la date de début plus le \emph{WCET}),
+ces fenêtres ne se chevauchent évidemment pas, car un même processeur
+ne peut qu\textquoteright exécuter séquentiellement les tâches.
+
+Il y a quatre fonctions pour ces ordonnancements :\emph{ random} qui
+réalise une stratégie d\textquoteright ordonnancement où l\textquoteright on
+donne une priorité aléatoire aux différents n½uds, et\emph{ hlfet},\emph{
+etf} et\emph{ cpfd} qui réalisent les algorithmes du même nom.
+
+~
+
+L\textquoteright exécution des ordonnancements statiques est réalisée
+dans la fonction\emph{}\\
+\emph{run\_static\_sched}. Cette fonction va initialement calculer
+l\textquoteright ordonnancement statique sur n processeurs (attention,
+ce nombre ne soit pas dépasser le nombre de c½urs disponibles sur
+la machine) du DAG en fonction d\textquoteright un des algorithmes
+implémentés, puis crée un pool de n thread qui a connaissance de l\textquoteright ordonnancement.
+Ainsi chaque thread se retrouve affecté à l\textquoteright exécution
+de l\textquoteright un des \textquotedblleft processeurs\textquotedblright{}
+décrit dans l\textquoteright ordonnancement statique et chaque thread
+va toujours s\textquoteright exécuter sur un même c½ur, grâce à\textbf{
+core\_affinity}. On a alors une bonne correspondance entre ce qui
+est décrit dans les ordonnancements statique et ce qui sera réellement
+effectué lors des exécutions du DAG.
+
+Chaque thread a donc une liste de tâche (celle de la structure Processor
+qui leur a été attribuée) et va l\textquoteright exécuter une à une
+en respectant l\textquoteright ordre. Cependant, cette implémentation
+ne tient pas compte des fenêtres temporelles de la liste de tâches
+mais va essayer d\textquoteright exécuter les tâches dès que possible
+(car le plus souvent, le calcul d\textquoteright une tâche prendra
+moins de temps que le WCET), mais il y a un mécanisme de synchronisation
+pour que les dépendances entre les tâches soient quand même respectées.
+
+Chaque tâche est associée à un état (l\textquoteright énumération\emph{
+TaskState}) indiquant si elle est prête à être exécutée (i.e. si toutes
+les tâches parentes ont fini de s\textquoteright exécuter) ou non.
+Dans le cas où elle ne l\textquoteright est pas, il y a un compteur
+indiquant combien de parents doivent encore s\textquoteright exécuter
+(le compteur d\textquoteright activation).
+
+~
+
+Quand un thread finit d\textquoteright exécuter une tâche, il change
+son état pour indiquer qu\textquoteright elle est finie et va décrémenter
+les compteurs d\textquoteright activation des tâches dépendantes et
+si le compteur d\textquoteright activation d\textquoteright une tâche
+atteint 0, elle devient prête.
+
+~
+
+Quand un thread veut commencer à exécuter une tâche, il doit d\textquoteright abord
+vérifier si celle-ci est prête. Si ce n\textquoteright est pas le
+cas, il entamer une attente active avec l\textquoteright utilitaire\emph{
+Backoff}. L\textquoteright attente active permet d\textquoteright éviter
+que les threads ne s\textquoteright endorment systématiquement pour
+attendre qu\textquoteright une tâche soit prête. Ce genre de mécanisme
+de synchronisation engendre des appels systèmes, ce qui d\textquoteright une
+part utilise beaucoup de cycles CPU et d\textquoteright une autre,
+comme les threads doivent rendre la main au noyau, lorsqu\textquoteright ils
+reviennent de l\textquoteright appel système, les données qui leur
+sont utiles ont probablement été évincées des caches du processeur.
+Pour ces raisons, il faut éviter le plus possible de faire des appels
+systèmes lorsqu\textquoteright on programme une application temps
+réel.
+
+\subsection{Implémentation de l\textquoteright exécution de l\textquoteright ordonnancement
+dynamique avec vol de tâches}
+
+L\textquoteright exécution parallèle avec l\textquoteright ordonnancement
+par vol de tâches est réalisée dans la fonction \\
+run\_work\_stealing. La fonction va initialement créer un pool de
+n threads. Chaque thread a sa propre file de tâches (de type Worker,
+venant de crossbeam) et il y a une file globale (de type Injector).
+Les threads vont initialement chercher les tâches dans la file globale.
+Puis, à chaque fin de tâche, ils vont décrémenter les compteurs d\textquoteright activations
+des tâches dépendantes (cela marche comme pour l\textquoteright exécution
+des ordonnancements statiques), ajouter au début de leur file les
+nouvelles tâches prêtes et finalement prendre la prochaine tâche,
+au début de leur file ou en volant à la fin d\textquoteright une des
+autres files.
+
+\subsection{Mécanisme de contrôle des pools de threads}
+
+Pour les deux exécutions parallèles, lorsque le programme doit commencer
+l\textquoteright exécution d\textquoteright un graphe, il appel une
+méthode du thread de pool qui envoie un message à chaque thread pour
+leur indiquer de commencer les calculs. Chaque thread dispose d\textquoteright un
+canal de messages sur lequel il attend un message avant de commencer
+à exécuter le graphe. À chaque fois qu\textquoteright un thread fini
+toutes les tâches à exécuter, il va attendre sur son canal le prochain
+message lui indiquant que le graphe doit à nouveau être exécuté.
+
+\subsection{Réalisation des mesures de performance}
+
+Nous voulions faire des mesures sur le temps d\textquoteright exécution
+total d\textquoteright un graphe à chaque cycle audio. Pour cela,
+au début de la fonction de callback audio, la date est enregistrée.
+Il y a un second enregistrement de la date juste après la fin de l\textquoteright exécution
+du graphe audio. Au lancement du programme, il y a un thread qui est
+créé et qui est associé à un canal de messages. Ce thread va simplement
+attendre de recevoir des messages sur ce canal et va enregistrer dans
+un fichier le contenu de chaque message reçu. À chaque fois que le
+thread principal fait un enregistrement, il envoie un message contenant
+l\textquoteright information enregistrée au thread qui va écrire ces
+informations dans un fichier. L\textquoteright intérêt d\textquoteright utiliser
+un thread séparé pour écrire les mesures dans un fichier est d\textquoteright éviter
+aux autres threads d\textquoteright avoir à effectuer des appels systèmes
+(ce qui doit être fait si l\textquoteright on veut manipuler des fichiers),
+ils n\textquoteright ont qu\textquoteright à envoyer un message dans
+le canal vers le thread écrivain et cette opération est toujours non-bloquante
+pour les canaux de type unbounded (fournis par crossbeam). Les mesures
+ont ainsi un impact limité sur l\textquoteright exécution des graphes
+audio. Pourtant il faut être conscient que toute mesure demande des
+ressources et donc impacte les performances, aussi minime cet impact
+soit-il.
+
+~
+
+Un script Python a été écrit pour permettre de facilement générer
+des données statistiques permettant de faire des comparaisons entre
+les différents algorithmes de parallélisation. Le script va lancer
+plusieurs fois différents programmes sur différents fichiers pendant
+quelques secondes. À l\textquoteright issue de cette étape, il y a
+plusieurs fichiers contenant les informations sur les temps d'exécutions
+des graphes audio dans un répertoire. Le script va alors parcourir
+ces fichiers pour générer des graphiques présentant des statistiques
+sur les exécutions.
+
+\section{Comparaison des ordonnancements}
+
+Dans cette partie, nous allons réaliser une comparaison des performances
+des différents ordonnancements.
+
+\subsection{Les caractéristiques des systèmes exécutant ces graphes}
+
+L\textquoteright architecture des machines, qui vont exécuter ces
+DAG, considérées dans le cadre de ce projet correspond aux machines
+utilisées dans la vie courante (i.e. ordinateurs de bureau et portables).
+Ce sont donc des systèmes à mémoire partagée dotés d\textquoteright un
+nombre plutôt restreint de processeurs. Ce sont des systèmes homogènes
+car les processeurs ont tous la même vitesse.
+
+De plus, les systèmes sur lesquels fonctionnent la plupart des SIM,
+ne sont pas des systèmes temps réel (les systèmes de la famille Unix
+(GNU/Linux ou MacOS) ou Windows, par exemple). Même si les noyaux
+de ces systèmes peuvent avoir une notion de processus avec une priorité
+temps réel, ils ne sont pas préemptifs et ne peuvent donc pas toujours
+garantir le temps de réponse à une interruption, ni avoir certaines
+autres garanties temps réel.
+
+~
+
+Ne pouvant pas avoir un contrôle total sur l\textquoteright ordonnancement
+des threads/processus constituant les SIM (parfois, il n\textquoteright est
+même pas possible d\textquoteright avoir une priorité temps réel),
+il se peut que parfois le SIM ne puisse pas avoir assez de temps processeur
+à un certain moment pour respecter la contrainte temps réel. Il peut
+aussi y avoir une perte de performance par rapport à la gestion des
+caches des processeurs : par exemple, s\textquoteright il y a une
+tâche B dépendant du résultat d\textquoteright une tâche A, si A s\textquoteright exécute
+sur un processeur et que B s\textquoteright exécute ensuite sur un
+processeur différent, le résultat de A sera obligé de transiter par
+la mémoire centrale de la machine pour pouvoir être lue par B, ce
+qui prendrait plus de temps que si B pouvait ensuite s\textquoteright exécuter
+sur le même processeur que A et que le résultat était resté dans le
+cache; de manière similaire, si A et B vont s\textquoteright exécuter
+sur un même processeur, s\textquoteright il y a un autre processus
+(ou même un autre thread du SIM) qui s\textquoteright exécute entre
+les deux, sur ce processeur, alors ce dernier peut provoquer l'éviction
+du résultat de A depuis le cache du processeur, avant que B n\textquoteright ait
+pu s\textquoteright en servir. Nous serons donc dans une démarche
+de \textquotedblleft best-effort\textquotedblright{} en essayant de
+trouver les meilleures solutions vis-à-vis des limitations que ces
+systèmes nous imposent.
+
+~
+
+Dans cette optique, observer uniquement le temps moyen n'est pas pertinent,
+il faut aussi tenir compte des pires cas et du nombre d'échéances
+dépassées, nous recherchons des algorithmes qui sont statistiquement
+stables et qui dépassent le moins souvent le temps qui leurs est imparti,
+ainsi tendrons-nous à privilégier un algorithme qui est moins bon
+en moyenne mais dépassant moins souvent les échéances.
+
+La machine utilisée pour faire les mesures exécute le système d'exploitation
+Ubuntu 18.04 avec le noyau Linux 4.15.0-50-generic, un processeur
+Intel i5-7200U @2.50GHz avec 3072 KB de cache et 4 c½urs, avec le
+gouverneur en mode performances.
+
+Les paramètres qui peuvent influencer les résultats de l\textquoteright exécution
+sur un même DAG sont:
+\begin{itemize}
+\item Le nombre de threads utilisés
+\item La taille des buffers, qui fait varier la durée d'un cycle et donc
+les échéances. Les valeurs courantes que nous étudierons seront :
+512, 256, 128, 64 et 32 échantillons.
+\item L'activité de la machine, les résultats ne seront pas les mêmes si
+elle est au repos ou si elle a une charge de travail importante, comme
+une compilation par exemple.
+\end{itemize}
+
+\subsection{Les configurations des graphe audio étudiés}
+\noindent \begin{flushleft}
+Nous allons concentrer notre analyse sur trois configurations particulières
+de graphes audio :
+\par\end{flushleft}
+\begin{itemize}
+\item \begin{flushleft}
+La ligne : c'est une chaîne de n½uds ou chacun s'exécute l\textquoteright un
+après l\textquoteright autre, dans cette configuration la parallélisation
+est impossible, toute exécution est nécessairement séquentielle, ces
+DAG vont nous servir de \textquotedblleft groupe témoin\textquotedblright{}
+afin de comparer le surcoût de chaque méthode.
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=0.25]{dot/ligne5/ligne5-1}
+\par\end{centering}
+\caption{Exemple de ligne avec 5 n½uds}
+
+\end{figure}
+\par\end{flushleft}
+\item \begin{flushleft}
+Le râteau : dans cette configuration, plusieurs lignes s\textquoteright unissent
+au bout; cette forme est celle permettant d'avoir le meilleur degré
+de parallélisme, donc d'avoir les meilleurs gains.
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=0.25]{dot/rateau11/rateau11-1}
+\par\end{centering}
+\caption{Exemple de râteau avec 11 n½uds}
+\end{figure}
+\par\end{flushleft}
+\item \begin{flushleft}
+Finalement le losange, qui se trouve entre les deux, commence et termine
+avec un degré de parallélisme nul tout en ayant un degré de parallélisme
+supérieur entre les deux. On s'attend à ce que l\textquoteright exécution
+séquentielle soit plus efficace sur les petits losanges, mais que
+le gain de la parallélisation soit significatif sur ceux étant plus
+grands. Cette configuration se veut plus proche des cas rencontrés
+dans la vie réelle.
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=0.25]{dot/losange16/losange16-1}
+\par\end{centering}
+\caption{Exemple de losange avec 16 n½uds}
+\end{figure}
+\par\end{flushleft}
+\end{itemize}
+
+\subsection{Première variable : le nombre de threads}
+
+Pour cette première série de mesures, nous allons fixer la taille
+du buffer à 128, et réaliser les mesures sur une machine au repos.
+
+Nous commençons avec les lignes, pour pouvoir comparer le surcoût
+de chaque méthode {[}Figure 5\vpageref{fig 5} {]}.
+
+\noindent 
+\begin{figure}[H]
+\begin{raggedright}
+\label{fig 5}\subfloat[Ligne avec\textbf{ 2} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{ligne_2_128/average}\includegraphics[scale=0.4]{ligne_2_128/misses}\includegraphics[scale=0.4]{ligne_2_128/worst}
+\par\end{raggedright}
+}
+\par\end{raggedright}
+\subfloat[Ligne avec\textbf{ 3} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{ligne_3_128/average}\includegraphics[scale=0.4]{ligne_3_128/misses}\includegraphics[scale=0.4]{ligne_3_128/worst}
+\par\end{raggedright}
+}
+
+\noindent \subfloat[Ligne avec\textbf{ 4} threads]{\includegraphics[scale=0.4]{ligne_4_128/average}\includegraphics[scale=0.4]{ligne_4_128/misses}\includegraphics[scale=0.4]{ligne_4_128/worst}
+
+}\caption{Lignes avec un nombre de threads variable}
+\end{figure}
+
+\noindent Puis avec les losanges {[}Figure 6\vpageref{fig 6} {]}.
+\begin{figure}[H]
+\begin{raggedright}
+\label{fig 6}\subfloat[Losange avec\textbf{ 2} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{losange_2_128/average}\includegraphics[scale=0.4]{losange_2_128/misses}\includegraphics[scale=0.4]{losange_2_128/worst}
+\par\end{raggedright}
+}
+\par\end{raggedright}
+\subfloat[Losange avec\textbf{ 3} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{losange_3_128/average}\includegraphics[scale=0.4]{losange_3_128/misses}\includegraphics[scale=0.4]{losange_3_128/worst}
+\par\end{raggedright}
+}
+
+\noindent \subfloat[Losange avec\textbf{ 4} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{losange_4_128/average}\includegraphics[scale=0.4]{losange_4_128/misses}\includegraphics[scale=0.4]{losange_4_128/worst}
+\par\end{raggedright}
+}\caption{Losanges avec un nombre de threads variable}
+\end{figure}
+Et avec les râteaux {[}Figure 7\vpageref{Figure  7} {]}.
+
+\noindent 
+\begin{figure}[H]
+\begin{raggedright}
+\label{Figure  7}\subfloat[Râteau avec\textbf{ 2} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{rateau_2_128/average}\includegraphics[scale=0.4]{rateau_2_128/misses}\includegraphics[scale=0.4]{rateau_2_128/worst}
+\par\end{raggedright}
+}
+\par\end{raggedright}
+\subfloat[Râteau avec\textbf{ 3} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{rateau_3_128/average}\includegraphics[scale=0.4]{rateau_3_128/misses}\includegraphics[scale=0.4]{rateau_3_128/worst}
+\par\end{raggedright}
+}
+
+\noindent \subfloat[Râteau avec\textbf{ 4} threads]{\noindent \begin{raggedright}
+\includegraphics[scale=0.4]{rateau_4_128/average}\includegraphics[scale=0.4]{rateau_4_128/misses}\includegraphics[scale=0.4]{rateau_4_128/worst}
+\par\end{raggedright}
+}\caption{Râteaux avec un nombre de threads variable}
+\end{figure}
+
+Dans un premier temps, nous allons nous intéresser aux dépassements
+d'échéances : nous pouvons constater que le nombre de threads optimal
+sur cette machine est de 3 et cela quelque soit la configuration étudiée.
+Cela peut peut sembler contre-intuitif compte tenu du fait qu'il y
+ait 4 c½urs, nous pouvons constater que la présence du thread de mesures
+impacte les performances car il interrompt les threads du pool. Nous
+pouvons également émettre l\textquoteright hypothèse que le cache
+étant partagé ainsi que sont bus, il est un frein a l'utilisation
+simultanée des 4 c½urs de la machine.
+
+Secondement, en observant les temps moyens et les pires temps pour
+les lignes, nous pouvons constater que, hormis des irrégularités des
+méthodes HLFET et EFT, les différentes méthodes sont très proches,
+avec un léger surcoût de la parallélisation explicable par le surcoût
+engendré par la gestions des pools de threads et des locks.
+
+Pour les losanges, on note l'irrégularité de HLFET qui détonne par
+rapport aux trois autres méthodes. Dans cette configuration nous voyons
+que les 4 c½urs ne font pas perdre tant de performances que ça, juste
+un légère augmentation du nombre d'échéances ratées.
+
+\subsection{Seconde variable : la taille du buffer}
+
+Plus la taille du buffer est petite, moins le système a de latence,
+mais plus les échéances sont courtes et plus la machine est mise à
+contribution. Nous avons deux configurations : un petit buffer entre
+16 et 256 échantillons, quand on cherche à avoir de la réactivité,
+par exemple pour des musiciens qui souhaitent avoir un retour son
+rapide, pour de la retransmission en direct, et a l'opposé un plus
+gros buffer à partir de 512 échantillons quand on peut se permettre
+d'avoir de plus longues latences.
+
+Nous allons fixer le nombre de threads et faire varier la taille du
+buffer de 16, 32, 64,128, 256, et enfin 512 échantillons.
+
+\begin{figure}[H]
+\subfloat[buffer de 16]{\includegraphics[scale=0.4]{ligne_3_16/misses}}\subfloat[buffer de 32]{\includegraphics[scale=0.4]{ligne_3_32/misses}}\subfloat[buffer de 64]{\includegraphics[scale=0.4]{ligne_3_64/misses}}
+\end{figure}
+\begin{figure}[H]
+\subfloat[buffer de 128]{\includegraphics[scale=0.4]{ligne_3_128/misses}}\subfloat[buffer de 256]{\includegraphics[scale=0.4]{ligne_3_256/misses}}\subfloat[buffer de 512]{\includegraphics[scale=0.4]{ligne_3_512/misses}}
+
+\caption{variations pour la ligne}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Buffer de 16 échantillons]{\includegraphics[scale=0.4]{\string"losange_3_16 /misses\string".eps}}\subfloat[Buffer de 32 échantillons]{\includegraphics[scale=0.4]{\string"losange_3_32 /misses\string".eps}}\subfloat[Buffer de 64 échantillons]{\includegraphics[scale=0.4]{\string"losange_3_64 /misses\string".eps}}
+\end{figure}
+\begin{figure}[H]
+\subfloat[Buffer de 128 échantillons]{\includegraphics[scale=0.4]{losange_3_128/misses}}\subfloat[Buffer de 256 échantillons]{\includegraphics[scale=0.4]{\string"losange_3_256 /misses\string".eps}}\subfloat[Buffer de 512 échantillons]{\includegraphics[scale=0.4]{\string"losange_3_512 /misses\string".eps}}
+
+\caption{Variations pour les losanges}
+\end{figure}
+
+\begin{figure}[H]
+\subfloat[Buffer de 16 échantillons]{\includegraphics[scale=0.4]{\string"rateau_3_16 /misses\string".eps}}\subfloat[Buffer de 32 échantillons]{\includegraphics[scale=0.4]{\string"rateau_3_32 /misses\string".eps}}\subfloat[Buffer de 64 échantillons]{\includegraphics[scale=0.4]{\string"losange_3_64 /misses\string".eps}}
+\end{figure}
+\begin{figure}[H]
+\subfloat[Buffer de 128 échantillons]{\includegraphics[scale=0.4]{rateau_3_128/misses}}\subfloat[Buffer de 256 échantillons]{\includegraphics[scale=0.4]{\string"rateau_3_256 /misses\string".eps}}\subfloat[Buffer de 512 échantillons]{\includegraphics[scale=0.4]{\string"rateau_3_512 /misses\string".eps}}
+
+\caption{Variations pour les râteaux}
+\end{figure}
+
+Pour les buffers de 16 les méthodes ETF et HLFET ont du mal a quelques
+cycles.
+
+Pour les buffers de 32 les méthodes sont stables sauf pour le râteau
+ou ETF et HLFET\emph{ }ont un peu de mal.
+
+Pour toutes les autres tailles les résultats sont très stables.
+
+\subsection{Dernière variable : la charge de la machine}
+
+Dans cette série de mesures, nous allons fixer la taille du buffer
+à 128 échantillons, le nombre de threads est à 3 et nous allons comparer
+l'éxécution entre la machine au repos et la machine qui lit une vidéo
+en haute qualité.
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{ligne_3_128/average}\includegraphics[scale=0.4]{ligne_3_128/misses}\includegraphics[scale=0.4]{ligne_3_128/worst}
+
+\caption{ligne au repos}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/average\string".eps}\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/misses\string".eps}\includegraphics[scale=0.4]{\string"ligne_3_128 _charge/worst\string".eps}
+
+\caption{ligne en regardant une vidéo}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{losange_3_128/average}\includegraphics[scale=0.4]{losange_3_128/misses}\includegraphics[scale=0.4]{losange_3_128/worst}
+
+\caption{losange au repos}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{losange_3_128_charge/average}\includegraphics[scale=0.4]{losange_3_128_charge/misses}\includegraphics[scale=0.4]{losange_3_128_charge/worst}
+
+\caption{losange en regardant une vidéo}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{rateau_3_128/average}\includegraphics[scale=0.4]{rateau_3_128/misses}\includegraphics[scale=0.4]{rateau_3_128/worst}
+
+\caption{râteau au repos}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=0.4]{rateau_3_128_charge/average}\includegraphics[scale=0.4]{rateau_3_128_charge/misses}\includegraphics[scale=0.4]{rateau_3_128_charge/worst}
+
+\caption{râteau en regardant une vidéo}
+\end{figure}
+
+Le cas le plus intéressant est celui des râteaux où l'on voit que
+lors de la lecture de la vidéo, toutes les méthodes parallèles ont
+plus de mal à tenir les échéances, contrairement a l\textquoteright exécution
+séquentielle qui elle tient la ligne avec la surcharge. On peut analyser
+cette différence par le fait que la lecture d'une vidéo va monopoliser
+un partie non négligeable des ressources de la machine, ce qui diminue
+une partie des gains de la parallélisation.
+
+\subsection{La stabilité des algorithmes}
+
+Pour comparer la stabilité des algorithmes, nous allons faire des
+histogrammes montrant la répartition des temps d'exécution avec 3
+threads et des buffers de 2048 échantillons, afin d'avoir des cycles
+plus longs et de mieux voir les variations.
+
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=0.6]{hist/hist_all_ligne}
+\par\end{centering}
+\caption{Histogramme pour une ligne à 100 n½uds}
+
+\begin{centering}
+\includegraphics[scale=0.6]{hist/hist_all_losange}
+\par\end{centering}
+\caption{Histogramme pour un losange à 156 n½uds}
+
+\begin{centering}
+\includegraphics[scale=0.6]{hist/hist_all_rateau}
+\par\end{centering}
+\caption{Histogramme pour un râteau à 101 n½uds}
+\end{figure}
+
+On peut dans un premier temps constater que sur l'histogramme de la
+ligne que HLFET a un overhead significatif et une légère stabilité
+moindre sur les autres méthodes. Les stabilités et les performances
+sont proches pour les trois autres méthodes.
+
+Sur l'histogramme du losange on voit une mauvaise stabilité du vol
+de tâches, qui a un pic au même niveau que l\textquoteright exécution
+séquentielle et un autre en retard. l\textquoteright exécution séquentielle
+est stable mais souffre d'un retard.Les deux qui sortent du lot sont
+HLFET et ETF qui sont proches au niveau des performances et de la
+stabilité.
+
+Pour le Râteau en revanche on voir que l\textquoteright exécution
+séquentielle n'est plus aussi stable et est a la traîne par rapport
+aux autres méthodes, les méthodes parallélises gagnent en performances
+et en stabilité avec ETF et le vol de tache qui sont les plus stables.
+cette configuration parallèle est l'endroit ou ces méthodes brillent
+le plus.
+
+\subsection{Conclusions}
+
+On peut dans un premier temps noter qu'HLFET est la moins efficace
+de toutes ces méthodes, tant au niveau de la performance que de la
+stabilité, les deux méthodes ETF et vol de taches sont très proches
+dans leurs résultats, cependant le cas du losange nous permet de les
+départager, en effet on constate que le vol de tache est bien moins
+stable dans le cas du losange, ce qui est le cas le plus proche dans
+la vie réele.
+
+Donc si on compare ETF a l\textquoteright exécution séquentielle on
+constate qu'ETF offre un gain de performances non négligeable dans
+les situations de parallélisme, mais on a constaté qu'ETF dépasse
+quelques fois la deadline, une optimisation de l'implémentation pourrais
+palier a ce problème.
+
+ETF est un algorithme simple et efficace,
+
+\section{Évolutions possibles}
+
+Premièrement il faut noter que notre implémentation repose sur beaucoup
+de locks, ce qui peut faire survenir des ralentissements, avec une
+optimisation minutieuse, que nous n'avons pas pu faire faute de temps;
+Par exemple en enlevant les locks superflus, ou en allant encore plus
+loin, remplaçant les lock par des \textquotedblleft traits unsafe\textquotedblright{}
+quand c\textquoteright est possible \cite{key-1}. Ou en rendant les
+threads a priorité temps réel avec\textbf{ audio\_thread\_priority
+\cite{key-2}. }ETF a du potentiel et il sera intéressant de regarder
+ses performances une fois ces optimisations effectuées.
+
+Deuxième regret, il manque dans l\textquoteright implémentation de
+CPFD le re-maping sur des processeurs réels, en effet l'algorithme
+ordonnance sur un nombre illimité de processeurs\og virtuels\fg{} qui
+faut ensuite mapper sur des processeurs réels (l\textquoteright algorithme
+est dans \cite{key-3}), avec MPI il serait possible d'exécuter les
+DAG sur des clusters par exemple, par contre la latence induite peut
+le rendre prohibitif pour des petits buffers, a réserver peut-être
+a des gros buffers pour du post process audio.
+
+Au début nous avions tenté d\textquoteright écrire un parser Puredata
+pour pouvoir prendre en compte les formats .pd en plus du format .ag,
+mais devant le temps demandé pour implémenter la grande variété des
+n½uds proposée et les lacunes de la documentation, nous avons fini
+par renoncer, il en subsiste un reliquat de ce parser dans notre code.
+
+\subsection{Retour sur Rust}
+
+Reprendrais-t-on Rust si on devait le refaire ? Si on est dans un
+optique d'optimiser finement et rapidement notre choix se porterais
+sur C/C++. Si on ne veut pas avoir a gérer une multitude de bugs de
+pointeurs ou de la mémoire, surtout en rapport aux threads notre choix
+se porterais encore sur Rust.
+
+Le compilateur de Rust est difficile à satisfaire mais il offre une
+sûreté non négligeable, nous n'avons pas eu a aller dénicher des erreurs
+de segmentation ou des fuites mémoire. Les exigences du compilateur
+ne nous ont pas permis d'optimiser autant qu'on aurait pu mais sans
+Rust nous aurions eu beaucoup plus de mal pour que tout ça marche
+tout court.
+\begin{thebibliography}{10}
+\bibitem{key-1}: Yann Orlarey, Stéphane Letz, Dominique Fober, Work
+stealing scheduler for automatic parallelization in faust, LAC 2010
+
+\bibitem{key-2}: MA Kiefer, K Molitorisz, J Bieler, Parallelizing
+a Real-Time Audio Application---A Case Study in Multithreaded Software
+Engineering, Parallel and Distributed Processing Symposium Workshop
+(IPDPSW), 2015
+
+\bibitem{key-3}: YK Kwok, I Ahmad, Static scheduling algorithms for
+allocating directed task graphs to multiprocessors, ACM Computing
+Surveys
+
+\bibitem{key-4}\textbf{https://www.graphviz.org/} , dernière visite
+le 24/05/2019
+
+\bibitem{key-5}\textbf{https://www.rust-lang.org/} , dernière visite
+le 24/05/2019
+
+\bibitem{key-6}\textbf{https://llvm.org/} , dernière visite le 24/05/2019
+
+\bibitem{key-7}\textbf{http://www.jackaudio.org/} , dernière visite
+le 24/05/2019
+
+\bibitem{key-8}\textbf{https://docs.rs/crossbeam/0.7.1/crossbeam/}
+, dernière visite le 24/05/2019
+
+\bibitem{key-9}\textbf{https://docs.rs/core\_affinity/0.5.9/core\_affinity/}
+, dernière visite le 24/05/2019
+
+\bibitem{key-10}\textbf{https://criterion.readthedocs.io/en/master/}
+, dernière visite le 24/05/2019
+
+\bibitem{key-11}\textbf{https://pest.rs/} , dernière visite le 24/05/2019
+
+\bibitem{key-12}https://doc.rust-lang.org/nomicon/concurrency.html
+, dernière visite le 24/05/2019
+
+\bibitem{key-13}https://github.com/padenot/audio\_thread\_priority
+, dernière visite le 24/05/2019
+\end{thebibliography}
+
+\end{document}

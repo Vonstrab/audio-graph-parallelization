@@ -1,0 +1,403 @@
+osc1 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod2 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod3 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc4 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod5 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod6 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc7 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod8 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod9 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc10 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod11 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod12 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc13 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod14 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod15 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc16 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod17 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod18 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc19 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod20 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod21 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc22 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod23 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod24 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc25 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod26 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod27 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc28 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod29 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod30 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc31 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod32 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod33 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc34 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod35 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod36 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc37 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod38 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod39 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc40 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod41 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod42 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc43 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod44 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod45 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+osc46 =
+{
+    kind: "osc",
+    volume: 1.0,
+    freq: 110,
+};
+
+mod47 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mod48 =
+{
+    kind: "mod",
+    volume: 1.0,
+    freq: 55,
+};
+
+mix49 =
+{
+    kind: "mix",
+    in: 16,
+    out: 1,
+    volume: 1.0,
+};
+
+s50 =
+{
+    kind: "sink",
+    volume: 1.0,
+};
+
+osc1.1 -> mod2.1;
+mod2.1 -> mod3.1;
+osc4.1 -> mod5.1;
+mod5.1 -> mod6.1;
+osc7.1 -> mod8.1;
+mod8.1 -> mod9.1;
+osc10.1 -> mod11.1;
+mod11.1 -> mod12.1;
+osc13.1 -> mod14.1;
+mod14.1 -> mod15.1;
+osc16.1 -> mod17.1;
+mod17.1 -> mod18.1;
+osc19.1 -> mod20.1;
+mod20.1 -> mod21.1;
+osc22.1 -> mod23.1;
+mod23.1 -> mod24.1;
+osc25.1 -> mod26.1;
+mod26.1 -> mod27.1;
+osc28.1 -> mod29.1;
+mod29.1 -> mod30.1;
+osc31.1 -> mod32.1;
+mod32.1 -> mod33.1;
+osc34.1 -> mod35.1;
+mod35.1 -> mod36.1;
+osc37.1 -> mod38.1;
+mod38.1 -> mod39.1;
+
+osc40.1 -> mod41.1;
+mod41.1 -> mod42.1;
+
+osc43.1 -> mod44.1;
+mod44.1 -> mod45.1;
+
+osc46.1 -> mod47.1;
+mod47.1 -> mod48.1;
+
+mod3.1 -> mix49.1;
+mod6.1 -> mix49.2;
+mod9.1 -> mix49.3;
+mod12.1 -> mix49.4;
+mod15.1 -> mix49.5;
+mod18.1 -> mix49.6;
+mod21.1 -> mix49.7;
+mod24.1 -> mix49.8;
+mod27.1 -> mix49.9;
+mod30.1 -> mix49.10;
+mod33.1 -> mix49.11;
+mod36.1 -> mix49.12;
+mod39.1 -> mix49.13;
+mod42.1 -> mix49.14;
+mod45.1 -> mix49.15;
+mod48.1 -> mix49.16;
+mix49.1 -> s50.1;

@@ -1,0 +1,4448 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\LinesNumbered
+\usepackage{adjustbox}
+\end_preamble
+\use_default_options true
+\begin_modules
+algorithm2e
+fixltx2e
+\end_modules
+\maintain_unincluded_children false
+\language french
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement H
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.5cm
+\rightmargin 2.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style french
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\author 2089228819 "Ivan"
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Rapport du PSAR/PSTL: Parallélisation de graphes audio (sujet PSTL)
+\end_layout
+
+\begin_layout Author
+Eisha Chen-yen-su, Ivan Delgado
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace 25pheight%
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Nous souhaitons remercier nos encadrants Jean-Louis Giavitto et Pierre Donat-Bou
+illud pour leurs conseils et leur aide.
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Le présent document porte sur un projet STL, il a donc été réalisé dans
+ le cadre de ce dernier mais également dans celui du projet SAR car l’un
+ des membres du binôme est en SAR.
+ Il comportera donc des éléments provenant du cahier des charges qui a été
+ rendu pour le PSAR, mais comme ce dernier n’était pas exigé pour le PSTL,
+ il nous a semblé judicieux de faire cela pour qu’il ne manque aucun éléments
+ de contexte.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Dans ce rapport, nous aborderons en premier lieu les graphes audio, ainsi
+ que ce qui les caractérisent.
+ Nous présenterons ensuite les algorithmes d’ordonnancement ainsi que l’architec
+ture logicielle ayant permis leur mise en œuvre.
+ Nous ferons également une comparaison entre les performances de ces ordonnancem
+ents.
+ Finalement, nous ferons une critique de la réalisation du projet en indiquant
+ les aspects de l’implémentation qui pourraient être améliorés et les fonctionna
+lités qui pourraient être développées par la suite.
+\end_layout
+
+\begin_layout Section
+Les graphes audio
+\end_layout
+
+\begin_layout Standard
+Les systèmes interactifs musicaux (abrégé SIM) permettent de jouer et de
+ composer de la musique en temps réel.
+ Ces derniers permettent la synthèse de signaux audio, qui est le résultat
+ d’un ensemble de traitements sur ces signaux.
+ Ces traitements doivent se faire en temps réel : à chaque cycle audio,
+ tous les calculs doivent se faire dans un temps imparti (i.e.
+ avant la fin du cycle), sans quoi, il y a une dégradation de la qualité
+ du signal audio.
+ Or la complexification de ces traitements font que cette synthèse peut
+ nécessiter de plus en plus de calculs, mais tout en devant être sur les
+ mêmes durées; il devient donc difficile de ne pas avoir de dégradations
+ dans ces conditions.
+\end_layout
+
+\begin_layout Standard
+Une solution consiste à tirer profit de l’architecture multi-cœur des processeur
+s modernes pour paralléliser ces calculs.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Nous allons préciser ici les contraintes temps réel que doivent respecter
+ les traitements audio en nous inspirant de l’analyse réalisée dans 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Un signal audio est caractérisé par sa fréquence d’échantillonnage indiquant
+ le nombre de valeurs (chaque valeur étant un nombre à virgule flottante
+ ou un entier) qu’il doit prendre à chaque seconde, le plus souvent elle
+ est de 44,1 kHz.
+ La carte son d’un ordinateur va lire ces échantillons dans un buffer audio
+ de taille fixe à un intervalle régulier (c’est ce qui défini un cycle audio),
+ donc si nous avons un buffer de 512 échantillons, la carte va lire dans
+ ce buffer environ 86 fois par seconde (44 100 divisé par 512), donc toutes
+ les 11,6 millisecondes
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+L'API JACK que nous utilisons utilise deux buffers, le principe est le même,
+ la durée des cycles est doublée
+\end_layout
+
+\end_inset
+
+.
+ Si un nouveau buffer n’est pas disponible au delà de cette échéance, alors
+ la carte audio va se mettre à lire des échantillons nuls ou bien le même
+ buffer qu’au cycle précédent, ce qui produit un “tick” désagréable à l’oreille.
+ La durée d’un cycle audio constitue donc la contrainte temps réel que doit
+ respecter le traitement audio : le temps de calcul des traitements audio,
+ pour chaque buffer, doit impérativement être inférieur à la durée d’un
+ cycle.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Ces traitements audio peuvent êtres représentés par un graphe audio (ou
+ DAG, pour “Directed Acyclic Graph”).
+ Les nœuds d’entrées d’un tel graphe sont les sources des signaux audio
+ et les nœuds de sorties, les sorties audio du système.
+ Les autres nœuds du graphe sont des traitements altérant les signaux audio
+ passant par ces derniers.
+ Ainsi chaque signal va-t-il suivre un chemin audio en passant d’un nœud
+ à un autre jusqu’à arriver à l’une des sorties.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Un graphe audio peut être vu comme un graphe de tâches dont chaque nœud
+ représente un traitement audio (en anglais, “DSP” pour “Digital Signal
+ Processor”) et les arcs représentent les buffers ou canaux permettant à
+ deux DSP de communiquer entre eux.
+ De plus, il est évident qu’un arc représentant une communication d’un nœud
+ A vers B induit que la tâche B dépend de la tâche A qui doit s’exécuter
+ avant.
+\end_layout
+
+\begin_layout Standard
+Le poids d’un nœud correspond au temps nécessaire à l’exécution d’une tâche.
+ Celui d’un arc correspond au coût de communication entre deux tâches.
+ Le coût de communication peut être considéré comme négligeable dans le
+ cas d’une communication via une mémoire partagée, elle peut être beaucoup
+ plus importante et variable dans le cas de passages de messages dans des
+ systèmes répartis: il faut alors en tenir compte.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename dot/seq_test/seq_test-1.png
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Exemple de DAG
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Le chemin critique d’un graphe de tâches correspond au plus long chemin
+ (par rapport à la somme totale des poids des nœuds et des arcs le constituant)
+ entre un nœud d’entrée et un nœud de sortie du DAG.
+ Et la longueur de ce chemin est le temps minimum (possible) d’exécution
+ parallèle de ce graphe.
+\end_layout
+
+\begin_layout Standard
+Donc paralléliser un graphe de tâches revient à faire un ordonnancement
+ périodique de ces tâches entre les différents processeurs disponibles,
+ tout en respectant les dépendances entre ces dernières.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+La parallélisation des graphes audio est déjà quelque chose de connu, cependant
+ elle n’est pas supportée par tous les SIM ou alors elle exige l’utilisation
+ d’instructions explicites.
+ Notre objectif était donc d’étudier les performances d’algorithmes d’ordonnance
+ment de graphes de tâches vis-à-vis des contraintes temps réel du domaine
+ audio, pour permettre la parallélisation automatique de l’exécution de
+ graphes audio.
+\end_layout
+
+\begin_layout Section
+Algorithmes d’ordonnancement
+\end_layout
+
+\begin_layout Standard
+Nous allons à présent parler des différents algorithmes et stratégies utilisées
+ pour étudier les possibilités de parallélisation automatique de graphes
+ audio.
+ Nous avons vu qu’il s’agissait d’un problème d’ordonnancement de graphes
+ de tâches.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Taxonomie de l’ordonnancement
+\begin_inset space \space{}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Tout d’abord, il y a deux types d’ordonnancements de DAG : l’ordonnancement
+ statique, qui définit quelles tâches vont s’exécuter sur quels processeurs
+ à un instant donné, avant son exécution (comme au moment de la compilation
+ par exemple) et qui sera toujours le même; l’ordonnancement dynamique qui,
+ quand à lui est déterminé au fur et à mesure de l’exécution du graphe et
+ qui par conséquent, peut varier en fonction d’éventuels aléas des différentes
+ exécutions.
+\end_layout
+
+\begin_layout Standard
+Les algorithmes d’ordonnancement statique sont tirés de
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+literal "false"
+
+\end_inset
+
+ et la stratégie d’ordonnancement dynamique est tirée de
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-2"
+literal "false"
+
+\end_inset
+
+ et
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-3"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Nous pouvons dégager certaines caractéristiques des DAG dans les cas étudiés
+ : il n’y a pas de tâches parallèles (i.e.
+ une tâche n’est exécutée que sur un seul processeur), le coût de calcul
+ des tâches est arbitraire et les coûts de communication entre les tâches
+ seront considérés comme négligeables.
+\end_layout
+
+\begin_layout Standard
+Ces DAG seront exécutés sur des systèmes multiprocesseurs à mémoire partagée
+ et les processeurs ont tous la même vitesse de traitement.
+\end_layout
+
+\begin_layout Subsection
+Les algorithmes d’ordonnancement statique
+\end_layout
+
+\begin_layout Subsubsection
+Le principe de l’ordonnancement à liste
+\end_layout
+
+\begin_layout Standard
+Nous allons définir le principe général derrière les algorithmes d’ordonnancemen
+t statique.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Ces algorithmes construisent d’abord une liste des tâches ordonnées par
+ ordre décroissant de priorité.
+ À chaque étape, il retire la tâche prioritaire de la liste, puis l’ordonnance
+ sur le processeur permettant à la tâche de commencer le plus tôt possible.
+ Il se termine lorsque toutes les tâches ont été assignées à l’un des processeur
+s.
+ Certains algorithmes calculent les priorités des tâches une seule fois
+ au début, d’autres les évaluent à chaque itération.
+\end_layout
+
+\begin_layout Standard
+Deux attributs sont fréquemment utilisés pour déterminer la priorité d’une
+ tâche : le t-level (“top level”) et le b-level (“bottom level”).
+ Le t-level d’un nœud n correspond à la longueur (i.e.
+ la somme des poids des nœuds et des arcs) maximale d’un chemin allant de
+ l’un des nœuds d’entrée du DAG vers n (en excluant son propre poids).
+ Le b-level d’un nœud n est quand à lui la longueur maximale d’un chemin
+ allant de n vers un nœud de sortie du graphe.
+ Il y a aussi une variante statique du b-level pour laquelle nous faisons
+ seulement la somme des poids des nœuds : le “static level” (que nous abrégeons
+ “SL”).
+\end_layout
+
+\begin_layout Subsubsection
+L’algorithme HLFET avec départage CP/MISF
+\end_layout
+
+\begin_layout Standard
+Le premier algorithme est l’algorithme HLFET (pour
+\begin_inset Quotes fld
+\end_inset
+
+Highest Level First with Estimated Times
+\begin_inset Quotes frd
+\end_inset
+
+) avec un départage des égalités avec CP/MISF (pour
+\begin_inset Quotes fld
+\end_inset
+
+Critical Path / Most Immediate Successors First
+\begin_inset Quotes frd
+\end_inset
+
+).
+ Pour celui-ci, la priorité d’un nœud est définie par son SL.
+ Lorsque plusieurs nœuds ont le même SL, on choisi d’abord celui ayant le
+ plus grand nombre de successeurs.
+\end_layout
+
+\begin_layout Standard
+Lorsque l’on considère négligeable les coûts de communication entre les
+ tâches, cet algorithme est supposé être proche de l’ordonnancement optimal,
+ comme il privilégie les nœuds appartenant au chemin critique.
+ De plus, il est très simple à mettre en place.
+ C’est pour ces raisons que nous avons choisi cet algorithme en premier.
+\end_layout
+
+\begin_layout Subsubsection
+L’algorithme ETF
+\end_layout
+
+\begin_layout Standard
+Le second algorithme statique est l’algorithme ETF (pour “Earliest Time
+ First”).
+ À chaque itération, il faut calculer pour chaque nœud prêt (i.e.
+ dont tous les parents ont déjà été ordonnancés), et sur chaque processeur,
+ l’instant le plus tôt auquel il pourra s’exécuter.
+ Puis on ordonnance le nœud pouvant s’exécuter au plus tôt sur le processeur
+ le permettant.
+ Les égalités sont résolues en choisissant d’abord le nœud ayant le SL le
+ plus élevé.
+\end_layout
+
+\begin_layout Standard
+Cet algorithme est également simple à implémenter.
+ De plus, il privilégie au mieux les temps de démarrage les plus précoces
+ ainsi que les nœuds du chemin critique.
+ Il est aussi possible de borner la qualité du résultat par rapport à l’ordonnan
+cement optimal.
+\end_layout
+
+\begin_layout Subsubsection
+L’algorithme CPFD
+\end_layout
+
+\begin_layout Standard
+Le dernier algorithme statique est l’algorithme CPFD (pour “Critical Path
+ Fast Duplication”).
+ Il est différent des autres vus précédemment, car il va ordonnancer les
+ tâches via un procédé plus complexe qu’avec une liste ordonnée.
+ CPFD s’autorise à dupliquer des tâches lorsque cela permet d’éviter les
+ coûts de communication d’une tâche A vers une tâche B : si une tâche B
+ s’exécute juste après A sur le même processeur, alors le résultat de A
+ est déjà disponible (sur ce processeur) pour que B puisse s’exécuter immédiatem
+ent après.
+ Il n’y a donc pas besoin d’envoyer de message pour communiquer le résultat
+ de A à B (ce qui peut être significativement long).
+ Cela peut être particulièrement utile dans un système réparti : faire en
+ sorte que deux tâches directement dépendantes s’exécutent sur un même site
+ permet d'éviter des envois de messages et peut donc faire gagner du temps.
+\end_layout
+
+\begin_layout Standard
+Dans le cadre du domaine audio, cela peut être mis en application lors d’une
+ collaboration en temps réel entre plusieurs musiciens étant sur plusieurs
+ machines différentes ou éloignés géographiquement.
+\end_layout
+
+\begin_layout Standard
+CPFD permet donc de prioriser les nœuds du chemin critique et peut faire
+ plus de réductions de coûts de communication via la duplication de tâche,
+ il semble donc bien adapté pour s’assurer de respecter au mieux une contrainte
+ temps réel sur un système réparti.
+\end_layout
+
+\begin_layout Standard
+Ce qui va suivre est la description de l’algorithme.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Premièrement, CPFD va distinguer les nœuds du DAG en trois catégories :
+ les CPN (pour “Critical Path Node”), qui sont les nœuds appartenant à un
+ chemin critique; les IBN (pour “In-Branch Nodes”), qui sont les nœuds possédant
+ un chemin menant à un CPN; et les OBN (pour “Out-Branch Node”), qui sont
+ simplement les nœuds n’appartenant pas aux deux autres catégories.
+ CPFD s’appuie sur une liste appelée “CPN-Dominant Sequence”.
+ Elle est construite selon [ l' Algorithme 1
+\begin_inset CommandInset ref
+LatexCommand vpageref
+reference "Algorithme 1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ] :
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Algorithme 1"
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Séquencement des CPN
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Insérer en premier le CPN d’entrée du DAG dans la séquence, mettre
+\emph on
+ Position
+\emph default
+ à 2.
+ Soit
+\emph on
+ n
+\emph default
+X, le nœud suivant dans le chemin critique
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Répéter
+\series default
+ :
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Si
+\series default
+\emph on
+ nX
+\emph default
+ a tous ses parents dans la séquence
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+mettre
+\emph on
+ nX
+\emph default
+ à
+\emph on
+ Position
+\emph default
+ dans la séquence et incrémenter
+\emph on
+ Position
+\emph default
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Sinon
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Posons
+\emph on
+ nY
+\emph default
+ tel qu’il soit un éventuel parent de
+\emph on
+ nX
+\emph default
+ qui ne soit pas dans la séquence et avec le
+\emph on
+ b-level
+\emph default
+ le plus élevé (si plusieurs nœuds correspondent à cela, on choisi d’abord
+ celui ayant le
+\emph on
+ t-level
+\emph default
+ minimal).
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Si
+\series default
+\emph on
+ nY
+\emph default
+ a tous ses parents dans la séquence
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+alors l’insérer à
+\emph on
+ Position
+\emph default
+ et incrémenter
+\emph on
+ Position
+\emph default
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Sinon
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+inclure récursivement tous les prédécesseurs de
+\emph on
+ nY
+\emph default
+ dans la séquence.
+\end_layout
+
+\begin_layout Plain Layout
+Répéter l’étape précédente jusqu’à ce que tous les parents de
+\emph on
+ nX
+\emph default
+ soient dans la séquence.
+ Insérer
+\emph on
+ nX
+\emph default
+ dans la séquence à
+\emph on
+ Position
+\emph default
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Fin si
+\series default
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Fin si
+\series default
+.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Jusqu’à ce que
+\series default
+ tous les CPN soient dans la séquence.
+\end_layout
+
+\begin_layout Plain Layout
+Ajouter à la fin de la séquence, tous les OBN par ordre décroissant de
+\emph on
+b-level
+\emph default
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Premièrement, CPFD va distinguer les nœuds du DAG en trois catégories
+\begin_inset space ~
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Itemize
+Les CPN (pour “Critical Path Node”), qui sont les nœuds appartenant à un
+ chemin critique.
+\end_layout
+
+\begin_layout Itemize
+Les IBN (pour “In-Branch Nodes”), qui sont les nœuds possédant un chemin
+ menant à un CPN.
+\end_layout
+
+\begin_layout Itemize
+Les OBN (pour “Out-Branch Node”), qui sont simplement les nœuds n’appartenant
+ pas aux deux autres catégories.
+\end_layout
+
+\begin_layout Standard
+À partir de cette séquence, CPFD procède à l’ordonnancement selon [ l'Algorithme
+ 2 
+\begin_inset CommandInset ref
+LatexCommand vpageref
+reference "Algorithme 2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ] :
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement ph
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Algorithme 2"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ordonnancement CPFD
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Soit
+\emph on
+ candidate
+\emph default
+ le CPN d’entrée.
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Répéter:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Soit
+\emph on
+ P_SET
+\emph default
+, l’ensemble des processeurs comportant les parents de
+\emph on
+ candidate
+\emph default
+, plus un processeur inutilisé.
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Pour chaque
+\series default
+\emph on
+ P 
+\emph default
+dans
+\emph on
+ P_SET
+\emph default
+, faire :
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+(a)
+\series default
+Calculer
+\emph on
+ ST
+\emph default
+ : le temps de départ de
+\emph on
+ candidate
+\emph default
+ sur
+\emph on
+ P
+\emph default
+.
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+(b)
+\series default
+Soit m, un éventuel parent de
+\emph on
+ candidate
+\emph default
+ qui n’est pas ordonnancé sur
+\emph on
+ P
+\emph default
+ et dont le message pour
+\emph on
+ candidate
+\emph default
+ a le temps d’arrivée le plus tardif.
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+(c)
+\series default
+ Essayer de dupliquer m sur le créneau d’inactivité de
+\emph on
+ P
+\emph default
+ le plus précoce.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Si
+\series default
+ la duplication réussi et que cela diminue
+\emph on
+ ST
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+alors mettre à jour
+\emph on
+ ST
+\emph default
+.
+ Faire en sorte qu’un nouveau candidate soit m et retourner à l’étape
+\series bold
+ (a)
+\series default
+ .
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Sinon
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indp
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Si la duplication échoue, alors rendre le contrôle pour examiner un autre
+ parent du candidate précédent.
+\end_layout
+
+\begin_layout Plain Layout
+Ordonnancer candidate sur le processeur
+\emph on
+ P’
+\emph default
+ qui lui permet de commencer le plus tôt et faire les duplications requises.
+\end_layout
+
+\begin_layout Plain Layout
+Soit
+\emph on
+ candidate
+\emph default
+, le CPN suivant.
+\end_layout
+
+\begin_layout Plain Layout
+Répéter le processus de l’étape
+\series bold
+ 3
+\series default
+.
+ à
+\series bold
+ 6
+\series default
+.
+ pour chaque OBN avec
+\emph on
+ P_SET
+\emph default
+ contenant tous les processeurs utilisés, plus un processeur inutilisé.
+ Les OBN sont ordonnancés dans l’ordre topologique.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Fin si
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Indm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\series bold
+Jusqu’à ce que
+\series default
+ tous les CPN soient ordonnancés.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Vol de tâche
+\end_layout
+
+\begin_layout Standard
+La toute dernière stratégie d’ordonnancement étudiée est l’ordonnancement
+ avec vol de tâches.
+ Il s’agit d’un ordonnancement dynamique dans lequel les tâches sont exécutées
+ par un pool de threads.
+\end_layout
+
+\begin_layout Standard
+Chaque thread a une file d’attente.
+ Au début de l’exécution du DAG, les tâches prêtes (i.e.
+ celles correspondant aux nœuds d’entrée du DAG) sont réparties parmi les
+ files d’attentes de chacun des threads en étant insérées au début de ces
+ files.
+ Pour avoir la prochaine tâche à exécuter, un thread en prend une au début
+ de sa file (ordre LIFO).
+ Si sa file est vide, il va “voler” une tâche à la fin (ordre FIFO) de la
+ file d’attente d’un autre thread.
+\end_layout
+
+\begin_layout Standard
+À chaque fois qu’un thread finit une tâche, il va ajouter, au début de sa
+ file, la (ou les) tâche(s) nouvellement prête(s) (i.e.
+ qui en dépendait et dont leurs autres dépendances ont également été satisfaites
+).
+\end_layout
+
+\begin_layout Standard
+Cette stratégie a pour premier avantage d’utiliser des files d’attentes
+ qui peuvent êtres “lock-free”, donc il y a peu de contentions sur ces dernières
+ et il n’y a pas de surcoûts causés par des synchronisations.
+ Comme un thread va toujours tenter de suivre un chemin de calcul du DAG
+ (car il va essayer d’exécuter immédiatement, après une tâche, ses successeurs),
+ il y a augmentation de la localité des données et on a alors une plus grande
+ probabilité pour que les données, sur lesquelles travaille un thread, restent
+ dans les caches du processeur.
+ De plus, lorsqu’un thread vole une tâche dans une file F, cette tâche sera
+ celle avec le
+\emph on
+t-level
+\emph default
+ le plus petit de la file F, donc avec une priorité plus élevée que les
+ autres.
+\end_layout
+
+\begin_layout Section
+Architecture logicielle
+\end_layout
+
+\begin_layout Standard
+Dans cette partie, nous ne parlerons pas de façon détaillée de l’implémentation
+ : en effet, cette dernière est déjà amplement commentée et documentée dans
+ le code source du projet.
+ De même, la documentation utilisateur est contenue dans le README du projet
+ [ Dépôt : https://gitlab.com/Vonstrab/audio-graph-parallelization ].
+\end_layout
+
+\begin_layout Standard
+Nous nous concentrerons ici sur la présentation de l’architecture globale
+ ainsi que sur les points importants de l’implémentation.
+\end_layout
+
+\begin_layout Subsection
+Les fonctionnalités réalisées
+\end_layout
+
+\begin_layout Standard
+Nous allons présenter les fonctionnalités réalisées par le logiciel développé
+ durant le projet.
+ Le logiciel peut lire certains graphes audio écrits dans des fichiers au
+ format AudioGraph.
+ Il peut créer des fichiers DOT et PDF (avec
+\series bold
+ Graphviz
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-4"
+literal "false"
+
+\end_inset
+
+) représentant le graphe.
+ Il peut calculer des ordonnancements statiques pour ces graphes avec les
+ algorithmes
+\emph on
+ HLFET
+\emph default
+,
+\emph on
+ ETF
+\emph default
+,
+\emph on
+ CPFD
+\emph default
+ ou “random
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Cet ordonnancement ne servait qu'a vérifier le bien fondé de l'implémentation
+ des autres ordonnancements en les comparants a cet ordonnancement arbitraire
+ témoin, nous n'allons pas dans ce présent document analyser les performances
+ de 
+\begin_inset Quotes fld
+\end_inset
+
+random
+\begin_inset Quotes frd
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+” (on assigne des priorités aléatoires aux nœud lors de l’ordonnancement)
+ et éventuellement les afficher.
+ Il peut exécuter séquentiellement le graphe audio ou en parallèle avec
+ des threads
+\series bold
+ POSIX
+\series default
+ selon un ordonnancement statique ou un ordonnancement dynamique avec vol
+ de tâches.
+ Pour finir, il est également possible de faire des mesures sur les temps
+ des exécutions d'un graphe audio.
+\end_layout
+
+\begin_layout Subsection
+Les technologies utilisées
+\end_layout
+
+\begin_layout Standard
+Nous allons à présent parler des technologies qui sont utilisées par ce
+ projet.
+\end_layout
+
+\begin_layout Standard
+Le logiciel est écrit en
+\series bold
+ Rust
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-5"
+literal "false"
+
+\end_inset
+
+.
+ C’est un langage de programmation dont le compilateur produit du code rapide
+ (le compilateur utilisant
+\series bold
+ LLVM
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-6"
+literal "false"
+
+\end_inset
+
+comme backend), il est orienté vers la programmation concurrente et le compilate
+ur fait de nombreuses vérifications pour détecter des problèmes liés à la
+ mémoire (comme par exemple le déréférencement de pointeurs non valides
+ ou les data races).
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Jack
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-7"
+literal "false"
+
+\end_inset
+
+ est utilisé pour la fonction de callback audio
+\series bold
+ JACK
+\series default
+ fait référence à une API et aussi à l’implémentation d’une infrastructure
+ permettant à des applications audio de communiquer entre elles et avec
+ les interfaces audio (comme des cartes son).
+ À chaque cycle audio, le serveur audio
+\series bold
+ JACK
+\series default
+ va appeler la fonction de callback audio de notre application.
+ C’est dans cette fonction que va être appelée notre routine d’exécution
+ du graphe audio.
+ Les nœuds de sortie du graphe vont écrire les résultats des traitements
+ du graphe dans les buffers des ports de sortie de l’application, ce sont
+ ces buffers qui vont être lus par le serveur
+\series bold
+ JACK
+\series default
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+crossbeam
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-12"
+literal "false"
+
+\end_inset
+
+ est utilisé pour diverses mécanismes de synchronisation tels que
+\begin_inset space ~
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Itemize
+Les
+\emph on
+ channel
+\emph default
+ qui sont des canaux de messages multi-producteurs et multi-consommateurs.
+\end_layout
+
+\begin_layout Itemize
+Les
+\emph on
+ deque
+\emph default
+ qui sont une implémentation de files utilisables pour l’ordonnancement
+ par vole de tâche.
+\end_layout
+
+\begin_layout Itemize
+Les
+\emph on
+ ShardedLock
+\emph default
+ qui sont des verrous permettant à une ressource d’être verrouillée pour
+ un seul écrivain ou pour plusieurs lecteurs.
+ Ce type de verrous existent déjà dans la bibliothèque standard (
+\emph on
+ RwLock
+\emph default
+ ) mais ceux de
+\series bold
+ crossbeam
+\series default
+ sont plus rapide pour acquérir le verrou en lecture mais plus lent pour
+ l’acquérir en écriture, ce qui est mieux lorsque l’on sait qu’on va plus
+ souvent lire une donnée que la modifier.
+\end_layout
+
+\begin_layout Itemize
+L’utilitaire
+\emph on
+ Backoff
+\emph default
+ permet de faire des boucles d’attentes actives mais en réduisant la contention
+ sur le processeur, en faisant en sorte que le thread rende la main à l’OS,
+ au bout d’un certain temps, pour des durées qui croissent exponentiellement
+ à chaque fois.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+core_affinity
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-13"
+literal "false"
+
+\end_inset
+
+ permet de faire en sorte qu’un thread s’exécute toujours sur le même processeur.
+ Ceci est extrêmement important pour la performance de l’exécution des DAG,
+ car les algorithmes d’ordonnancement s'appuient sur la localité des données
+ : lorsque deux tâches s’exécutent successivement et que l’une utilise le
+ résultat de l’autre (i.e.
+ il y a une relation de dépendance entre ces tâches dans le DAG), il est
+ beaucoup plus avantageux qu’elles s’exécutent sur le même cœur car la seconde
+ tâche peut plus rapidement accéder aux données qui ont été écrites par
+ la première et qui sont encore dans le cache du cœur, au lieu d’avoir à
+ les chercher dans la RAM, ce qui est systématiquement le cas si les tâches
+ s’exécutent sur des cœurs différents.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+criterion
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-10"
+literal "false"
+
+\end_inset
+
+ permet de faire des benchmarks pour estimer les WCET (Worst Case Execution
+ Time) des nœuds du DAG, qui seront utilisés comme coût de calcul des nœuds
+ par les algorithmes d’ordonnancement statiques.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+pest
+\series default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-11"
+literal "false"
+
+\end_inset
+
+ est utilisé pour écrire le parser de fichiers
+\series bold
+ AudioGraph
+\series default
+.
+\end_layout
+
+\begin_layout Subsection
+Présentation des modules Rust
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Rust
+\series default
+ permet de simplement structurer le code d’un logiciel en modules.
+\end_layout
+
+\begin_layout Standard
+Voici la liste des modules du projet :
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+dsp
+\emph default
+ : contient l’implémentation des traitements audio ainsi que des buffers
+ permettant de communiquer entre les tâches.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+execution
+\emph default
+ : implémente les exécutions des DAG.
+ Il y a l’exécution séquentielle mais aussi l’exécution parallèle des ordonnance
+ments statiques et l’exécution parallèle avec ordonnancement par vol de
+ tâches.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+measure
+\emph default
+ : contient les fonctions permettant d’effectuer les mesures temporelles
+ sur les différentes exécutions.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+parser
+\emph default
+ : contient le parser pour extraire les graphes audio décrits dans des fichiers
+ AudioGraph.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+static_scheduling
+\emph default
+ : contient l’implémentation des algorithmes d’ordonnancement statique.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+task_graph
+\emph default
+ : implémente la représentation d’un DAG avec diverses informations utilisées
+ par les algorithmes d’ordonnancement statique ou l’exécution parallèle
+ avec ordonnancement par vol de tâches.
+\end_layout
+
+\begin_layout Subsection
+Les DSP et fichiers AudioGraph supportés
+\end_layout
+
+\begin_layout Standard
+Nous allons détailler ici la manière dont a été implémenté le traitement
+ du signal.
+ Nous nous sommes efforcées de garder une séparation entre la représentation
+ du DAG contenant les informations utiles à l’ordonnancement (le graphe
+ de tâches) et le graphe audio sous-jacent où est effectué le traitement
+ du signal.
+\end_layout
+
+\begin_layout Standard
+Les nœuds de ce graphe audio sont des fonctions prenant un (ou plusieurs)
+ signal en entrée, sous forme d’un (ou plusieurs) tableau de flottants (qui
+ sont les échantillons audio), et écrivant le résultat du traitement dans
+ un (ou plusieurs) autre tableau de flottants.
+ Les nœuds d’entrée du graphe ne prennent pas de signal en entrée mais en
+ fournissent un en sortie, les nœuds de sortie ont seulement une entrée.
+\end_layout
+
+\begin_layout Standard
+Les arcs du graphes sont les buffers reliant les traitements : une fonction
+ de traitement écrit son résultat dans ce buffer (c’est sa sortie) et une
+ autre lit dans ce même buffer (c’est son entrée).
+ Ces buffers viennent de la structure
+\emph on
+ DspEdge
+\emph default
+ qui contient toutes les caractéristiques du signal : les échantillons du
+ signal, la fréquence d’échantillonnage et la taille du buffer.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Les DSP implémentés sont les suivants :
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Oscillator
+\emph default
+: un oscillateur produisant une onde sinusoïdale avec une certaine amplitude
+ et fréquence.
+ Il n’a qu’une seule sortie.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Modulator
+\emph default
+: applique une modulation au signal d’entrée qui peut s’apparenter à de
+ la modulation d’amplitude (AM).
+ Il a exactement une entrée et une sortie.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Sink
+\emph default
+: ce DSP est la sortie du graphe audio, il écrit le signal d’entrée dans
+ un buffer audio de
+\series bold
+ JACK
+\series default
+.
+ Il n’a qu’une seule entrée.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+InputOutputAdaptator
+\emph default
+: il s’agit d’un mixeur, il peut avoir plusieurs entrées et sorties.
+ Il mixe les signaux en entrée et écrit le même résultat tous ses buffers
+ de sortie.
+\end_layout
+
+\begin_layout Standard
+Lorsque le programme lit un fichier AudioGraph, il va reconnaître les nœuds
+ déclarés comme les DSP implémentés.
+ Si le parser trouve un nœud dont le type est inconnu, il va lui assigner
+ un DSP par défaut en fonction du nombre de ses entrées et sorties.
+\end_layout
+
+\begin_layout Subsection
+Implémentation de l’exécution séquentielle
+\end_layout
+
+\begin_layout Standard
+L’exécution séquentielle du graphe audio est réalisée dans la fonction
+\emph on
+ run_seq
+\emph default
+.
+ Cette fonction va initialement faire une liste des tâches en effectuant
+ un tri topologique du DAG.
+ Puis, à chaque cycle audio, elle va exécuter le DAG en exécutant séquentielleme
+nt les tâches dans l’ordre de cette liste.
+\end_layout
+
+\begin_layout Subsection
+Implémentation des algorithmes d’ordonnancement statique
+\end_layout
+
+\begin_layout Standard
+Les ordonnancements statiques ont été implémentés avec des fonctions prenant
+ comme paramètre un graphe de tâche (la structure
+\emph on
+ TaskGraph
+\emph default
+) et retournant un ordonnancement.
+ L’ordonnancement est représenté dans la structure Schedule qui contient
+ la liste des processeurs participant à l’exécution des tâches (la structure
+\emph on
+ Processor
+\emph default
+).
+ Chaque processeur a une liste de fenêtres temporelles (la structure
+\emph on
+ TimeSlot
+\emph default
+) indiquant quand il doit commencer une tâche et quand il doit la finir
+ (qui est simplement la date de début plus le 
+\emph on
+WCET
+\emph default
+), ces fenêtres ne se chevauchent évidemment pas, car un même processeur
+ ne peut qu’exécuter séquentiellement les tâches.
+\end_layout
+
+\begin_layout Standard
+Il y a quatre fonctions pour ces ordonnancements :
+\emph on
+ random
+\emph default
+ qui réalise une stratégie d’ordonnancement où l’on donne une priorité aléatoire
+ aux différents nœuds, et
+\emph on
+ hlfet
+\emph default
+,
+\emph on
+ etf
+\emph default
+ et
+\emph on
+ cpfd
+\emph default
+ qui réalisent les algorithmes du même nom.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+L’exécution des ordonnancements statiques est réalisée dans la fonction
+\emph on
+ run_static_sched
+\emph default
+.
+ Cette fonction va initialement calculer l’ordonnancement statique sur n
+ processeurs (attention, ce nombre ne soit pas dépasser le nombre de cœurs
+ disponibles sur la machine) du DAG en fonction d’un des algorithmes implémentés
+, puis crée un pool de n thread qui a connaissance de l’ordonnancement.
+ Ainsi chaque thread se retrouve affecté à l’exécution de l’un des “processeurs”
+ décrit dans l’ordonnancement statique et chaque thread va toujours s’exécuter
+ sur un même cœur, grâce à
+\series bold
+ core_affinity
+\series default
+.
+ On a alors une bonne correspondance entre ce qui est décrit dans les ordonnance
+ments statique et ce qui sera réellement effectué lors des exécutions du
+ DAG.
+\end_layout
+
+\begin_layout Standard
+Chaque thread a donc une liste de tâches (celle de la structure Processor
+ qui leur a été attribuée) et va l’exécuter une à une en respectant l’ordre.
+ Cependant, cette implémentation ne tient pas compte des fenêtres temporelles
+ de la liste de tâches mais va essayer d’exécuter les tâches dès que possible
+ (car le plus souvent, le calcul d’une tâche prendra moins de temps que
+ le WCET), et il y a un mécanisme de synchronisation pour que les dépendances
+ entre les tâches soient quand même respectées.
+\change_inserted 2089228819 1558094108
+
+\end_layout
+
+\begin_layout Standard
+Chaque tâche est associée à un état (l’énumération
+\emph on
+ TaskState
+\emph default
+) indiquant si elle est prête à être exécutée (i.e.
+ si toutes les tâches parentes ont fini de s’exécuter) ou non.
+ Dans le cas où elle ne l’est pas, il y a un compteur indiquant combien
+ de parents doivent encore s’exécuter (le compteur d’activation).
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Quand un thread finit d’exécuter une tâche, il change son état pour indiquer
+ qu’elle est finie et va décrémenter les compteurs d’activation des tâches
+ dépendantes.
+ Donc si le compteur d’activation d’une tâche atteint 0, elle devient prête.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Quand un thread veut commencer à exécuter une tâche, il doit d’abord vérifier
+ si celle-ci est prête.
+ Si ce n’est pas le cas, il entamer une attente active avec l’utilitaire
+\emph on
+ Backoff
+\emph default
+.
+ L’attente active permet d’éviter que les threads ne s’endorment systématiquemen
+t pour attendre qu’une tâche soit prête.
+ Ce genre de mécanisme de synchronisation engendre des appels systèmes,
+ ce qui d’une part utilise beaucoup de cycles CPU et d’une autre, comme
+ les threads doivent rendre la main au noyau, lorsqu’ils reviennent de l’appel
+ système, les données qui leur sont utiles ont probablement été évincées
+ des caches du processeur.
+ Pour ces raisons, il faut éviter le plus possible de faire des appels systèmes
+ lorsqu’on programme une application temps réel.
+\end_layout
+
+\begin_layout Subsection
+Implémentation de l’exécution de l’ordonnancement dynamique avec vol de
+ tâches
+\end_layout
+
+\begin_layout Standard
+L’exécution parallèle avec l’ordonnancement par vol de tâches est réalisée
+ dans la fonction 
+\begin_inset Newline newline
+\end_inset
+
+run_work_stealing.
+ La fonction va initialement créer un pool de n threads.
+ Chaque thread a sa propre file de tâches (de type Worker, venant de crossbeam)
+ et il y a une file globale (de type Injector).
+ Les threads vont initialement chercher les tâches dans la file globale.
+ Puis, à chaque fin de tâche, ils vont décrémenter les compteurs d’activation
+ des tâches dépendantes (cela marche comme pour l’exécution des ordonnancements
+ statiques), ajouter au début de leur file les nouvelles tâches prêtes et
+ finalement prendre la prochaine tâche, au début de leur file ou en volant
+ à la fin d’une des autres files.
+\end_layout
+
+\begin_layout Subsection
+Mécanisme de contrôle des pools de threads
+\end_layout
+
+\begin_layout Standard
+Pour les deux exécutions parallèles, lorsque le programme doit commencer
+ l’exécution d’un graphe, il appelle une méthode du thread de pool qui envoie
+ un message à chaque thread pour leur indiquer de commencer les calculs.
+ Chaque thread dispose d’un canal de messages sur lequel il attend un message
+ avant de commencer à exécuter le graphe.
+ À chaque fois qu’un thread finit toutes les tâches à exécuter, il va attendre
+ sur son canal le prochain message lui indiquant que le graphe doit à nouveau
+ être exécuté.
+\end_layout
+
+\begin_layout Subsection
+Réalisation des mesures de performance
+\end_layout
+
+\begin_layout Standard
+Nous voulions faire des mesures sur le temps d’exécution total d’un graphe
+ à chaque cycle audio.
+ Pour cela, au début de la fonction de callback audio, la date est enregistrée.
+ Il y a un second enregistrement de la date juste après la fin de l’exécution
+ du graphe audio.
+ Au lancement du programme, il y a un thread qui est créé et qui est associé
+ à un canal de messages.
+ Ce thread va simplement attendre de recevoir des messages sur ce canal
+ et va enregistrer dans un fichier le contenu de chaque message reçu.
+ À chaque fois que le thread principal fait un enregistrement, il envoie
+ un message contenant l’information enregistrée au thread qui va écrire
+ ces informations dans un fichier.
+ L’intérêt d’utiliser un thread séparé pour écrire les mesures dans un fichier
+ est d’éviter aux autres threads d’avoir à effectuer des appels systèmes
+ (ce qui doit être fait si l’on veut manipuler des fichiers), ils n’ont
+ qu’à envoyer un message dans le canal vers le thread écrivain et cette
+ opération est toujours non-bloquante pour les canaux de type unbounded
+ (fournis par crossbeam).
+ Les mesures ont ainsi un impact limité sur l’exécution des graphes audio.
+ Pourtant il faut être conscient que toute mesure demande des ressources
+ et donc impacte les performances, aussi minime que cet impact puisse être.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Un script Python a été écrit pour permettre de facilement générer des données
+ statistiques permettant de faire des comparaisons entre les différents
+ algorithmes de parallélisation.
+ Le script va lancer plusieurs fois différents programmes sur différents
+ fichiers pendant quelques secondes.
+ À l’issue de cette étape, il y a plusieurs fichiers contenant les informations
+ sur les temps d'exécutions des graphes audio dans un répertoire.
+ Le script va alors parcourir ces fichiers pour générer des graphiques présentan
+t des statistiques sur les exécutions.
+\end_layout
+
+\begin_layout Section
+Comparaison des ordonnancements
+\end_layout
+
+\begin_layout Standard
+Dans cette partie, nous allons réaliser une comparaison des performances
+ des différents ordonnancements.
+\end_layout
+
+\begin_layout Subsection
+Les caractéristiques des systèmes exécutant ces graphes
+\end_layout
+
+\begin_layout Standard
+L’architecture des machines, qui vont exécuter ces DAG, considérée dans
+ le cadre de ce projet correspond aux machines utilisées dans la vie courante
+ (i.e.
+ ordinateurs de bureau et portables).
+ Ce sont donc des systèmes à mémoire partagée dotés d’un nombre plutôt restreint
+ de processeurs.
+ Ce sont des systèmes homogènes car les processeurs ont tous la même vitesse.
+\end_layout
+
+\begin_layout Standard
+De plus, les systèmes sur lesquels fonctionnent la plupart des SIM, ne sont
+ pas des systèmes temps réel (les systèmes de la famille Unix (GNU/Linux
+ ou MacOS) ou Windows, par exemple).
+ Même si les noyaux de ces systèmes peuvent avoir une notion de processus
+ avec une priorité temps réel, ils ne sont pas préemptifs et ne peuvent
+ donc pas toujours garantir le temps de réponse à une interruption, ni avoir
+ certaines autres garanties temps réel.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Ne pouvant pas avoir un contrôle total sur l’ordonnancement des threads/processu
+s constituant les SIM (parfois, il n’est même pas possible d’avoir une priorité
+ temps réel), il se peut que parfois le SIM ne puisse pas avoir assez de
+ temps processeur à un moment donné pour respecter la contrainte temps réel.
+ Il peut aussi y avoir une perte de performance par rapport à la gestion
+ des caches des processeurs : par exemple, s’il y a une tâche B dépendant
+ du résultat d’une tâche A, si A s’exécute sur un processeur et que B s’exécute
+ ensuite sur un processeur différent, le résultat de A sera obligé de transiter
+ par la mémoire centrale de la machine pour pouvoir être lue par B, ce qui
+ prendrait plus de temps que si B pouvait ensuite s’exécuter sur le même
+ processeur que A et que le résultat était resté dans le cache; de manière
+ similaire, si A et B vont s’exécuter sur un même processeur, s’il y a un
+ autre processus (ou même un autre thread du SIM) qui s’exécute entre les
+ deux, sur ce processeur, alors ce dernier peut provoquer l'éviction du
+ résultat de A depuis le cache du processeur, avant que B n’ait pu s’en
+ servir.
+ Nous serons donc dans une démarche de “best-effort” en essayant de trouver
+ les meilleures solutions vis-à-vis des limitations que ces systèmes nous
+ imposent.
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Dans cette optique, observer uniquement le temps moyen n'est pas pertinent,
+ il faut aussi tenir compte des pires cas et du nombre d'échéances dépassées.
+ Nous recherchons des algorithmes qui sont statistiquement stables et qui
+ dépassent le moins souvent le temps qui leurs est imparti, ainsi tendrons-nous
+ à privilégier un algorithme qui est moins bon en moyenne mais dépassant
+ moins souvent les échéances.
+\end_layout
+
+\begin_layout Standard
+La machine utilisée pour faire les mesures exécute le système d'exploitation
+ Ubuntu 18.04 avec le noyau Linux 4.15.0-50-generic, un processeur Intel i5-7200U
+ @2.50GHz avec 3072 KB de cache et 4 cœurs, avec le gouverneur en mode performanc
+es.
+\end_layout
+
+\begin_layout Standard
+Les paramètres qui peuvent influencer les résultats de l’exécution sur un
+ même DAG sont:
+\end_layout
+
+\begin_layout Itemize
+Le nombre de threads utilisés
+\end_layout
+
+\begin_layout Itemize
+La taille des buffers, qui fait varier la durée d'un cycle et donc les échéances.
+ Les valeurs courantes que nous étudierons seront : 512, 256, 128, 64 et
+ 32 échantillons.
+\end_layout
+
+\begin_layout Itemize
+L'activité de la machine; les résultats ne seront pas les mêmes si elle
+ est au repos ou si elle a une charge de travail importante, comme une compilati
+on par exemple, ou la lecture d'une vidéo.
+\end_layout
+
+\begin_layout Subsection
+\noindent
+Les configurations des graphes audio étudiés
+\end_layout
+
+\begin_layout Standard
+\noindent
+\align left
+Nous allons concentrer notre analyse sur trois configurations particulières
+ de graphes audio :
+\end_layout
+
+\begin_layout Itemize
+\noindent
+\align left
+La ligne : c'est une chaîne de nœuds ou chacun s'exécute l’un après l’autre,
+ dans cette configuration la parallélisation est impossible, toute exécution
+ est nécessairement séquentielle, ces DAG vont nous servir de “groupe témoin”
+ afin de comparer le surcoût de chaque méthode.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename dot/ligne5/ligne5-1.png
+	lyxscale 25
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Exemple de ligne avec 5 nœuds
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\noindent
+\align left
+Le râteau : dans cette configuration, plusieurs lignes s’unissent au bout;
+ cette forme est celle permettant d'avoir le meilleur degré de parallélisme,
+ donc d'avoir les meilleurs gains.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename dot/rateau11/rateau11-1.png
+	lyxscale 25
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Exemple de râteau avec 11 nœuds
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\noindent
+\align left
+Finalement le losange, qui se trouve entre les deux, commence et termine
+ avec un degré de parallélisme nul tout en ayant un degré de parallélisme
+ supérieur entre les deux.
+ On s'attend à ce que l’exécution séquentielle soit plus efficace sur les
+ petits losanges, mais que le gain de la parallélisation soit significatif
+ sur ceux plus grands.
+ Cette configuration se veut plus proche des cas rencontrés dans la vie
+ réelle.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename dot/losange16/losange16-1.png
+	lyxscale 25
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Exemple de losange avec 16 nœuds
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Première variable : le nombre de threads
+\end_layout
+
+\begin_layout Standard
+Pour cette première série de mesures, nous allons fixer la taille du buffer
+ à 128, et réaliser les mesures sur une machine au repos.
+\end_layout
+
+\begin_layout Standard
+Nous commençons avec les lignes, pour pouvoir comparer le surcoût de chaque
+ méthode [Figure 5
+\begin_inset CommandInset ref
+LatexCommand vpageref
+reference "fig 5"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ].
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align left
+\begin_inset CommandInset label
+LatexCommand label
+name "fig 5"
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename ligne_2_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_2_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_2_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ligne avec
+\series bold
+ 2
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename ligne_3_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_3_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_3_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ligne avec
+\series bold
+ 3
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_4_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_4_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_4_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ligne avec
+\series bold
+ 4
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Lignes avec un nombre de threads variable
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+Puis avec les losanges [Figure 6
+\begin_inset CommandInset ref
+LatexCommand vpageref
+reference "fig 6"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ].
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align left
+\begin_inset CommandInset label
+LatexCommand label
+name "fig 6"
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename losange_2_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_2_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_2_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Losange avec
+\series bold
+ 2
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename losange_3_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_3_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_3_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Losange avec
+\series bold
+ 3
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename losange_4_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_4_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_4_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Losange avec
+\series bold
+ 4
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Losanges avec un nombre de threads variable
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+Et avec les râteaux [Figure 7
+\begin_inset CommandInset ref
+LatexCommand vpageref
+reference "Figure  7"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ].
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align left
+\begin_inset CommandInset label
+LatexCommand label
+name "Figure  7"
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename rateau_2_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_2_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_2_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Râteau avec
+\series bold
+ 2
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename rateau_3_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_3_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_3_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Râteau avec
+\series bold
+ 3
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\noindent
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\noindent
+\align left
+\begin_inset Graphics
+	filename rateau_4_128/average.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_4_128/misses.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_4_128/worst.png
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Râteau avec
+\series bold
+ 4
+\series default
+ threads
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Râteaux avec un nombre de threads variable
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Dans un premier temps, nous allons nous intéresser aux dépassements d'échéances
+ : nous pouvons constater que le nombre de threads optimal sur cette machine
+ est de 3 et cela quelque soit la configuration étudiée.
+ Cela peut sembler contre-intuitif compte tenu du fait qu'il y ait 4 cœurs,
+ nous pouvons constater que la présence du thread de mesures impacte les
+ performances car il interrompt les threads du pool.
+ Nous pouvons également émettre l’hypothèse que le cache étant partagé ainsi
+ que sont bus, il est un frein a l'utilisation simultanée des 4 cœurs de
+ la machine.
+\end_layout
+
+\begin_layout Standard
+Ensuite, en observant les temps moyens et les pires temps pour les lignes,
+ nous pouvons constater que, hormis des irrégularités des méthodes HLFET
+ et EFT, les différentes méthodes sont très proches, avec un léger surcoût
+ de la parallélisation explicable par le surcoût engendré par la gestion
+ des pools de threads et des locks.
+\end_layout
+
+\begin_layout Standard
+Pour les losanges, on note l'irrégularité de HLFET qui détonne par rapport
+ aux trois autres méthodes.
+ Dans cette configuration nous voyons que les 4 cœurs ne font pas perdre
+ tant de performance que ça, juste un légère augmentation du nombre d'échéances
+ ratées.
+\end_layout
+
+\begin_layout Subsection
+Seconde variable : la taille du buffer
+\end_layout
+
+\begin_layout Standard
+Plus la taille du buffer est petite, moins le système a de latence, mais
+ plus les échéances sont courtes et plus la machine est mise à contribution.
+ Nous avons deux configurations : un petit buffer entre 16 et 256 échantillons,
+ quand on cherche à avoir de la réactivité, par exemple pour des musiciens
+ qui souhaitent avoir un retour son rapide, pour de la retransmission en
+ direct, et a l'opposé un plus gros buffer à partir de 512 échantillons
+ quand on peut se permettre d'avoir de plus longues latences.
+\end_layout
+
+\begin_layout Standard
+Nous allons fixer le nombre de threads et faire varier la taille du buffer
+ de 16, 32, 64,128, 256, et enfin 512 échantillons.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_16/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+buffer de 16
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_32/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+buffer de 32
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_64/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+buffer de 64
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_128/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+buffer de 128
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_256/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+buffer de 256
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_512/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+buffer de 512
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+variations pour la ligne
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_16 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 16 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_32 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 32 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_64 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 64 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_128/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 128 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_256 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 256 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_512 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 512 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Variations pour les losanges
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_16 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 16 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_32 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 32 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_64 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 64 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_128/misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 128 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_256 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 256 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_512 /misses.png
+	lyxscale 25
+	scale 40
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Buffer de 512 échantillons
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Variations pour les râteaux
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Pour les buffers de 16 les méthodes ETF et HLFET ont du mal a quelques cycles.
+\end_layout
+
+\begin_layout Standard
+Pour les buffers de 32 les méthodes sont stables sauf pour le râteau ou
+ ETF et HLFET
+\emph on
+ 
+\emph default
+ont un peu de mal.
+\end_layout
+
+\begin_layout Standard
+Pour toutes les autres tailles les résultats sont très stables.
+\end_layout
+
+\begin_layout Subsection
+Dernière variable : la charge de la machine
+\end_layout
+
+\begin_layout Standard
+Dans cette série de mesures, nous allons fixer la taille du buffer à 128
+ échantillons, le nombre de threads est à 3 et nous allons comparer l'éxécution
+ entre la machine au repos et la machine qui lit une vidéo en haute résolution.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_128/average.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_3_128/misses.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_3_128/worst.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+ligne au repos
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename ligne_3_128 _charge/average.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_3_128 _charge/misses.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename ligne_3_128 _charge/worst.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+ligne en regardant une vidéo
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_128/average.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_3_128/misses.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_3_128/worst.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+losange au repos
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename losange_3_128_charge/average.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_3_128_charge/misses.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename losange_3_128_charge/worst.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+losange en regardant une vidéo
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_128/average.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_3_128/misses.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_3_128/worst.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+râteau au repos
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rateau_3_128_charge/average.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_3_128_charge/misses.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename rateau_3_128_charge/worst.png
+	lyxscale 40
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+râteau en regardant une vidéo
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Le cas le plus intéressant est celui des râteaux où l'on voit que lors de
+ la lecture de la vidéo, toutes les méthodes parallèles ont plus de mal
+ à tenir les échéances, contrairement à l’exécution séquentielle qui elle
+ tient la ligne avec la surcharge.
+ On peut analyser cette différence par en réfléchissant au fait que la lecture
+ d'une vidéo va monopoliser une partie non négligeable des ressources de
+ la machine, ce qui diminue une partie des gains de la parallélisation.
+\end_layout
+
+\begin_layout Subsection
+La stabilité des algorithmes
+\end_layout
+
+\begin_layout Standard
+Pour comparer la stabilité des algorithmes, nous allons faire des histogrammes
+ montrant la répartition des temps d'exécution avec 3 threads et des buffers
+ de 2048 échantillons, afin d'avoir des cycles plus longs et de mieux voir
+ les variations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename hist/hist_all_ligne.png
+	lyxscale 60
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Histogramme pour une ligne à 100 nœuds
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename hist/hist_all_losange.png
+	lyxscale 60
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Histogramme pour un losange à 156 nœuds
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename hist/hist_all_rateau.png
+	lyxscale 60
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Histogramme pour un râteau à 101 nœuds
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+On peut dans un premier temps constater que sur l'histogramme de la ligne,
+ HLFET a un overhead significatif et une légère stabilité moindre sur les
+ autres méthodes.
+ Les stabilités et les performances sont proches pour les trois autres méthodes.
+\end_layout
+
+\begin_layout Standard
+Sur l'histogramme du losange on voit une mauvaise stabilité du vol de tâches,
+ qui a un pic au même niveau que l’exécution séquentielle et un autre en
+ retard.
+ L’exécution séquentielle est stable mais souffre d'un retard.
+ Les deux qui sortent du lot sont HLFET et ETF qui sont proches au niveau
+ des performances et de la stabilité.
+\end_layout
+
+\begin_layout Standard
+Pour le Râteau en revanche on voir que l’exécution séquentielle n'est plus
+ aussi stable et est a la traîne par rapport aux autres méthodes, les méthodes
+ parallélises gagnent en performances et en stabilité avec ETF et le vol
+ de tache qui sont les plus stables.
+ Cette configuration parallèle est l'endroit ou ces méthodes brillent le
+ plus.
+\end_layout
+
+\begin_layout Subsection
+Conclusions
+\end_layout
+
+\begin_layout Standard
+Nous pouvons dans un premier temps noter que HLFET est la moins efficace
+ de toutes ces méthodes, tant au niveau de la performance que de la stabilité,
+ les deux méthodes ETF et le vol de tâches sont très proches dans leurs
+ résultats.
+ Cependant, le cas des losanges nous permet de les départager.
+ En effet, nous constatons que le vol de tâche est bien moins stable dans
+ le cas des losanges, ce qui est le cas le plus proche dans la vie réelle.
+\end_layout
+
+\begin_layout Standard
+Donc si nous comparons ETF à l’exécution séquentielle, nous constatons que
+ ETF offre un gain de performances non négligeable dans les situations de
+ parallélisme, mais nous avons constaté que ETF dépasse quelque fois les
+ échéances, une optimisation de l'implémentation pourrait palier à ce problème.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
+Évolutions possibles
+\end_layout
+
+\begin_layout Standard
+Premièrement, il faut noter que notre implémentation repose sur beaucoup
+ de locks, ce qui peut faire survenir des ralentissements, avec une optimisation
+ minutieuse, que nous n'avons pas pu faire, faute de temps.
+ Par exemple, nous aurions pu enlever des locks qui n'étaient pas réellement
+ utiles, ou nous aurions pu aller plus loin en implémentant certaines structures
+ avec des 
+\begin_inset Quotes fld
+\end_inset
+
+traits unsafe
+\begin_inset Quotes frd
+\end_inset
+
+ pour éviter l'utilisation de locks 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+literal "false"
+
+\end_inset
+
+.
+ Nous aurions pu aussi rendre les threads à priorité temps réel avec
+\series bold
+ audio_thread_priority 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-2"
+literal "false"
+
+\end_inset
+
+.
+ 
+\series default
+ETF a du potentiel et il serait intéressant de regarder ses performances
+ une fois de telles optimisations effectuées.
+\end_layout
+
+\begin_layout Standard
+Deuxième regret, il manque dans l’implémentation de CPFD le re-mapping sur
+ des processeurs réels, en effet l'algorithme ordonnance sur un nombre illimité
+ de processeurs 
+\begin_inset Quotes fld
+\end_inset
+
+virtuels
+\begin_inset Quotes frd
+\end_inset
+
+ qu'il faut ensuite mapper sur des processeurs réels (l’algorithme est dans
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-3"
+literal "false"
+
+\end_inset
+
+), avec MPI il serait possible d'exécuter les DAG sur des clusters par exemple,
+ par contre la latence induite peut le rendre prohibitif pour des petits
+ buffers, à réserver peut-être à des gros buffers pour du post process audio.
+\end_layout
+
+\begin_layout Standard
+Au début, nous avions tenté d’écrire un parseur Puredata pour pouvoir prendre
+ en charge les formats .pd en plus du format .ag.
+ Mais devant le temps demandé pour implémenter, la grande variété des nœuds
+ proposés et les lacunes de la documentation, nous avons fini par renoncer,
+ il subsiste un reliquat du parseur dans notre code.
+\end_layout
+
+\begin_layout Subsection
+Retour sur Rust
+\end_layout
+
+\begin_layout Standard
+Reprendrions-nous Rust si nous devions le faire à nouveau le projet ?
+\end_layout
+
+\begin_layout Standard
+Si nous sommes dans une optique d'optimisation fine et rapide, notre choix
+ se porterait sur C/C++.
+ Si nous ne voulons pas à avoir à gérer une multitude de bugs liés aux pointeurs
+ et à la mémoire, surtout par rapport aux threads, notre choix se porterait
+ encore sur Rust.
+\end_layout
+
+\begin_layout Standard
+Le compilateur de Rust est difficile à satisfaire mais il offre une sûreté
+ non négligeable, nous n'avons pas eu à aller dénicher des erreurs de segmentati
+on ou des fuites mémoire.
+ Les exigences du compilateur ne nous ont pas permis d'optimiser autant
+ qu'on aurait pu.
+ Mais sans Rust, nous aurions eu beaucoup plus de mal pour que tout cela
+ fonction au moins correctement.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-1"
+literal "false"
+
+\end_inset
+
+: Yann Orlarey, Stéphane Letz, Dominique Fober, Work stealing scheduler
+ for automatic parallelization in faust, LAC 2010
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-2"
+literal "false"
+
+\end_inset
+
+: MA Kiefer, K Molitorisz, J Bieler, Parallelizing a Real-Time Audio Application
+—A Case Study in Multithreaded Software Engineering, Parallel and Distributed
+ Processing Symposium Workshop (IPDPSW), 2015
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-3"
+literal "false"
+
+\end_inset
+
+: YK Kwok, I Ahmad, Static scheduling algorithms for allocating directed
+ task graphs to multiprocessors, ACM Computing Surveys
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-4"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://www.graphviz.org/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-5"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://www.rust-lang.org/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-6"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://llvm.org/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-7"
+literal "false"
+
+\end_inset
+
+
+\series bold
+http://www.jackaudio.org/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-8"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://docs.rs/crossbeam/0.7.1/crossbeam/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-9"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://docs.rs/core_affinity/0.5.9/core_affinity/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-10"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://criterion.readthedocs.io/en/master/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-11"
+literal "false"
+
+\end_inset
+
+
+\series bold
+https://pest.rs/
+\series default
+ , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-12"
+literal "false"
+
+\end_inset
+
+https://doc.rust-lang.org/nomicon/concurrency.html , dernière visite le 24/05/2019
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-13"
+literal "false"
+
+\end_inset
+
+https://github.com/padenot/audio_thread_priority , dernière visite le 24/05/2019
+\end_layout
+
+\end_body
+\end_document
